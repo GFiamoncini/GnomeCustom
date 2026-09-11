@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 Gabriel Fiamoncini
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<schemalist gettext-domain="gnomecustom">
+  <schema id="org.gnome.shell.extensions.gnomecustom.dock"
+          path="/org/gnome/shell/extensions/gnomecustom/dock/">
+
+    <key name="icon-size" type="u">
+      <default>24</default>
+      <range min="16" max="64"/>
+      <summary>Maximum icon size</summary>
+      <description>Icons shrink when the dock would not fit; they never grow past
+      this size.</description>
+    </key>
+    <key name="length-fraction" type="d">
+      <default>0.9</default>
+      <range min="0.2" max="1.0"/>
+      <summary>Maximum dock length</summary>
+      <description>Fraction of the primary monitor width.</description>
+    </key>
+    <key name="background-opacity" type="d">
+      <default>0.0</default>
+      <range min="0.0" max="1.0"/>
+      <summary>Dock background opacity</summary>
+      <description>0 is fully transparent.</description>
+    </key>
+  </schema>
+</schemalist>

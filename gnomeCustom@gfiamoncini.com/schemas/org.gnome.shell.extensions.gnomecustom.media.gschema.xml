@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 Gabriel Fiamoncini
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<schemalist gettext-domain="gnomecustom">
+
+  <enum id="org.gnome.shell.extensions.gnomecustom.PanelBox">
+    <value value="0" nick="left"/>
+    <value value="1" nick="center"/>
+    <value value="2" nick="right"/>
+  </enum>
+
+  <schema id="org.gnome.shell.extensions.gnomecustom.media"
+          path="/org/gnome/shell/extensions/gnomecustom/media/">
+
+    <key name="allowed-players" type="as">
+      <default>['spotify']</default>
+      <summary>Players shown in the top bar</summary>
+      <description>MPRIS player identifiers, in order of preference: the part of
+      the bus name after “org.mpris.MediaPlayer2.”, without any “.instance”
+      suffix. A playing player is preferred over a paused one.</description>
+    </key>
+    <key name="panel-position" enum="org.gnome.shell.extensions.gnomecustom.PanelBox">
+      <default>'right'</default>
+      <summary>Top bar section for the media button</summary>
+    </key>
+    <key name="panel-max-width" type="u">
+      <default>240</default>
+      <range min="80" max="600"/>
+      <summary>Maximum width of the track name in the top bar, in pixels</summary>
+    </key>
+    <key name="show-progress" type="b">
+      <default>true</default>
+      <summary>Show the elapsed time in the card</summary>
+    </key>
+    <key name="ambient-background" type="b">
+      <default>true</default>
+      <summary>Colour the card from the album cover</summary>
+      <description>A gradient from the dominant colour of the cover to black. When
+      off, the card follows the shell theme.</description>
+    </key>
+  </schema>
+</schemalist>

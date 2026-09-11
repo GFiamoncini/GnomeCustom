@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 Gabriel Fiamoncini
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<schemalist gettext-domain="gnomecustom">
+  <schema id="org.gnome.shell.extensions.gnomecustom.panel"
+          path="/org/gnome/shell/extensions/gnomecustom/panel/">
+
+    <key name="show-activities" type="b">
+      <default>false</default>
+      <summary>Show the Activities button</summary>
+    </key>
+    <key name="apps-menu" type="b">
+      <default>true</default>
+      <summary>Show the applications menu</summary>
+      <description>A category-based menu of installed applications.</description>
+    </key>
+    <key name="apps-menu-shortcut" type="as">
+      <default>['&lt;Alt&gt;F1']</default>
+      <summary>Keybinding to open the applications menu</summary>
+    </key>
+    <key name="apps-menu-icon-size" type="u">
+      <default>32</default>
+      <range min="16" max="64"/>
+      <summary>Icon size in the applications menu</summary>
+    </key>
+  </schema>
+</schemalist>

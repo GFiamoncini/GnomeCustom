@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 Gabriel Fiamoncini
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<schemalist gettext-domain="gnomecustom">
+
+  <enum id="org.gnome.shell.extensions.gnomecustom.PanelStyle">
+    <value value="0" nick="none"/>
+    <value value="1" nick="attached"/>
+    <value value="2" nick="floating"/>
+  </enum>
+
+  <schema id="org.gnome.shell.extensions.gnomecustom.theme"
+          path="/org/gnome/shell/extensions/gnomecustom/theme/">
+
+    <key name="panel-style" enum="org.gnome.shell.extensions.gnomecustom.PanelStyle">
+      <default>'floating'</default>
+      <summary>Top bar shape</summary>
+      <description>“None” leaves the shell theme untouched, “attached” styles the
+      bar in place, and “floating” detaches it from the screen edges.</description>
+    </key>
+    <key name="panel-height" type="u">
+      <default>29</default>
+      <range min="16" max="96"/>
+      <summary>Top bar height in pixels</summary>
+    </key>
+    <key name="panel-margin-top" type="d">
+      <default>1.5</default>
+      <range min="0" max="40"/>
+      <summary>Space above the top bar</summary>
+    </key>
+    <key name="panel-margin-bottom" type="d">
+      <default>2.1</default>
+      <range min="0" max="40"/>
+      <summary>Space below the top bar</summary>
+    </key>
+    <key name="panel-margin-sides" type="d">
+      <default>4.5</default>
+      <range min="0" max="200"/>
+      <summary>Space at the sides of the top bar</summary>
+      <description>The default is three times the top margin, which is the
+      proportion the floating bar was designed around.</description>
+    </key>
+    <key name="panel-radius" type="d">
+      <default>15</default>
+      <range min="0" max="50"/>
+      <summary>Corner radius of the top bar</summary>
+    </key>
+    <key name="panel-border-width" type="d">
+      <default>2</default>
+      <range min="0" max="10"/>
+      <summary>Border thickness of the top bar</summary>
+    </key>
+    <key name="panel-border-alpha" type="d">
+      <default>0.5</default>
+      <range min="0" max="1"/>
+      <summary>Border opacity</summary>
+    </key>
+    <key name="panel-background-alpha" type="d">
+      <default>0.9</default>
+      <range min="0" max="1"/>
+      <summary>Background opacity of the top bar</summary>
+    </key>
+    <key name="accent-color" type="s">
+      <default>'#1C71D8'</default>
+      <summary>Accent colour</summary>
+      <description>Used for highlights and the active indicator. Hexadecimal, “#RRGGBB”.</description>
+    </key>
+    <key name="background-color" type="s">
+      <default>''</default>
+      <summary>Top bar background colour</summary>
+      <description>Empty means the colour comes from the wallpaper palette when
+      that is enabled, and from the shell theme otherwise.</description>
+    </key>
+    <key name="foreground-color" type="s">
+      <default>''</default>
+      <summary>Top bar text colour</summary>
+      <description>Empty means it is chosen automatically for contrast against
+      the background.</description>
+    </key>
+    <key name="palette-from-wallpaper" type="b">
+      <default>true</default>
+      <summary>Derive the palette from the wallpaper</summary>
+      <description>Extracts the dominant colours of the desktop background and
+      uses them for the bar.</description>
+    </key>
+    <key name="palette" type="as">
+      <default>[]</default>
+      <summary>Cached wallpaper palette</summary>
+      <description>Colours extracted from the current wallpaper, most frequent
+      first. Regenerated automatically; not meant to be edited.</description>
+    </key>
+    <key name="palette-slot" type="u">
+      <default>0</default>
+      <range min="0" max="11"/>
+      <summary>Which palette colour the bar uses</summary>
+    </key>
+    <key name="fitts-widgets" type="b">
+      <default>true</default>
+      <summary>Make panel buttons reach the screen edge</summary>
+      <description>Removes the dead zone above panel buttons so they can be
+      clicked by slamming the pointer into the edge.</description>
+    </key>
+    <key name="shell-theme" type="s">
+      <default>''</default>
+      <summary>Shell theme name</summary>
+      <description>Theme from ~/.themes or /usr/share/themes. Empty uses the
+      default GNOME Shell theme.</description>
+    </key>
+  </schema>
+</schemalist>

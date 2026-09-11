@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 Gabriel Fiamoncini
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<schemalist gettext-domain="gnomecustom">
+
+  <enum id="org.gnome.shell.extensions.gnomecustom.LogoSource">
+    <value value="0" nick="distro"/>
+    <value value="1" nick="symbolic"/>
+    <value value="2" nick="custom"/>
+  </enum>
+
+  <schema id="org.gnome.shell.extensions.gnomecustom.menu"
+          path="/org/gnome/shell/extensions/gnomecustom/menu/">
+
+    <key name="icon-source" enum="org.gnome.shell.extensions.gnomecustom.LogoSource">
+      <default>'distro'</default>
+      <summary>Which logo to show</summary>
+      <description>“Distro” uses the logo declared by the running distribution,
+      “symbolic” uses a monochrome icon that follows the panel colour, and
+      “custom” uses the file below.</description>
+    </key>
+    <key name="custom-icon-path" type="s">
+      <default>''</default>
+      <summary>Path to a custom logo image</summary>
+    </key>
+    <key name="icon-size" type="u">
+      <default>19</default>
+      <range min="8" max="48"/>
+      <summary>Logo size in pixels</summary>
+    </key>
+
+    <key name="show-system-details" type="b">
+      <default>true</default>
+      <summary>Show the “About this system” item</summary>
+    </key>
+    <key name="show-app-grid" type="b">
+      <default>true</default>
+      <summary>Show the “Applications” item</summary>
+    </key>
+    <key name="show-activities-item" type="b">
+      <default>true</default>
+      <summary>Show the “Activities” item</summary>
+    </key>
+    <key name="show-software" type="b">
+      <default>true</default>
+      <summary>Show the software centre item</summary>
+    </key>
+    <key name="show-monitor" type="b">
+      <default>true</default>
+      <summary>Show the system monitor item</summary>
+    </key>
+    <key name="show-terminal" type="b">
+      <default>true</default>
+      <summary>Show the terminal item</summary>
+    </key>
+    <key name="show-extensions" type="b">
+      <default>true</default>
+      <summary>Show the extensions item</summary>
+    </key>
+    <key name="show-settings" type="b">
+      <default>true</default>
+      <summary>Show the settings item</summary>
+    </key>
+    <key name="show-force-quit" type="b">
+      <default>true</default>
+      <summary>Show the “Force quit” item</summary>
+      <description>Lets the pointer pick a window to terminate. Works on Wayland
+      and X11.</description>
+    </key>
+    <key name="show-lock" type="b">
+      <default>true</default>
+      <summary>Show the “Lock screen” item</summary>
+    </key>
+    <key name="show-power" type="b">
+      <default>true</default>
+      <summary>Show the power items</summary>
+      <description>Suspend, restart and power off.</description>
+    </key>
+
+    <key name="software-app" type="s">
+      <default>'org.gnome.Software.desktop'</default>
+      <summary>Software centre application</summary>
+    </key>
+    <key name="monitor-app" type="s">
+      <default>'org.gnome.SystemMonitor.desktop'</default>
+      <summary>System monitor application</summary>
+    </key>
+    <key name="terminal-app" type="s">
+      <default>''</default>
+      <summary>Terminal application</summary>
+      <description>Empty follows the system default terminal.</description>
+    </key>
+    <key name="extensions-app" type="s">
+      <default>'com.mattjakeman.ExtensionManager.desktop'</default>
+      <summary>Extensions manager application</summary>
+      <description>Falls back to the GNOME Extensions app when the chosen one is
+      not installed.</description>
+    </key>
+  </schema>
+</schemalist>

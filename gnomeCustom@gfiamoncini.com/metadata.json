@@ -1,0 +1,10 @@
+{
+  "uuid": "gnomeCustom@gfiamoncini.com",
+  "name": "GnomeCustom",
+  "description": "Camada unificada de personalização para o GNOME Shell: painel, dock, tiling, overview, animações, mídia e tematização em uma única extensão modular.\n\nCada módulo pode ser ativado ou desativado individualmente. Desativar a extensão restaura o estado anterior do GNOME.",
+  "shell-version": [ "49" ],
+  "settings-schema": "org.gnome.shell.extensions.gnomecustom",
+  "gettext-domain": "gnomecustom",
+  "url": "https://github.com/gfiamoncini/gnomecustom",
+  "version-name": "0.1.0-dev"
+}

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 Gabriel Fiamoncini
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<schemalist gettext-domain="gnomecustom">
+  <schema id="org.gnome.shell.extensions.gnomecustom.overview"
+          path="/org/gnome/shell/extensions/gnomecustom/overview/">
+
+    <key name="always-show-thumbnails" type="b">
+      <default>true</default>
+      <summary>Show workspace thumbnails with a single workspace</summary>
+      <description>GNOME hides the thumbnails strip when there is only one
+      workspace.</description>
+    </key>
+    <key name="thumbnails-background" type="b">
+      <default>true</default>
+      <summary>Wallpaper behind workspace thumbnails</summary>
+      <description>Instead of a plain grey background.</description>
+    </key>
+    <key name="hide-search" type="b">
+      <default>true</default>
+      <summary>Hide the search entry until typing</summary>
+      <description>The entry appears as soon as a search starts.</description>
+    </key>
+    <key name="show-firefox-pip" type="b">
+      <default>true</default>
+      <summary>Show Firefox picture-in-picture windows in the overview</summary>
+    </key>
+  </schema>
+</schemalist>

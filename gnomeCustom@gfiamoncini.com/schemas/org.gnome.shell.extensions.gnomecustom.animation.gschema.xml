@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 Gabriel Fiamoncini
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<schemalist gettext-domain="gnomecustom">
+  <schema id="org.gnome.shell.extensions.gnomecustom.animation"
+          path="/org/gnome/shell/extensions/gnomecustom/animation/">
+
+    <key name="speed-factor" type="d">
+      <default>0.25</default>
+      <range min="0.05" max="4.0"/>
+      <summary>Animation speed factor</summary>
+      <description>Multiplies the duration of Shell animations: 0.25 makes them four
+      times faster, 2 makes them twice as slow. It has little effect while animations
+      are turned off in the system.</description>
+    </key>
+  </schema>
+</schemalist>

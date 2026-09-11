@@ -1,0 +1,337 @@
+/*
+ * SPDX-FileCopyrightText: 2026 Gabriel Fiamoncini
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * Folha estática: estrutura dos widgets próprios da extensão.
+ *
+ * Cores e geometria da barra NÃO ficam aqui — são geradas em tempo de execução
+ * pelo Theme Engine, a partir da configuração e da paleta do papel de parede.
+ * O que está neste arquivo é apenas o esqueleto dos menus que criamos, com
+ * cores herdadas do tema de Shell do usuário (AD-8).
+ */
+
+/* ------------------------------------------------ menu de aplicações */
+
+.gnomecustom-apps-menu {
+    spacing: 6px;
+    padding: 4px;
+}
+
+.gnomecustom-apps-categories {
+    spacing: 2px;
+    padding-right: 6px;
+    border-right: 1px solid rgba(127, 127, 127, 0.25);
+}
+
+.gnomecustom-apps-list {
+    spacing: 2px;
+}
+
+.gnomecustom-apps-category,
+.gnomecustom-apps-item {
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition-duration: 100ms;
+}
+
+.gnomecustom-apps-category StBoxLayout,
+.gnomecustom-apps-item StBoxLayout {
+    spacing: 10px;
+}
+
+.gnomecustom-apps-category:hover,
+.gnomecustom-apps-category:focus,
+.gnomecustom-apps-category:selected,
+.gnomecustom-apps-item:hover,
+.gnomecustom-apps-item:focus {
+    background-color: rgba(127, 127, 127, 0.2);
+}
+
+.gnomecustom-apps-item:active {
+    background-color: rgba(127, 127, 127, 0.35);
+}
+
+.gnomecustom-apps-message {
+    padding: 12px;
+    font-style: italic;
+}
+
+/* ------------------------------------------------------ número do OSD */
+
+/* Dígitos de largura fixa e largura mínima para três dígitos: o OSD não muda
+   de tamanho entre 5 e 100 (nem 150, com amplificação). */
+.gnomecustom-osd-number {
+    min-width: 2em;
+    font-size: 20px;
+    font-weight: bold;
+    font-feature-settings: "tnum";
+    text-align: right;
+}
+
+/* ------------------------------------------------------------ mídia */
+
+.gnomecustom-media-panel {
+    spacing: 8px;
+}
+
+.gnomecustom-media-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    background-color: rgba(127, 127, 127, 0.25);
+}
+
+.gnomecustom-media-thumb-icon {
+    icon-size: 12px;
+}
+
+/* O card desenha o próprio fundo em degradê; a caixa do menu fica invisível.
+   Só vale com "fundo da capa" ligado — desligado, o tema de Shell decide. */
+.gnomecustom-media-menu {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+.gnomecustom-media-item {
+    padding: 0;
+}
+
+.gnomecustom-media-card {
+    width: 280px;
+    padding: 14px 20px 18px 20px;
+    spacing: 8px;
+    border-radius: 16px;
+}
+
+.gnomecustom-media-ambient {
+    color: #ffffff;
+}
+
+.gnomecustom-media-source {
+    font-weight: bold;
+    text-align: center;
+}
+
+.gnomecustom-media-cover {
+    width: 240px;
+    height: 240px;
+    margin: 6px 0;
+    border-radius: 120px;
+    background-color: rgba(127, 127, 127, 0.2);
+}
+
+.gnomecustom-media-cover-icon {
+    icon-size: 96px;
+}
+
+.gnomecustom-media-title {
+    font-size: 1.3em;
+    font-weight: bold;
+    text-align: center;
+}
+
+.gnomecustom-media-subtitle {
+    text-align: center;
+    opacity: 0.8;
+}
+
+.gnomecustom-media-progress {
+    spacing: 6px;
+    margin-top: 8px;
+}
+
+.gnomecustom-media-track {
+    height: 4px;
+    border-radius: 2px;
+    background-color: rgba(127, 127, 127, 0.35);
+}
+
+.gnomecustom-media-fill {
+    height: 4px;
+    border-radius: 2px;
+    background-color: -st-accent-color;
+}
+
+.gnomecustom-media-ambient .gnomecustom-media-track {
+    background-color: rgba(255, 255, 255, 0.25);
+}
+
+.gnomecustom-media-ambient .gnomecustom-media-fill {
+    background-color: rgba(255, 255, 255, 0.95);
+}
+
+.gnomecustom-media-time {
+    font-size: 0.85em;
+    font-weight: bold;
+    font-feature-settings: "tnum";
+    opacity: 0.8;
+}
+
+/* -------------------------------------------------------- bluetooth */
+
+.gnomecustom-bt-panel {
+    spacing: 10px;
+}
+
+.gnomecustom-bt-panel-item {
+    spacing: 3px;
+}
+
+.gnomecustom-bt-panel-value {
+    font-feature-settings: "tnum";
+}
+
+.gnomecustom-bt-panel-item.low .gnomecustom-bt-panel-value,
+.gnomecustom-bt-panel-item.low StIcon {
+    color: #ff6b6b;
+}
+
+/* Mesmo formato do card de mídia: a caixa do menu some e o card desenha o fundo. */
+.gnomecustom-bt-menu {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+.gnomecustom-bt-item {
+    padding: 0;
+}
+
+.gnomecustom-bt-card {
+    width: 300px;
+    padding: 14px 12px 14px 12px;
+    spacing: 8px;
+    border-radius: 16px;
+    color: #ffffff;
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(46, 52, 64, 0.96);
+    background-gradient-end: rgba(0, 0, 0, 0.96);
+}
+
+.gnomecustom-bt-header {
+    font-weight: bold;
+    text-align: center;
+    padding-bottom: 4px;
+}
+
+.gnomecustom-bt-list {
+    spacing: 4px;
+}
+
+.gnomecustom-bt-row {
+    padding: 8px 10px;
+    border-radius: 10px;
+    transition-duration: 100ms;
+}
+
+.gnomecustom-bt-row:hover,
+.gnomecustom-bt-row:focus {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.gnomecustom-bt-row:active {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+.gnomecustom-bt-row.disconnected {
+    opacity: 0.55;
+}
+
+.gnomecustom-bt-row-box {
+    spacing: 6px;
+}
+
+.gnomecustom-bt-row-top {
+    spacing: 10px;
+}
+
+.gnomecustom-bt-icon {
+    icon-size: 20px;
+}
+
+.gnomecustom-bt-name {
+    font-weight: bold;
+}
+
+.gnomecustom-bt-value {
+    font-weight: bold;
+    font-feature-settings: "tnum";
+}
+
+.gnomecustom-bt-note {
+    font-size: 0.85em;
+    opacity: 0.75;
+    margin-left: 30px;
+}
+
+.gnomecustom-bt-track {
+    height: 4px;
+    margin-left: 30px;
+    border-radius: 2px;
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.gnomecustom-bt-fill {
+    height: 4px;
+    border-radius: 2px;
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+.gnomecustom-bt-row.low .gnomecustom-bt-value,
+.gnomecustom-bt-row.low .gnomecustom-bt-icon {
+    color: #ff6b6b;
+}
+
+.gnomecustom-bt-row.low .gnomecustom-bt-fill {
+    background-color: #ff6b6b;
+}
+
+/* ------------------------------------------------------------- dock */
+
+/* Modo compacto (custom-theme-shrink do Dash to Dock): tira a folga que o tema dá
+   ao dash da visão geral. O fundo vem por estilo inline, com a opacidade da
+   configuração. */
+.gnomecustom-dock #dash {
+    padding: 0 !important;
+}
+
+.gnomecustom-dock #dash .dash-background {
+    padding: 2px 1px !important;
+    margin-bottom: 0 !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+}
+
+.gnomecustom-dock #dash .dash-separator {
+    margin-bottom: 0 !important;
+}
+
+.gnomecustom-dock #dash .dash-item-container .overview-tile {
+    margin: 0 !important;
+    padding: 0 1px 6px 1px !important;
+}
+
+.gnomecustom-dock #dash .dash-item-container .overview-tile .overview-icon {
+    padding: 4px !important;
+}
+
+.gnomecustom-dock-dots {
+    spacing: 2px;
+}
+
+/* O dock é transparente: a sombra mantém os pontos visíveis sobre partes claras
+   do papel de parede. */
+.gnomecustom-dock-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 2px;
+    background-color: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
+}
+
+.gnomecustom-dock-dots.focused .gnomecustom-dock-dot {
+    background-color: #ffffff;
+}

@@ -1,0 +1,4 @@
+# capturado em 2026-09-09T22:47:36-03:00
+gnome-shell: GNOME Shell 49.9
+fedora: Fedora release 43 (Forty Three)
+session: wayland

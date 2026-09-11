@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 Gabriel Fiamoncini
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<schemalist gettext-domain="gnomecustom">
+
+  <enum id="org.gnome.shell.extensions.gnomecustom.LogLevel">
+    <value value="0" nick="silent"/>
+    <value value="1" nick="error"/>
+    <value value="2" nick="warn"/>
+    <value value="3" nick="info"/>
+    <value value="4" nick="debug"/>
+  </enum>
+
+  <schema id="org.gnome.shell.extensions.gnomecustom"
+          path="/org/gnome/shell/extensions/gnomecustom/">
+
+    <!-- Interruptores de módulo. Nenhum módulo consulta outro: cada um olha
+         apenas a própria chave (regra fundamental, briefing §6). -->
+    <key name="panel-enabled" type="b">
+      <default>false</default>
+      <summary>Enable the Panel module</summary>
+      <description>Application menu and top bar tweaks.</description>
+    </key>
+    <key name="menu-enabled" type="b">
+      <default>false</default>
+      <summary>Enable the Logo Menu module</summary>
+      <description>System menu with the distribution logo.</description>
+    </key>
+    <key name="bluetooth-enabled" type="b">
+      <default>false</default>
+      <summary>Enable the Bluetooth module</summary>
+      <description>Battery level of Bluetooth devices.</description>
+    </key>
+    <key name="volume-enabled" type="b">
+      <default>false</default>
+      <summary>Enable the Volume module</summary>
+      <description>Numeric volume value in the on-screen display.</description>
+    </key>
+    <key name="media-enabled" type="b">
+      <default>false</default>
+      <summary>Enable the Media module</summary>
+      <description>MPRIS playback controls in the panel.</description>
+    </key>
+    <key name="dock-enabled" type="b">
+      <default>false</default>
+      <summary>Enable the Dock module</summary>
+      <description>Turns the Dash into a permanent dock.</description>
+    </key>
+    <key name="overview-enabled" type="b">
+      <default>false</default>
+      <summary>Enable the Overview module</summary>
+      <description>Tweaks for the overview screen.</description>
+    </key>
+    <key name="animation-enabled" type="b">
+      <default>false</default>
+      <summary>Enable the Animation module</summary>
+      <description>Controls the speed of Shell animations.</description>
+    </key>
+    <key name="tiling-enabled" type="b">
+      <default>false</default>
+      <summary>Enable the Tiling module</summary>
+      <description>Tiling window management.</description>
+    </key>
+    <key name="theme-enabled" type="b">
+      <default>false</default>
+      <summary>Enable the Theme module</summary>
+      <description>Theming engine for the panel, menus, dock and OSD.</description>
+    </key>
+    <key name="diagnostics-enabled" type="b">
+      <default>true</default>
+      <summary>Enable the Diagnostics module</summary>
+      <description>Detects extensions that conflict with enabled modules.</description>
+    </key>
+
+    <!-- Geral -->
+    <key name="log-level" enum="org.gnome.shell.extensions.gnomecustom.LogLevel">
+      <default>'warn'</default>
+      <summary>Logging detail level</summary>
+      <description>Messages below this level are not written to the journal.</description>
+    </key>
+
+    <!-- Avançado / estado interno -->
+    <key name="migration-version" type="u">
+      <default>0</default>
+      <summary>Migration version already applied</summary>
+      <description>Used to run each configuration import only once.</description>
+    </key>
+    <key name="conflict-warnings" type="b">
+      <default>true</default>
+      <summary>Warn about conflicting extensions</summary>
+      <description>Writes a warning when an original extension competes with an
+      enabled module for the same feature.</description>
+    </key>
+    <key name="strict-cleanup-check" type="b">
+      <default>false</default>
+      <summary>Check cleanup on disable</summary>
+      <description>On disable, checks for leftover signals, patches and timers and
+      reports what remained. Intended for development.</description>
+    </key>
+  </schema>
+</schemalist>

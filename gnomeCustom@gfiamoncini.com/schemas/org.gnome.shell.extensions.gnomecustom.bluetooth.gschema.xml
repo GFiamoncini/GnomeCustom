@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 Gabriel Fiamoncini
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<schemalist gettext-domain="gnomecustom">
+  <schema id="org.gnome.shell.extensions.gnomecustom.bluetooth"
+          path="/org/gnome/shell/extensions/gnomecustom/bluetooth/">
+
+    <!-- Lista de valores, e não o enum PanelBox do esquema .media: o
+         glib-compile-schemas lê os arquivos em ordem alfabética, e um enum de
+         outro arquivo ainda não está definido quando este é lido. -->
+    <key name="panel-position" type="s">
+      <choices>
+        <choice value="left"/>
+        <choice value="center"/>
+        <choice value="right"/>
+      </choices>
+      <default>'right'</default>
+      <summary>Top bar section for the Bluetooth button</summary>
+    </key>
+    <key name="low-battery-threshold" type="u">
+      <default>20</default>
+      <range min="0" max="100"/>
+      <summary>Low battery percentage</summary>
+      <description>At or below this battery level a device is shown in red. 0 turns
+      the warning off.</description>
+    </key>
+  </schema>
+</schemalist>

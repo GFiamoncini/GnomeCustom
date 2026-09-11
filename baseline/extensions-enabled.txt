@@ -1,0 +1,11 @@
+dash-to-dock@micxgx.gmail.com
+bluetooth-battery@michalw.github.com
+gnome-ui-tune@itstime.tech
+impatience@gfxmonk.net
+logomenu@aryan_k
+osd-volume-number@deminder
+openbar@neuromorph
+user-theme@gnome-shell-extensions.gcampax.github.com
+spotify-controls@Sonath21
+forge@jmmaranan.com
+apps-menu@gnome-shell-extensions.gcampax.github.com

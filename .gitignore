@@ -1,0 +1,9 @@
+# Clones de referência (auditoria) — não versionados
+/reference/
+# Artefatos de build
+*.compiled
+schemas/gschemas.compiled
+/build/
+/dist/
+*.zip
+node_modules/

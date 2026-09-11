@@ -1,0 +1,41 @@
+GnomeCustom
+Copyright (C) 2026 Gabriel Fiamoncini
+Licenciado sob a GPL-3.0-or-later (ver COPYING).
+
+Obras derivadas e atribuições
+=============================
+
+Os arquivos abaixo adaptam ideias ou estrutura de projetos de terceiros cuja
+licença permite reuso (docs/LICENSE-AUDIT.md §4). Nenhum código de projetos
+GPL-2.0-only ou GPL-3.0-only foi copiado (LICENSE-AUDIT.md §3).
+
+gnomeCustom@gfiamoncini.com/ui/panel/apps-menu.js
+    Adaptado de apps-menu, do gnome-shell-extensions.
+    Copyright (C) 2013 Giovanni Campagna e colaboradores — GPL-2.0-or-later.
+    https://gitlab.gnome.org/GNOME/gnome-shell-extensions
+
+gnomeCustom@gfiamoncini.com/services/shell/dash.js
+    Subclasses do Dash do GNOME Shell (ui/dash.js), com a criação dos itens e o
+    cálculo do tamanho de ícone adaptados.
+    Copyright (C) autores do GNOME Shell — GPL-2.0-or-later.
+    https://gitlab.gnome.org/GNOME/gnome-shell
+
+gnomeCustom@gfiamoncini.com/services/shell/dash.js
+gnomeCustom@gfiamoncini.com/lib/dock.js
+    Cliques do dock (alternar janelas com memória, Shift minimiza, meio abre
+    janela nova) e pontos por janela, adaptados do Dash to Dock.
+    Copyright (C) micheleg e colaboradores — GPL-2.0-or-later.
+    https://github.com/micheleg/dash-to-dock
+
+gnomeCustom@gfiamoncini.com/services/shell/animation.js
+    Guardar o fator de velocidade original do St, aplicar o configurado e
+    devolver o original ao desligar, como no Impatience.
+    Copyright (C) 2012 Tim Cuthbertson — GPL-3.0-or-later.
+    https://github.com/timbertson/gnome-shell-impatience
+
+gnomeCustom@gfiamoncini.com/ui/media/indicator.js
+gnomeCustom@gfiamoncini.com/services/system/cover-art.js
+    Baseados no spotify-controller (commit 640d3f6a5fe2): o card de mídia e o
+    cache de capas com cor dominante.
+    Copyright (C) 2026 NarkAgni — GPL-3.0-or-later.
+    https://github.com/NarkAgni/spotify-controller

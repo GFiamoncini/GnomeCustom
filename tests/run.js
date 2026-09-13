@@ -41,6 +41,8 @@ const Rules = await import(`${EXT}/lib/tiling/rules.js`);
 const Geometry = await import(`${EXT}/lib/tiling/geometry.js`);
 const {TILING_ACTIONS, normalizeAccel, findCollisions} = await import(`${EXT}/lib/tiling/actions.js`);
 const {TilingController, keyFor, GAP_INCREMENT_MAX} = await import(`${EXT}/lib/tiling/controller.js`);
+const Migration = await import(`${EXT}/lib/migration/importers.js`);
+const Profiles = await import(`${EXT}/lib/profiles.js`);
 const {parseOsRelease} = await import(`${EXT}/services/system/distro.js`);
 const {VolumeModule, formatLevel} = await import(`${EXT}/modules/volume/module.js`);
 const Mpris = await import(`${EXT}/lib/mpris.js`);
@@ -2216,6 +2218,270 @@ test('controlador: janela que muda de monitor por fora vai para a árvore certa'
     controller.windowChanged(a, 'monitor');
     assertEqual(controller.tree.keyOf(a), '1:0');
     assertEqual(keyFor({monitor: 1, workspace: -1}), '1:*');
+});
+
+// ---------------------------------------------------------------- migração
+
+const readText = (...parts) => {
+    const file = Gio.File.new_for_path(GLib.build_filenamev([GLib.get_current_dir(), ...parts]));
+    return file.query_exists(null) ? new TextDecoder().decode(file.load_contents(null)[1]) : null;
+};
+
+/** Seções de um `dconf dump`: {'/': {chave: valor}, 'keybindings': {...}}. */
+function parseDconfDump(text) {
+    const sections = {};
+    let current = null;
+    for (const line of (text ?? '').split('\n')) {
+        const header = /^\[(.*)\]$/.exec(line.trim());
+        if (header) {
+            current = sections[header[1]] = {};
+            continue;
+        }
+        const eq = line.indexOf('=');
+        if (!current || eq < 0)
+            continue;
+        const key = line.slice(0, eq);
+        current[key] = GLib.Variant.parse(null, line.slice(eq + 1), null, null).recursiveUnpack();
+    }
+    return sections;
+}
+
+/** Baseline de cada fonte: arquivo do dump e seção de cada esquema. */
+const BASELINE_DUMPS = {
+    'dash-to-dock': ['dconf-ext-dash-to-dock.ini', {main: '/'}],
+    'forge': ['dconf-ext-forge.ini', {main: '/', keybindings: 'keybindings'}],
+    'openbar': ['dconf-ext-openbar.ini', {main: '/'}],
+    'user-theme': ['dconf-ext-user-theme.ini', {main: '/'}],
+    'impatience': ['dconf-ext-net.ini', {main: 'gfxmonk/impatience'}],
+    'gnome-ui-tune': ['dconf-ext-gnome-ui-tune.ini', {main: '/'}],
+    'logomenu': ['dconf-ext-Logo-menu.ini', {main: '/'}],
+    'bluetooth-battery': ['dconf-ext-bluetooth_battery_indicator.ini', {main: '/'}],
+    'osd-volume-number': ['dconf-ext-osd-volume-number.ini', {main: '/'}],
+    'spotify-controls': ['dconf-ext-spotify-controls.ini', {main: '/'}],
+    'apps-menu': [null, {main: '/'}],
+};
+
+/** Roda um importador sobre o baseline do usuário. */
+function importBaseline(id) {
+    const source = Migration.findSource(id);
+    const [dump, sectionOf] = BASELINE_DUMPS[id];
+    const sections = parseDconfDump(dump ? readText('baseline', dump) : '');
+    const read = (key, schema = 'main') => {
+        const section = sections[sectionOf[schema]] ?? {};
+        return key in section ? section[key] : source.defaults[schema]?.[key];
+    };
+    const file = name => ({
+        'forge-windows': readText('baseline', 'forge-windows.json'),
+        'forge-stylesheet': readText('baseline', 'forge-stylesheet.css'),
+    })[name] ?? null;
+    return source.run({read, file});
+}
+
+/** Defaults dos nossos esquemas, por esquema filho. */
+function ourDefaults(schemaName) {
+    const fileName = schemaName
+        ? `org.gnome.shell.extensions.gnomecustom.${schemaName}.gschema.xml`
+        : 'org.gnome.shell.extensions.gnomecustom.gschema.xml';
+    const xml = readText('gnomeCustom@gfiamoncini.com', 'schemas', fileName);
+    const values = {};
+    const re = /<key name="([^"]+)"(?: type="([^"]+)")?(?: enum="[^"]+")?>\s*<default>([\s\S]*?)<\/default>/g;
+    for (const [, key, type, raw] of xml.matchAll(re)) {
+        const text = raw.trim().replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+        values[key] = type
+            ? GLib.Variant.parse(new GLib.VariantType(type), text, null, null).recursiveUnpack()
+            : text.replace(/^'|'$/g, '');
+    }
+    return values;
+}
+
+const approxEqual = (a, b) => typeof a === 'number' && typeof b === 'number'
+    ? Math.abs(a - b) < 1e-6
+    : JSON.stringify(a) === JSON.stringify(b);
+
+test('migração: conversões de cor e da borda do Forge', () => {
+    assertEqual(Migration.openBarColorToHex(['0.110', '0.443', '0.847']), '#1C71D8');
+    assertEqual(Migration.openBarColorToHex(['x']), null);
+
+    const border = Migration.parseForgeBorder(readText('baseline', 'forge-stylesheet.css'));
+    assertEqual(border, {color: '#9A9996', width: 3, radius: 14}, 'baseline do usuário:');
+    assertEqual(Migration.parseForgeBorder('.outra { }'), null);
+});
+
+test('CRITÉRIO fase 9: importar o baseline reproduz os padrões do GnomeCustom', () => {
+    // Os padrões dos nossos esquemas foram ajustados ao baseline do usuário; se
+    // os importadores estiverem certos, importar a configuração dele não muda
+    // nada — com as exceções conhecidas abaixo, que são mudanças posteriores
+    // à captura ou decisões registradas.
+    const known = new Set([
+        'theme/shell-theme',            // padrão vazio; o usuário tem Orchis
+        'tiling/window-rules',          // o baseline tem os fantasmas por wmId (descartados)
+        'tiling.keybindings/window-toggle-always-float',   // desligado depois da captura
+        'menu/show-lock', 'menu/show-power',               // Logo Menu escondia; o nosso mostra
+    ]);
+
+    const differences = [];
+    let total = 0;
+    for (const source of Migration.SOURCES) {
+        const {writes} = importBaseline(source.id);
+        for (const write of writes) {
+            total++;
+            const defaults = ourDefaults(write.schema);
+            assert(write.key in defaults, `${source.id}: chave de destino inexistente ${write.schema}/${write.key}`);
+            const ours = defaults[write.key];
+            const same = approxEqual(ours, write.value) ||
+                (typeof ours === 'string' && typeof write.value === 'string' &&
+                 ours.toLowerCase() === write.value.toLowerCase());
+            if (!same && !known.has(`${write.schema}/${write.key}`))
+                differences.push(`${source.id}: ${write.schema}/${write.key} nosso=${JSON.stringify(ours)} importado=${JSON.stringify(write.value)}`);
+        }
+    }
+    assert(total > 60, `poucas gravações: ${total}`);
+    assertEqual(differences, [], 'divergências inesperadas:');
+});
+
+test('migração: Forge descarta regras por wmId e traz os 39 atalhos', () => {
+    const {writes, notes} = importBaseline('forge');
+    const rules = JSON.parse(writes.find(w => w.key === 'window-rules').value);
+    assert(rules.every(rule => !('wmId' in rule)), 'nenhuma regra por id');
+    assert(notes.some(n => /id de janela descartada/.test(n.reason)), 'o descarte é relatado');
+
+    const bindings = writes.filter(w => w.schema === 'tiling.keybindings');
+    assertEqual(bindings.length, 39);
+    assertEqual(bindings.find(w => w.key === 'con-split-vertical').value, ['<Super>v']);
+});
+
+test('migração: Logo Menu converte comandos e inverte os "hide"', () => {
+    const {writes} = importBaseline('logomenu');
+    const get = key => writes.find(w => w.key === key)?.value;
+    assertEqual(get('icon-source'), 'distro', 'symbolic-icon=false no baseline:');
+    assertEqual(get('icon-size'), 19);
+    assertEqual(get('show-activities'), false);
+    assertEqual([get('show-force-quit'), get('show-software')], [true, true], 'hide-* invertidos:');
+    assertEqual([get('show-lock'), get('show-power')], [false, false], 'padrões do Logo Menu:');
+    assertEqual(get('software-app'), 'org.gnome.Software.desktop');
+    assertEqual(get('terminal-app'), '', 'gnome-terminal padrão vira o terminal do sistema:');
+    assertEqual(get('extensions-app'), 'com.mattjakeman.ExtensionManager.desktop');
+});
+
+test('migração: Open Bar do baseline vira a barra flutuante com paleta', () => {
+    const {writes, notes} = importBaseline('openbar');
+    const get = key => writes.find(w => w.key === key)?.value;
+    assertEqual(get('panel-style'), 'floating');
+    assertEqual([get('panel-height'), get('panel-margin-top'), get('panel-margin-sides')], [29, 1.5, 4.5]);
+    assertEqual([get('palette-from-wallpaper'), get('background-color'), get('accent-color')], [true, '', '#1C71D8']);
+    assertEqual([get('style-menus'), get('style-dock')], [false, false]);
+    assert(notes.length > 0, 'o que não tem equivalente é relatado');
+});
+
+test('migração: fontes sem destino só produzem notas, e ninguém escreve fora do GnomeCustom', () => {
+    for (const id of ['bluetooth-battery', 'osd-volume-number']) {
+        const {writes, notes} = importBaseline(id);
+        assertEqual(writes, [], `${id} não grava:`);
+        assert(id === 'osd-volume-number' || notes.length > 0, `${id} explica`);
+    }
+
+    const valid = new Set(['', 'theme', 'panel', 'menu', 'dock', 'overview', 'animation', 'media',
+        'tiling', 'tiling.keybindings', 'bluetooth']);
+    for (const source of Migration.SOURCES) {
+        for (const write of importBaseline(source.id).writes)
+            assert(valid.has(write.schema), `${source.id} escreve em esquema desconhecido: ${write.schema}`);
+    }
+});
+
+test('migração: Dash to Dock sem dados usa os padrões dele e explica o que não existe', () => {
+    const source = Migration.findSource('dash-to-dock');
+    const {writes, notes} = source.run({read: key => source.defaults.main[key], file: () => null});
+    assertEqual(writes.find(w => w.key === 'icon-size').value, 48);
+    assert(!writes.some(w => w.key === 'background-opacity'), 'transparência do tema não vira número');
+    const reasons = notes.map(n => n.from);
+    for (const key of ['dock-fixed', 'show-trash', 'show-mounts', 'transparency-mode'])
+        assert(reasons.includes(key), `nota para ${key}`);
+});
+
+test('migração: padrões declarados batem com os esquemas instalados (quando existem)', () => {
+    let checked = 0;
+    for (const source of Migration.SOURCES) {
+        const dirs = [
+            GLib.build_filenamev([GLib.get_home_dir(), '.local/share/gnome-shell/extensions', source.uuid, 'schemas']),
+            GLib.build_filenamev(['/usr/share/gnome-shell/extensions', source.uuid, 'schemas']),
+        ];
+        const dir = dirs.find(d => GLib.file_test(`${d}/gschemas.compiled`, GLib.FileTest.EXISTS));
+        if (!dir)
+            continue;
+        const schemaSource = Gio.SettingsSchemaSource.new_from_directory(dir, null, false);
+        for (const [schemaName, defaults] of Object.entries(source.defaults)) {
+            const schema = schemaSource.lookup(source.schemas[schemaName], false);
+            if (!schema)
+                continue;
+            for (const [key, declared] of Object.entries(defaults)) {
+                if (!schema.has_key(key))
+                    throw new Error(`${source.id}: chave ${key} não existe no esquema instalado`);
+                let real = schema.get_key(key).get_default_value().recursiveUnpack();
+                if (key === 'custom-icon-path')
+                    real = String(real).replace(/^''$/, '');
+                assert(approxEqual(real, declared),
+                    `${source.id}: padrão de ${key} declarado ${JSON.stringify(declared)}, instalado ${JSON.stringify(real)}`);
+                checked++;
+            }
+        }
+    }
+    if (checked === 0)
+        print('        (nenhuma extensão original instalada: conferência ignorada)');
+});
+
+// ------------------------------------------------------------------ perfis
+
+test('perfis: todos cobrem os 10 módulos, citam presets reais e têm ids únicos', () => {
+    assertEqual(Profiles.unknownPresets(), [], 'presets inexistentes:');
+    const ids = new Set();
+    for (const profile of Profiles.PROFILES) {
+        assert(!ids.has(profile.id), `id repetido: ${profile.id}`);
+        ids.add(profile.id);
+        assertEqual(Object.keys(profile.modules).sort(), [...Profiles.PROFILE_MODULES].sort(),
+            `${profile.id}: módulos:`);
+        for (const [schema, keys] of Object.entries(profile.values)) {
+            const defaults = ourDefaults(schema);
+            for (const key of Object.keys(keys))
+                assert(key in defaults, `${profile.id}: chave inexistente ${schema}/${key}`);
+        }
+    }
+    assert(!ids.has(Profiles.CUSTOM_PROFILE), 'id reservado');
+
+    // Os 10 módulos do perfil são exatamente os implementados (menos o diagnóstico).
+    const implemented = MODULES_INFO.filter(i => i.implemented && i.id !== 'diagnostics').map(i => i.id).sort();
+    assertEqual([...Profiles.PROFILE_MODULES].sort(), implemented, 'módulos cobertos:');
+});
+
+test('perfis: estado padrão é "Nada ligado" e o Desktop é o baseline', () => {
+    const readDefault = (schema, key) => ourDefaults(schema)[key];
+    const modulesFrom = (fn) => Object.fromEntries(Profiles.PROFILE_MODULES.map(id => [id, fn(id)]));
+
+    assertEqual(Profiles.matchProfile({
+        modules: modulesFrom(id => ourDefaults('')[`${id}-enabled`]),
+        themePreset: 'default',
+        read: readDefault,
+    }), 'off', 'esquema recém-instalado:');
+
+    // Desktop = todos ligados + padrões do esquema (que são o baseline).
+    assertEqual(Profiles.matchProfile({
+        modules: modulesFrom(() => true), themePreset: 'default', read: readDefault,
+    }), 'desktop', 'baseline com tudo ligado:');
+
+    assertEqual(Profiles.matchProfile({
+        modules: {...modulesFrom(() => true), dock: false}, themePreset: 'default', read: readDefault,
+    }), Profiles.CUSTOM_PROFILE, 'um módulo diferente vira personalizado:');
+});
+
+test('perfis: conflitos só com extensões ativas que o perfil substituiria', () => {
+    const desktop = Profiles.findProfile('desktop');
+    const gaming = Profiles.findProfile('gaming');
+    const active = new Set(['forge@jmmaranan.com', 'dash-to-dock@micxgx.gmail.com']);
+    const isEnabled = uuid => active.has(uuid);
+
+    assertEqual(Profiles.conflictsFor(desktop, KNOWN_EXTENSIONS, isEnabled).map(c => c.name).sort(),
+        ['Dash to Dock', 'Forge']);
+    assertEqual(Profiles.conflictsFor(gaming, KNOWN_EXTENSIONS, isEnabled), [],
+        'sem tiling nem dock, Forge e Dash to Dock não conflitam:');
 });
 
 // -------------------------------------------------------------- os-release

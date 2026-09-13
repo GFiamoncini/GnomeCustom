@@ -87,9 +87,15 @@ const {DockPage} = await import(`../${UUID}/prefs/pages/dock.js`);
 const {OverviewPage} = await import(`../${UUID}/prefs/pages/overview.js`);
 const {AnimationPage} = await import(`../${UUID}/prefs/pages/animation.js`);
 const {TilingPage} = await import(`../${UUID}/prefs/pages/tiling.js`);
+const {MigrationPage} = await import(`../${UUID}/prefs/pages/migration.js`);
+const Migration = await import(`../${UUID}/lib/migration/importers.js`);
+const MigrationApply = await import(`../${UUID}/lib/migration/apply.js`);
 const {TILING_ACTIONS} = await import(`../${UUID}/lib/tiling/actions.js`);
 const {AdvancedPage} = await import(`../${UUID}/prefs/pages/advanced.js`);
 const {MODULES_INFO} = await import(`../${UUID}/lib/modules-info.js`);
+
+/** Abre qualquer esquema nosso, '' = base, no backend em memória. */
+const openOurs = name => (name ? childSettings(name) : settings);
 
 /** Abre um esquema filho (`…gnomecustom.theme`, etc.) do diretório compilado. */
 function childSettings(name) {
@@ -103,7 +109,7 @@ let general = null;
 let advanced = null;
 
 step('GeneralPage é construída', () => {
-    general = new GeneralPage(settings, _);
+    general = new GeneralPage(settings, _, {openSettings: openOurs});
     if (!(general instanceof Adw.PreferencesPage))
         throw new Error('não é uma Adw.PreferencesPage');
 });
@@ -434,6 +440,143 @@ step('TilingPage mostra os atalhos; os indisponíveis ficam insensíveis', () =>
         throw new Error(`esperava 3 atalhos indisponíveis, achei ${insensitive}`);
 });
 
+step('migração: toVariant ajusta ao intervalo e recusa tipo errado', () => {
+    const schema = childSettings('dock').settings_schema;
+    const size = MigrationApply.toVariant(schema.get_key('icon-size'), 200);
+    if (size.variant.get_uint32() !== 64 || !size.adjusted)
+        throw new Error(`esperava 64 ajustado, veio ${size.variant?.print(false)}`);
+    const rounded = MigrationApply.toVariant(schema.get_key('icon-size'), 23.6);
+    if (rounded.variant.get_uint32() !== 24)
+        throw new Error('arredondamento');
+    const bad = MigrationApply.toVariant(schema.get_key('icon-size'), 'grande');
+    if (bad.variant !== null)
+        throw new Error('texto em chave numérica deveria falhar');
+});
+
+step('migração: aplicar grava, conta iguais, e desfazer volta exatamente ao anterior', () => {
+    const dock = childSettings('dock');
+    const theme = childSettings('theme');
+    dock.set_uint('icon-size', 32);                 // valor do usuário antes da importação
+
+    const imports = [{
+        source: {title: 'Teste'},
+        result: {
+            writes: [
+                {schema: 'dock', key: 'icon-size', value: 48, from: 'dash-max-icon-size'},
+                {schema: 'dock', key: 'length-fraction', value: 0.9, from: 'height-fraction'},   // igual ao padrão
+                {schema: 'theme', key: 'shell-theme', value: 'Orchis', from: 'name'},
+                {schema: 'theme', key: 'nao-existe', value: 1, from: 'x'},
+            ],
+            notes: [{from: 'dock-fixed', reason: 'sempre fixo'}],
+        },
+    }];
+    const report = MigrationApply.applyImports(imports, openOurs);
+
+    if (report.changed.length !== 2 || report.unchanged !== 1 || report.failed.length !== 1)
+        throw new Error(`relatório inesperado: ${JSON.stringify({c: report.changed.length, u: report.unchanged, f: report.failed.length})}`);
+    if (dock.get_uint('icon-size') !== 48 || theme.get_string('shell-theme') !== 'Orchis')
+        throw new Error('valores não gravados');
+    if (settings.get_uint('migration-version') !== Migration.MIGRATION_FORMAT)
+        throw new Error('migration-version não gravada');
+    if (!MigrationApply.backupDate(openOurs))
+        throw new Error('backup ausente');
+
+    MigrationApply.restoreBackup(openOurs);
+    if (dock.get_uint('icon-size') !== 32)
+        throw new Error('valor do usuário não restaurado');
+    if (theme.get_user_value('shell-theme') !== null)
+        throw new Error('chave que estava no padrão deveria voltar ao padrão');
+    if (MigrationApply.backupDate(openOurs) !== null)
+        throw new Error('backup deveria ser consumido');
+    dock.reset('icon-size');
+});
+
+step('MigrationPage: lista as 11 fontes e importa todas pelo botão', () => {
+    // Fontes falsas: todas "instaladas", lendo os padrões declarados de cada uma.
+    const opener = source => ({
+        installed: true,
+        read: (key, schema = 'main') => source.defaults[schema]?.[key],
+        file: () => null,
+    });
+    const page = new MigrationPage(openOurs, _, {openSource: opener, isEnabled: () => true});
+
+    const rows = descendants(page).filter(w => w instanceof Adw.ActionRow &&
+        w.subtitle === 'installed, active');
+    if (rows.length !== Migration.SOURCES.length)
+        throw new Error(`esperava ${Migration.SOURCES.length} fontes, achei ${rows.length}`);
+
+    const importAll = descendants(page).find(w => w instanceof Gtk.Button && w.label === 'Import all');
+    importAll.emit('clicked');
+
+    const report = page.lastReport;
+    if (!report || report.failed.length !== 0)
+        throw new Error(`importação falhou: ${JSON.stringify(report?.failed)}`);
+    // Padrões do Dash to Dock (ícone 48) chegaram ao nosso dock.
+    if (childSettings('dock').get_uint('icon-size') !== 48)
+        throw new Error('valor importado não gravado');
+    if (report.notes.length === 0)
+        throw new Error('as notas deveriam aparecer no relatório');
+
+    const undo = descendants(page).find(w => w instanceof Gtk.Button && w.label === 'Undo');
+    if (!undo.sensitive)
+        throw new Error('desfazer deveria estar disponível');
+    undo.emit('clicked');
+    if (childSettings('dock').get_user_value('icon-size') !== null)
+        throw new Error('desfazer não voltou ao padrão');
+});
+
+step('GeneralPage: perfil Desktop liga tudo, e editar vira Personalizado', () => {
+    const page = new GeneralPage(settings, _, {openSettings: openOurs});
+    const combo = descendants(page).find(w => w instanceof Adw.ComboRow && w.title === 'Profile');
+    if (!combo)
+        throw new Error('seletor de perfil ausente');
+
+    const ids = ['off', 'desktop', 'developer', 'laptop', 'minimal', 'gaming', 'custom'];
+    if (ids[combo.selected] !== 'off')
+        throw new Error(`esperava "off", mostrou '${ids[combo.selected]}'`);
+
+    combo.selected = ids.indexOf('developer');
+    if (!settings.get_boolean('tiling-enabled') || settings.get_boolean('dock-enabled'))
+        throw new Error('módulos do perfil Desenvolvedor não aplicados');
+    if (childSettings('theme').get_string('background-color').toUpperCase() !== '#1E1E1E')
+        throw new Error('preset escuro do perfil não aplicado');
+    if (!childSettings('tiling').get_boolean('auto-split'))
+        throw new Error('ajuste do perfil não aplicado');
+    if (ids[combo.selected] !== 'developer')
+        throw new Error('depois de aplicar deveria continuar em "developer"');
+
+    settings.set_boolean('media-enabled', true);
+    if (ids[combo.selected] !== 'custom')
+        throw new Error('ligar um módulo à mão deveria virar personalizado');
+
+    for (const name of ['', 'theme', 'tiling', 'animation']) {
+        const s = openOurs(name);
+        for (const key of s.settings_schema.list_keys())
+            s.reset(key);
+    }
+});
+
+step('GeneralPage: com extensão original ativa, pergunta antes; cancelar não aplica', () => {
+    let asked = null;
+    const page = new GeneralPage(settings, _, {
+        openSettings: openOurs,
+        isEnabled: uuid => uuid === 'forge@jmmaranan.com',
+        confirm: (conflicts, apply, cancel) => {
+            asked = conflicts.map(c => c.name);
+            cancel();
+        },
+    });
+    const combo = descendants(page).find(w => w instanceof Adw.ComboRow && w.title === 'Profile');
+    combo.selected = 1;   // desktop
+
+    if (JSON.stringify(asked) !== JSON.stringify(['Forge']))
+        throw new Error(`deveria perguntar sobre o Forge, perguntou ${JSON.stringify(asked)}`);
+    if (settings.get_boolean('tiling-enabled'))
+        throw new Error('cancelar não deveria aplicar');
+    if (combo.selected !== 0)
+        throw new Error('o seletor deveria voltar ao perfil atual');
+});
+
 step('AdvancedPage é construída', () => {
     advanced = new AdvancedPage(settings, metadata, _);
     if (!(advanced instanceof Adw.PreferencesPage))
@@ -484,9 +627,9 @@ function findSwitchRow(page, title) {
     return null;
 }
 
-function findComboRow(page) {
+function findComboRow(page, title = 'Detail level') {
     for (const widget of descendants(page)) {
-        if (widget instanceof Adw.ComboRow)
+        if (widget instanceof Adw.ComboRow && widget.title === title)
             return widget;
     }
     return null;

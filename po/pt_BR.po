@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnomeCustom 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/gfiamoncini/gnomecustom/issues\n"
-"POT-Creation-Date: 2026-09-13 14:43-0300\n"
+"POT-Creation-Date: 2026-09-13 15:09-0300\n"
 "PO-Revision-Date: 2026-09-09 23:30-0300\n"
 "Last-Translator: Gabriel Fiamoncini\n"
 "Language-Team: português do Brasil\n"
@@ -17,35 +17,74 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:20
+#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:23
 msgid "Silent"
 msgstr "Silencioso"
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:21
+#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:24
 msgid "Errors only"
 msgstr "Apenas erros"
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:22
+#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:25
 msgid "Warnings"
 msgstr "Avisos"
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:23
+#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:26
 msgid "Info"
 msgstr "Informação"
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:24
+#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:27
 msgid "Debug"
 msgstr "Depuração"
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:42
+#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:51
 msgid "General"
 msgstr "Geral"
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:55
+#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:74
+#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:86
+msgid "Profile"
+msgstr "Perfil"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:75
+msgid "Turns modules on or off and picks a theme in one step."
+msgstr "Liga ou desliga módulos e escolhe um tema de uma vez."
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:83
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:55
+msgid "Custom"
+msgstr "Personalizado"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:96
+msgid "Your own combination of modules and settings"
+msgstr "A sua própria combinação de módulos e ajustes"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:134
+msgid "Original extensions are still active"
+msgstr "Extensões originais ainda estão ativas"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:135
+#, javascript-format
+msgid ""
+"%s would run alongside the modules that replace them. Disable them in the "
+"Extensions app first, or apply anyway and disable them afterwards."
+msgstr ""
+"%s rodariam junto com os módulos que as substituem. Desative-as antes no "
+"aplicativo Extensões, ou aplique assim mesmo e desative-as depois."
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:137
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:138
+msgid "Apply anyway"
+msgstr "Aplicar assim mesmo"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:156
 msgid "Modules"
 msgstr "Módulos"
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:56
+#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:157
 msgid ""
 "Each module can be turned on or off on its own. Turning the extension off "
 "restores the previous state of GNOME."
@@ -53,27 +92,28 @@ msgstr ""
 "Cada módulo pode ser ativado ou desativado individualmente. Desativar a "
 "extensão restaura o estado anterior do GNOME."
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:69
+#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:170
 #, javascript-format
 msgid "not implemented yet, arrives in phase %d"
 msgstr "ainda não implementado, chega na fase %d"
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:91
+#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:192
 msgid "Logging"
 msgstr "Registro"
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:92
+#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:193
 msgid "Messages are written to the systemd journal, tagged [GnomeCustom]."
 msgstr ""
 "As mensagens são gravadas no journal do systemd, com o marcador "
 "[GnomeCustom]."
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:100
+#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:201
 msgid "Detail level"
 msgstr "Nível de detalhe"
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:24
 #: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:388
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:37
 msgid "Theme"
 msgstr "Tema"
 
@@ -88,10 +128,6 @@ msgid ""
 msgstr ""
 "Um ponto de partida para todas as superfícies de uma vez. Mudar qualquer "
 "opção abaixo transforma o visual em personalizado."
-
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:55
-msgid "Custom"
-msgstr "Personalizado"
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:58
 msgid "Look"
@@ -348,6 +384,7 @@ msgid "Could not list installed themes"
 msgstr "Não foi possível listar os temas instalados"
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/panel.js:20
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:45
 msgid "Panel"
 msgstr "Painel"
 
@@ -393,6 +430,8 @@ msgid "The logo menu can open the overview instead"
 msgstr "O menu do logotipo também abre a visão geral"
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:22
+#: gnomeCustom@gfiamoncini.com/lib/migration/importers.js:356
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:53
 msgid "Logo Menu"
 msgstr "Menu do logotipo"
 
@@ -620,6 +659,7 @@ msgstr "Desligado, o cartão segue o tema do Shell"
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/dock.js:20
 #: gnomeCustom@gfiamoncini.com/prefs/pages/dock.js:25
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:85
 msgid "Dock"
 msgstr "Dock"
 
@@ -654,6 +694,7 @@ msgstr "0 é totalmente transparente"
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/overview.js:20
 #: gnomeCustom@gfiamoncini.com/prefs/pages/overview.js:25
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:93
 msgid "Overview"
 msgstr "Visão geral"
 
@@ -699,6 +740,7 @@ msgid "GNOME leaves them out of the overview"
 msgstr "O GNOME as deixa fora da visão geral"
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/animation.js:25
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:101
 msgid "Animation"
 msgstr "Animação"
 
@@ -784,7 +826,7 @@ msgid "Options meant for working on the extension itself."
 msgstr "Opções destinadas a quem trabalha na própria extensão."
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/advanced.js:116
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:92
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:97
 msgid "Warn about conflicting extensions"
 msgstr "Avisar sobre extensões conflitantes"
 
@@ -797,7 +839,7 @@ msgstr ""
 "sobrepõem"
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/advanced.js:124
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:98
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:103
 msgid "Check cleanup on disable"
 msgstr "Verificar limpeza ao desativar"
 
@@ -968,7 +1010,17 @@ msgstr "Versão da migração já aplicada"
 msgid "Used to run each configuration import only once."
 msgstr "Usado para executar cada importação de configuração apenas uma vez."
 
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:92
+msgid "Settings saved before the last import"
+msgstr "Configurações salvas antes da última importação"
+
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:93
+msgid "JSON snapshot used by “Undo last import”. Not meant to be edited."
+msgstr ""
+"Foto em JSON usada por “Desfazer a última importação”. Não se destina a "
+"edição manual."
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:98
 msgid ""
 "Writes a warning when an original extension competes with an enabled module "
 "for the same feature."
@@ -976,7 +1028,7 @@ msgstr ""
 "Grava um aviso quando uma extensão original disputa a mesma funcionalidade "
 "de um módulo ativo."
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:99
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:104
 msgid ""
 "On disable, checks for leftover signals, patches and timers and reports what "
 "remained. Intended for development."
@@ -1439,6 +1491,7 @@ msgstr ""
 "Barra escura e sólida encostada na borda, com menus, OSD e dock combinando"
 
 #: gnomeCustom@gfiamoncini.com/theme/presets/presets.js:157
+#: gnomeCustom@gfiamoncini.com/lib/profiles.js:89
 msgid "Minimal"
 msgstr "Mínimo"
 
@@ -1456,6 +1509,7 @@ msgstr "Barra flutuante no azul do Fedora com destaque azul-claro"
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:25
 #: gnomeCustom@gfiamoncini.com/modules/tiling/module.js:335
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:109
 msgid "Tiling"
 msgstr "Mosaico"
 
@@ -1467,7 +1521,9 @@ msgstr "Comportamento"
 msgid ""
 "Arranges windows side by side automatically. While the Forge extension is "
 "active, this module waits and does nothing."
-msgstr "Organiza as janelas lado a lado automaticamente. Enquanto a extensão Forge estiver ativa, este módulo espera e não faz nada."
+msgstr ""
+"Organiza as janelas lado a lado automaticamente. Enquanto a extensão Forge "
+"estiver ativa, este módulo espera e não faz nada."
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:48
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:12
@@ -1529,7 +1585,9 @@ msgstr "Espaçamento"
 msgid ""
 "Windows end up 2 × size × step apart, and the same distance from the screen "
 "edges."
-msgstr "As janelas ficam a 2 × tamanho × passo umas das outras, e à mesma distância das bordas da tela."
+msgstr ""
+"As janelas ficam a 2 × tamanho × passo umas das outras, e à mesma distância "
+"das bordas da tela."
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:79
 msgid "Step"
@@ -1554,7 +1612,10 @@ msgid ""
 "Matched by application class and, optionally, by text in the title. Separate "
 "several titles with commas; start one with “!” to match titles that do not "
 "contain it."
-msgstr "Identificadas pela classe da aplicação e, opcionalmente, por um texto no título. Separe vários títulos com vírgulas; comece um com “!” para casar com títulos que não o contêm."
+msgstr ""
+"Identificadas pela classe da aplicação e, opcionalmente, por um texto no "
+"título. Separe vários títulos com vírgulas; comece um com “!” para casar com "
+"títulos que não o contêm."
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:109
 msgid "Application class, e.g. org.gnome.Calculator"
@@ -1604,7 +1665,9 @@ msgstr "Atalhos de teclado"
 msgid ""
 "The same keys as the Forge extension. Stacked and tabbed layouts are not "
 "available, so their shortcuts stay free."
-msgstr "As mesmas teclas da extensão Forge. Os layouts em pilha e em abas não estão disponíveis, então os atalhos deles ficam livres."
+msgstr ""
+"As mesmas teclas da extensão Forge. Os layouts em pilha e em abas não estão "
+"disponíveis, então os atalhos deles ficam livres."
 
 #: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:32
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:12
@@ -1805,13 +1868,18 @@ msgstr "Decoração das abas (indisponível)"
 msgid ""
 "When off, the module stays loaded but every window floats. Toggled by the "
 "quick settings switch and the keyboard shortcut."
-msgstr "Desligado, o módulo continua carregado, mas todas as janelas flutuam. Alternado pelo interruptor das configurações rápidas e pelo atalho de teclado."
+msgstr ""
+"Desligado, o módulo continua carregado, mas todas as janelas flutuam. "
+"Alternado pelo interruptor das configurações rápidas e pelo atalho de "
+"teclado."
 
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:19
 msgid ""
 "A new window splits the focused one along its longer side, instead of "
 "joining the focused window's container."
-msgstr "Uma janela nova divide a janela em foco pelo lado maior, em vez de entrar no contêiner dela."
+msgstr ""
+"Uma janela nova divide a janela em foco pelo lado maior, em vez de entrar no "
+"contêiner dela."
 
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:25
 msgid "Gap size in pixels"
@@ -1821,7 +1889,9 @@ msgstr "Tamanho do espaçamento em pixels"
 msgid ""
 "Multiplied by the gap step. Windows are 2 × gap × step apart, and the same "
 "distance from the screen edges."
-msgstr "Multiplicado pelo passo. As janelas ficam a 2 × espaçamento × passo umas das outras, e à mesma distância das bordas da tela."
+msgstr ""
+"Multiplicado pelo passo. As janelas ficam a 2 × espaçamento × passo umas das "
+"outras, e à mesma distância das bordas da tela."
 
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:32
 msgid "Gap step"
@@ -1829,7 +1899,8 @@ msgstr "Passo do espaçamento"
 
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:33
 msgid "Changed by the “increase gaps” and “decrease gaps” shortcuts."
-msgstr "Alterado pelos atalhos “aumentar o espaçamento” e “diminuir o espaçamento”."
+msgstr ""
+"Alterado pelos atalhos “aumentar o espaçamento” e “diminuir o espaçamento”."
 
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:41
 msgid "Keep floating windows above tiled ones"
@@ -1839,7 +1910,9 @@ msgstr "Manter as janelas flutuantes acima das encaixadas"
 msgid ""
 "Applies to windows floated with the shortcut; the setting is undone when the "
 "window is tiled again or the module is turned off."
-msgstr "Vale para janelas postas para flutuar pelo atalho; é desfeito quando a janela volta ao mosaico ou o módulo é desligado."
+msgstr ""
+"Vale para janelas postas para flutuar pelo atalho; é desfeito quando a "
+"janela volta ao mosaico ou o módulo é desligado."
 
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:47
 msgid "Draw a border around the focused window"
@@ -1853,7 +1926,9 @@ msgstr "Cor, espessura e cantos vêm das configurações de tema."
 msgid ""
 "Dropping a tiled window over another swaps their places; dropping it "
 "elsewhere puts it back."
-msgstr "Soltar uma janela encaixada sobre outra troca as duas de lugar; soltá-la em outro ponto a devolve ao lugar."
+msgstr ""
+"Soltar uma janela encaixada sobre outra troca as duas de lugar; soltá-la em "
+"outro ponto a devolve ao lugar."
 
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:63
 msgid "Show a tiling switch in quick settings"
@@ -1871,4 +1946,289 @@ msgstr "Índices das áreas de trabalho, começando em 0."
 msgid ""
 "JSON list of rules with “wmClass” and optionally “wmTitle”, in the format of "
 "Forge's windows.json. Rules by window id are ignored on purpose."
-msgstr "Lista JSON de regras com “wmClass” e, opcionalmente, “wmTitle”, no formato do windows.json do Forge. Regras por id de janela são ignoradas de propósito."
+msgstr ""
+"Lista JSON de regras com “wmClass” e, opcionalmente, “wmTitle”, no formato "
+"do windows.json do Forge. Regras por id de janela são ignoradas de propósito."
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/migration.js:34
+msgid "Migration"
+msgstr "Migração"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/migration.js:53
+msgid "Import from the original extensions"
+msgstr "Importar das extensões originais"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/migration.js:54
+msgid ""
+"Reads the settings of the extensions GnomeCustom replaces and copies them "
+"over. The original extensions are only read, never changed."
+msgstr ""
+"Lê as configurações das extensões que o GnomeCustom substitui e as copia. As "
+"extensões originais são apenas lidas, nunca alteradas."
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/migration.js:61
+msgid "not installed"
+msgstr "não instalada"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/migration.js:62
+msgid "installed, active"
+msgstr "instalada, ativa"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/migration.js:62
+msgid "installed, inactive"
+msgstr "instalada, inativa"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/migration.js:66
+msgid "Import"
+msgstr "Importar"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/migration.js:79
+msgid "Import from every installed extension"
+msgstr "Importar de todas as extensões instaladas"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/migration.js:80
+#, javascript-format
+msgid "%d found"
+msgstr "%d encontrada(s)"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/migration.js:83
+msgid "Import all"
+msgstr "Importar todas"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/migration.js:97
+#: gnomeCustom@gfiamoncini.com/prefs/pages/migration.js:99
+msgid "Undo"
+msgstr "Desfazer"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/migration.js:98
+msgid "Undo the last import"
+msgstr "Desfazer a última importação"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/migration.js:103
+#, javascript-format
+msgid "%d option(s) restored"
+msgstr "%d opção(ões) restaurada(s)"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/migration.js:114
+msgid "Switching over"
+msgstr "Fazendo a troca"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/migration.js:115
+msgid "Importing only copies settings. To replace the original extensions:"
+msgstr ""
+"Importar só copia configurações. Para substituir as extensões originais:"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/migration.js:118
+msgid "1. Import, above"
+msgstr "1. Importe, acima"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/migration.js:119
+msgid "2. Choose a profile, or turn modules on, in the General page"
+msgstr "2. Escolha um perfil, ou ligue os módulos, na página Geral"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/migration.js:120
+msgid "3. Disable the original extensions in the Extensions app"
+msgstr "3. Desative as extensões originais no aplicativo Extensões"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/migration.js:121
+msgid "4. Log out and back in"
+msgstr "4. Encerre a sessão e entre de novo"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/migration.js:147
+msgid "Close"
+msgstr "Fechar"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/migration.js:157
+#, javascript-format
+msgid "Saved before the import of %s"
+msgstr "Salvo antes da importação de %s"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/migration.js:158
+msgid "Nothing to undo"
+msgstr "Nada a desfazer"
+
+#: gnomeCustom@gfiamoncini.com/lib/migration/report.js:18
+#, javascript-format
+msgid "%d option(s) changed, %d already matched."
+msgstr "%d opção(ões) alterada(s), %d já coincidia(m)."
+
+#: gnomeCustom@gfiamoncini.com/lib/migration/report.js:23
+msgid "Changed:"
+msgstr "Alteradas:"
+
+#: gnomeCustom@gfiamoncini.com/lib/migration/report.js:30
+msgid "Adjusted to the allowed range:"
+msgstr "Ajustadas ao intervalo permitido:"
+
+#: gnomeCustom@gfiamoncini.com/lib/migration/report.js:37
+msgid "Not imported:"
+msgstr "Não importadas:"
+
+#: gnomeCustom@gfiamoncini.com/lib/migration/report.js:44
+msgid "Without an equivalent:"
+msgstr "Sem equivalente:"
+
+#: gnomeCustom@gfiamoncini.com/lib/migration/report.js:50
+msgid ""
+"Importing does not turn modules on. Pick a profile or turn modules on in the "
+"General page, and disable the original extensions."
+msgstr ""
+"Importar não liga os módulos. Escolha um perfil ou ligue os módulos na "
+"página Geral, e desative as extensões originais."
+
+#: gnomeCustom@gfiamoncini.com/lib/migration/report.js:52
+msgid "Import finished with problems"
+msgstr "Importação concluída com problemas"
+
+#: gnomeCustom@gfiamoncini.com/lib/migration/report.js:52
+msgid "Import finished"
+msgstr "Importação concluída"
+
+#: gnomeCustom@gfiamoncini.com/lib/migration/importers.js:129
+msgid "Dash to Dock"
+msgstr "Dash to Dock"
+
+#: gnomeCustom@gfiamoncini.com/lib/migration/importers.js:169
+msgid "Forge"
+msgstr "Forge"
+
+#: gnomeCustom@gfiamoncini.com/lib/migration/importers.js:245
+msgid "Open Bar"
+msgstr "Open Bar"
+
+#: gnomeCustom@gfiamoncini.com/lib/migration/importers.js:312
+msgid "User Themes"
+msgstr "User Themes"
+
+#: gnomeCustom@gfiamoncini.com/lib/migration/importers.js:324
+msgid "Impatience"
+msgstr "Impatience"
+
+#: gnomeCustom@gfiamoncini.com/lib/migration/importers.js:336
+msgid "GNOME UI Tune"
+msgstr "GNOME UI Tune"
+
+#: gnomeCustom@gfiamoncini.com/lib/migration/importers.js:417
+msgid "Apps Menu"
+msgstr "Apps Menu"
+
+#: gnomeCustom@gfiamoncini.com/lib/migration/importers.js:429
+msgid "Bluetooth Battery Indicator"
+msgstr "Bluetooth Battery Indicator"
+
+#: gnomeCustom@gfiamoncini.com/lib/migration/importers.js:443
+msgid "OSD Volume Number"
+msgstr "OSD Volume Number"
+
+#: gnomeCustom@gfiamoncini.com/lib/migration/importers.js:458
+msgid "Spotify Controls"
+msgstr "Spotify Controls"
+
+#: gnomeCustom@gfiamoncini.com/lib/profiles.js:48
+msgid "Nothing on"
+msgstr "Nada ligado"
+
+#: gnomeCustom@gfiamoncini.com/lib/profiles.js:49
+msgid "Every module off; the original extensions stay in charge"
+msgstr ""
+"Todos os módulos desligados; as extensões originais continuam no comando"
+
+#: gnomeCustom@gfiamoncini.com/lib/profiles.js:56
+msgid "Desktop"
+msgstr "Desktop"
+
+#: gnomeCustom@gfiamoncini.com/lib/profiles.js:57
+msgid "Everything on, reproducing the 11 original extensions (your baseline)"
+msgstr "Tudo ligado, reproduzindo as 11 extensões originais (o seu baseline)"
+
+#: gnomeCustom@gfiamoncini.com/lib/profiles.js:67
+msgid "Developer"
+msgstr "Desenvolvedor"
+
+#: gnomeCustom@gfiamoncini.com/lib/profiles.js:68
+msgid "Tiling first: automatic splits, no dock, dark theme"
+msgstr "Mosaico em primeiro lugar: divisão automática, sem dock, tema escuro"
+
+#: gnomeCustom@gfiamoncini.com/lib/profiles.js:78
+msgid "Laptop"
+msgstr "Notebook"
+
+#: gnomeCustom@gfiamoncini.com/lib/profiles.js:79
+msgid "More room on a small screen: thin bar, no dock, tiling on"
+msgstr "Mais espaço em tela pequena: barra fina, sem dock, mosaico ligado"
+
+#: gnomeCustom@gfiamoncini.com/lib/profiles.js:90
+msgid "Only the bar, the logo menu and the volume number"
+msgstr "Só a barra, o menu do logotipo e o número do volume"
+
+#: gnomeCustom@gfiamoncini.com/lib/profiles.js:97
+msgid "Gaming"
+msgstr "Jogos"
+
+#: gnomeCustom@gfiamoncini.com/lib/profiles.js:98
+msgid ""
+"Nothing moving windows around: no tiling or dock; media and Bluetooth "
+"battery on"
+msgstr ""
+"Nada mexendo nas janelas: sem mosaico nem dock; mídia e bateria Bluetooth "
+"ligadas"
+
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:38
+msgid "Panel, menu, dock and OSD styling"
+msgstr "Estilo da barra, dos menus, do dock e do OSD"
+
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:46
+msgid "Application menu and top bar tweaks"
+msgstr "Menu de aplicações e ajustes da barra superior"
+
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:54
+msgid "System menu with the distribution logo"
+msgstr "Menu de sistema com o logotipo da distribuição"
+
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:61
+msgid "Bluetooth Battery"
+msgstr "Bateria Bluetooth"
+
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:62
+msgid "Connected devices and their battery, with a card"
+msgstr "Dispositivos conectados e a bateria deles, com um cartão"
+
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:69
+msgid "Volume OSD"
+msgstr "Número no volume"
+
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:70
+msgid "Numeric volume value in the OSD"
+msgstr "Valor numérico no aviso de volume"
+
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:77
+msgid "Media Controls"
+msgstr "Mídia"
+
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:78
+msgid "Now playing in the top bar, with a card"
+msgstr "O que está tocando na barra superior, com um cartão"
+
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:86
+msgid "Fixed dock on the primary monitor"
+msgstr "Dock fixo no monitor principal"
+
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:94
+msgid "Workspace thumbnails, hidden search and picture-in-picture windows"
+msgstr "Miniaturas das áreas de trabalho, busca escondida e janelas picture-in-picture"
+
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:102
+msgid "Shell animation speed"
+msgstr "Velocidade das animações do Shell"
+
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:110
+msgid "Tree-based window tiling"
+msgstr "Janelas em mosaico, organizadas em árvore"
+
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:117
+msgid "Diagnostics"
+msgstr "Diagnóstico"
+
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:118
+msgid "Warns about extensions that duplicate an active module"
+msgstr "Avisa sobre extensões que duplicam um módulo ativo"

@@ -87,6 +87,11 @@
       <summary>Migration version already applied</summary>
       <description>Used to run each configuration import only once.</description>
     </key>
+    <key name="migration-backup" type="s">
+      <default>''</default>
+      <summary>Settings saved before the last import</summary>
+      <description>JSON snapshot used by “Undo last import”. Not meant to be edited.</description>
+    </key>
     <key name="conflict-warnings" type="b">
       <default>true</default>
       <summary>Warn about conflicting extensions</summary>

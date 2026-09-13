@@ -22,94 +22,100 @@
  * @property {boolean} implemented
  */
 
+/**
+ * Marca strings para o xgettext; quem exibe chama `_()` sobre elas.
+ * (Faltava: até a Fase 9 os nomes dos módulos apareciam em inglês.)
+ */
+const N_ = message => message;
+
 /** Ordem idêntica à de ativação em `extension.js`. */
 /** @type {ModuleInfo[]} */
 export const MODULES_INFO = Object.freeze([
     {
         id: 'theme',
         key: 'theme-enabled',
-        title: 'Theme',
-        summary: 'Panel, menu, dock and OSD styling',
+        title: N_('Theme'),
+        summary: N_('Panel, menu, dock and OSD styling'),
         phase: 2,
         implemented: true,
     },
     {
         id: 'panel',
         key: 'panel-enabled',
-        title: 'Panel',
-        summary: 'Application menu and top bar tweaks',
+        title: N_('Panel'),
+        summary: N_('Application menu and top bar tweaks'),
         phase: 2,
         implemented: true,
     },
     {
         id: 'menu',
         key: 'menu-enabled',
-        title: 'Logo Menu',
-        summary: 'System menu with the distribution logo',
+        title: N_('Logo Menu'),
+        summary: N_('System menu with the distribution logo'),
         phase: 2,
         implemented: true,
     },
     {
         id: 'bluetooth',
         key: 'bluetooth-enabled',
-        title: 'Bluetooth Battery',
-        summary: 'Connected devices and their battery, with a card',
+        title: N_('Bluetooth Battery'),
+        summary: N_('Connected devices and their battery, with a card'),
         phase: 3,
         implemented: true,
     },
     {
         id: 'volume',
         key: 'volume-enabled',
-        title: 'Volume OSD',
-        summary: 'Numeric volume value in the OSD',
+        title: N_('Volume OSD'),
+        summary: N_('Numeric volume value in the OSD'),
         phase: 3,
         implemented: true,
     },
     {
         id: 'media',
         key: 'media-enabled',
-        title: 'Media Controls',
-        summary: 'Now playing in the top bar, with a card',
+        title: N_('Media Controls'),
+        summary: N_('Now playing in the top bar, with a card'),
         phase: 3,
         implemented: true,
     },
     {
         id: 'dock',
         key: 'dock-enabled',
-        title: 'Dock',
-        summary: 'Fixed dock on the primary monitor',
+        title: N_('Dock'),
+        summary: N_('Fixed dock on the primary monitor'),
         phase: 4,
         implemented: true,
     },
     {
         id: 'overview',
         key: 'overview-enabled',
-        title: 'Overview',
-        summary: 'Workspace thumbnails, hidden search and picture-in-picture windows',
+        title: N_('Overview'),
+        summary: N_('Workspace thumbnails, hidden search and picture-in-picture windows'),
         phase: 5,
         implemented: true,
     },
     {
         id: 'animation',
         key: 'animation-enabled',
-        title: 'Animation',
-        summary: 'Shell animation speed',
+        title: N_('Animation'),
+        summary: N_('Shell animation speed'),
         phase: 6,
         implemented: true,
     },
     {
         id: 'tiling',
         key: 'tiling-enabled',
-        title: 'Tiling',
-        summary: 'Tree-based window tiling',
+        title: N_('Tiling'),
+        summary: N_('Tree-based window tiling'),
         phase: 8,
         implemented: true,
     },
     {
         id: 'diagnostics',
         key: 'diagnostics-enabled',
-        title: 'Diagnostics',
-        summary: 'Warns about extensions that duplicate an active module',
+        title: N_('Diagnostics'),
+        summary: N_('Warns about extensions that duplicate an active module'),
         phase: 1,
         implemented: true,
     },

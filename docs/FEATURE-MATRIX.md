@@ -120,7 +120,8 @@ Estado: `⬜` não iniciado · `🟡` em andamento · `✅` pronto · `⏸` adia
 | Verificação de limpeza | não | `strict-cleanup-check` + `collectLeaks()` | ✅ |
 | Testes automatizados | Forge tem `TESTS.md` | `tests/` (98 do núcleo + 17 das prefs) | ✅ |
 | Build reproduzível | não | `Makefile` (build, check, install, pack) | ✅ |
-| Tradução pt-BR | parcial | `po/pt_BR.po` (57/57 das strings atuais) | ✅ |
-| Migração de config antiga | não | `core/migration/*` | ⬜ |
+| Tradução pt-BR | parcial | `po/pt_BR.po` (456/456) | ✅ |
+| Migração de config antiga | não | `lib/migration/` + página Migração (backup e desfazer) | ✅ |
+| Guia do usuário | não | `docs/USER-GUIDE.md` | ✅ |
 | Presets de tema | não | `theme/presets/` (5 presets + personalizado derivado) | ✅ |
-| Perfis de sistema (Developer, Laptop, Gaming…) | não | `core/profiles` | ⏸ |
+| Perfis (Desktop, Desenvolvedor, Notebook, Mínimo, Jogos) | não | `lib/profiles.js` + página Geral | ✅ |

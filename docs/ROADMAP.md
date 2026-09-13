@@ -222,12 +222,21 @@ Descobertas ao rodar no Shell (todas com teste ou correção):
 - `Super+V` do baseline colide com `toggle-message-tray` do GNOME, que vence — **inclusive na
   sessão real do usuário** (decisão dele se quer liberar).
 
-## Fase 9 — Migração e polimento
-- [ ] `core/migration/*` conforme `MIGRATION.md`, com relatório e reversão
-- [ ] Presets/perfis (Default, Developer, Minimal, Laptop, Desktop, Gaming, Custom)
-- [ ] `po/`: pt-BR completo
-- [ ] Documentação de usuário
-- [ ] Avaliar declarar GNOME 50 (só após teste real)
+## Fase 9 — Migração e polimento ✅
+- [x] `lib/migration/importers.js`: importadores das 11 extensões, puros, sobre o **valor efetivo**
+      (o Logo Menu esconde bloquear/energia por padrão; importar só o alterado mudaria o menu)
+- [x] `lib/migration/apply.js`: leitura só-leitura dos esquemas de cada extensão e dos arquivos
+      do Forge; backup em `migration-backup`; ajuste aos limites; relatório; desfazer exato
+- [x] Página **Migração** nas preferências, com relatório e os passos da troca
+- [x] Perfis em `lib/profiles.js` (Nada ligado, Desktop, Desenvolvedor, Notebook, Mínimo, Jogos;
+      Personalizado derivado), com aviso antes de ligar módulos cujas originais estão ativas
+- [x] `MIGRATION.md` reescrito conforme o implementado (o da Fase 0 citava chaves inexistentes)
+- [x] `docs/USER-GUIDE.md`: instalar, trocar as extensões, perfis, módulos, atalhos, problemas
+- [x] GNOME 50 avaliado e **não declarado** (sem teste real); roteiro em `COMPATIBILITY.md` §6
+- [x] 11 testes novos do núcleo (183) e 7 passos das prefs; pt-BR 456/456
+- [x] **Critério verificado:** importar o baseline reproduz os padrões do GnomeCustom; ensaio
+      só-leitura sobre as extensões instaladas: 90 gravações, 3 mudariam algo (tema Orchis;
+      bloquear e energia escondidos como no Logo Menu); regras fantasmas do Forge descartadas
 
 ---
 
@@ -240,7 +249,7 @@ Descobertas ao rodar no Shell (todas com teste ou correção):
 | **M2** ✅ | Fase 3 ✅ | + BT Battery, OSD Volume, Spotify Controls |
 | **M3 (MVP)** ✅ | Fase 4–6 ✅ | + Dash to Dock, GNOME UI Tune, Impatience |
 | **M4** ✅ | Fases 7 e 8 | + Forge → **todas as 11** |
-| **M5** | Fase 9 | migração, presets, i18n |
+| **M5** ✅ | Fase 9 | migração, perfis, guia do usuário, i18n |
 
 O MVP da §33 do briefing corresponde a **M3**. O tiling entra em **M4**, conforme previsto.
 

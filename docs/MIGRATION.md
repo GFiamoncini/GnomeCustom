@@ -1,125 +1,80 @@
 # MIGRATION.md
 
-Camada de migração: converte a configuração das extensões originais em configuração do
-GnomeCustom. Base factual: `BASELINE-CONFIG.md`.
+Como a configuração das 11 extensões originais vira configuração do GnomeCustom.
+
+A fonte da verdade é o código: `lib/migration/importers.js` (mapeamento, puro e testado) e
+`lib/migration/apply.js` (leitura das extensões, gravação, backup). Este documento resume o
+que eles fazem. **Reescrito na Fase 9**: a versão da Fase 0 citava chaves imaginadas antes de
+os módulos existirem.
 
 ```
-config antiga (dconf + arquivos)  ──►  Migration Layer  ──►  gnomecustom.*
+extensão original (esquema dela + arquivos do Forge)
+        │  só leitura
+        ▼
+importers.js ──► gravações + notas ──► apply.js ──► gnomecustom.*
+                                          │
+                                          └─► migration-backup (foto de antes)
 ```
 
-Princípios:
-1. A migração **nunca escreve** nos esquemas das extensões originais (só lê).
-2. É idempotente e versionada (`advanced.migration-version`).
-3. Cada importador é independente e opcional (botões separados em Preferências).
-4. O que não tem equivalente é **relatado**, não silenciosamente descartado.
+## Princípios
 
----
+1. **Só leitura das originais.** O `Gio.Settings` de uma extensão original nunca recebe `set_*`.
+2. **Valor efetivo, não só o alterado.** Importa o que o usuário vê hoje, padrão incluído: o Logo
+   Menu esconde "bloquear" e "energia" por padrão e o nosso mostra.
+3. **Nada some calado.** O que não tem equivalente vira nota no relatório.
+4. **Importar não liga módulos.** Isso é perfil ou página Geral.
+5. **Reversível.** Antes de gravar, uma foto de todas as chaves do GnomeCustom vai para
+   `migration-backup`; "Desfazer" restaura, inclusive voltando ao padrão o que estava no padrão.
+6. **Ajuste aos limites.** Números fora do intervalo do nosso esquema são limitados e relatados.
 
-## 1. Dash to Dock → `gnomecustom.dock`
+## Mapeamento
 
-| Origem | Valor no baseline | Destino | Observação |
-|---|---|---|---|
-| `dock-position` | `BOTTOM` | `position` | enum idêntico |
-| `dock-fixed` | `true` | `fixed` | |
-| `height-fraction` | `0.90` | `length-fraction` | renomeado (vale para as duas orientações) |
-| `dash-max-icon-size` | `24` | `icon-size` | |
-| `custom-theme-shrink` | `true` | `compact` | |
-| `running-indicator-style` | `DOTS` | `running-indicator` | |
-| `transparency-mode` + `background-opacity` | `FIXED` + `0.0` | `background-alpha` = 0.0, `background-mode` = `fixed` | dois campos → dois campos |
-| `preferred-monitor-by-connector` | `HDMI-1` | `monitor-connector` | **usar sempre o conector**, não o índice |
-| `preferred-monitor` | `-2` | — | índice legado do D2D; descartar |
-| `show-show-apps-button` / `show-trash` / `show-mounts` / `show-icons-emblems` | todos `false` | `show-apps-button` / `show-trash` / `show-mounts` / `show-emblems` | |
-| ~90 chaves restantes | default | — | relatar "não migrado (default)" |
-
-## 2. Forge → `gnomecustom.tiling`
-
-| Origem | Valor | Destino |
+| Origem | Vai para | Notas quando não há equivalente |
 |---|---|---|
-| `tiling-mode-enabled` | `true` | `gnomecustom tiling-enabled` |
-| `auto-split-enabled` | `false` | `auto-split` |
-| `window-gap-size` / `-increment` | `2` / `1` | `gap-size` / `gap-increment` |
-| `window-gap-hidden-on-single` | `true` | `gap-hidden-on-single` |
-| `float-always-on-top-enabled` | `true` | `float-always-on-top` |
-| `focus-border-toggle` | `true` | `focus-border` |
-| `focus-on-hover-enabled` | `false` | `focus-on-hover` |
-| `move-pointer-focus-enabled` | `false` | `move-pointer-focus` |
-| `preview-hint-enabled` | `true` | `preview-hint` |
-| `quick-settings-enabled` | `true` | `quick-settings-toggle` |
-| `stacked-` / `tabbed-tiling-mode-enabled` | `false` | `stacked-mode` / `tabbed-mode` |
-| `keybindings/*` (40 chaves) | ver baseline | `tiling.keybindings.*` | nomes mantidos 1:1 quando o conceito existe |
-| `css-last-update`, `css-updated`, `window-overrides-reload-trigger` | — | — | estado interno; descartar |
+| **Dash to Dock** `dash-max-icon-size`, `height-fraction`, `background-opacity` (se `transparency-mode` for FIXED/DYNAMIC) | `dock/icon-size`, `length-fraction`, `background-opacity` | auto-ocultar, posição ≠ baixo, monitor, estilo do indicador, lixeira/volumes/botão de apps |
+| **Forge** 8 opções (`tiling-mode-enabled`, `auto-split-enabled`, gaps, `float-always-on-top-enabled`, `focus-border-toggle`, `quick-settings-enabled`) | `tiling/*` | pilha/abas, foco por hover, ponteiro com o foco |
+| Forge `preview-hint-enabled` | `tiling/drag-swap` | a prévia durante o arrasto não existe |
+| Forge `workspace-skip-tile` (`"0,2"`) | `tiling/skip-workspaces` (`[0, 2]`) | — |
+| Forge `keybindings/*` (39) | `tiling.keybindings/*` (mesmos nomes) | — |
+| Forge `~/.config/forge/config/windows.json` | `tiling/window-rules` | regras por `wmId` **descartadas e contadas** |
+| Forge `stylesheet.css` (`.window-tiled-border`) | `theme/tiling-border-color/-width/-radius` | — |
+| **Open Bar** `bartype` | `theme/panel-style` (Floating→floating, Mainland→attached; Trilands/Islands aproximados) | — |
+| Open Bar `height`, `margin`, `bottom-margin`, `bradius`, `bwidth`, `balpha`, `bgalpha` | `theme/panel-*`; laterais = 3 × `margin` | — |
+| Open Bar `bg-change` / `bgcolor` / `hcolor` | `palette-from-wallpaper` / `background-color` / `accent-color` | — |
+| Open Bar `fitts-widgets`, `menustyle`, `dashdock-style` + `dbradius` | `fitts-widgets`, `style-menus`, `style-dock` + `dock-radius` | as ~270 chaves restantes (neon, sombras, GTK…) |
+| **User Themes** `name` | `theme/shell-theme` | — |
+| **Impatience** `speed-factor` | `animation/speed-factor` | — |
+| **GNOME UI Tune** 4 interruptores | `overview/*` | miniaturas maiores (usa o tamanho do GNOME) |
+| **Logo Menu** ícone (`use-custom-icon`, `symbolic-icon`, caminho), `menu-button-icon-size` | `menu/icon-source`, `custom-icon-path`, `icon-size` | galeria de logotipos do Logo Menu |
+| Logo Menu `hide-forcequit`, `hide-softwarecentre` (invertidos), `show-lockscreen`, `show-power-options` | `menu/show-force-quit`, `show-software`, `show-lock`, `show-power` | — |
+| Logo Menu comandos (`gnome-software`…) | `menu/*-app` (identificadores .desktop) | comando desconhecido; `gnome-terminal` padrão vira "terminal do sistema" |
+| Logo Menu `show-activities-button`, `menu-button-extensions-app` | `panel/show-activities`, `menu/extensions-app` | — |
+| **Apps Menu** `apps-menu-toggle-menu` | `panel/apps-menu-shortcut` | — |
+| **Spotify Controls** `position`, `max-width` (> 0) | `media/panel-position`, `panel-max-width` | controles de reprodução no card; largura ilimitada |
+| **Bluetooth Battery Indicator** | — | intervalo (o BlueZ avisa), lista de dispositivos, ocultar indicador |
+| **OSD Volume Number** | — | posições de ícone e número (o número sempre substitui o ícone) |
 
-### 2.1 Estado fora do GSettings
-| Origem | Destino | Tratamento |
-|---|---|---|
-| `~/.config/forge/config/windows.json` (32 regras) | `tiling.window-rules` (JSON em uma chave `string`) | importar apenas entradas com `wmClass`/`wmTitle`; **descartar as 4 entradas com `wmId`** e informar o usuário |
-| `~/.config/forge/stylesheet/forge/stylesheet.css` | `theme.tiling-colors` (tiled/split/stacked/tabbed/floated, largura e raio de borda) | extrair as 5 cores + `border-width` + `border-radius`; não importar CSS cru |
+## O que muda para o usuário do baseline
 
-## 3. Open Bar → `gnomecustom.theme`
+Ensaio só-leitura sobre as extensões instaladas em 2026-09-13: **90 gravações, 3 mudariam
+algo** — os padrões do GnomeCustom já são o baseline.
 
-| Origem | Valor | Destino |
-|---|---|---|
-| `bartype` | `Floating` | `panel-style` |
-| `height` | `29` | `panel-height` |
-| `margin` / `bottom-margin` | `1.5` / `2.1` | `panel-margin-top` / `panel-margin-bottom` |
-| `bradius` | `15` | `panel-radius` |
-| `bwidth` / `balpha` | `2` / `0.5` | `panel-border-width` / `panel-border-alpha` |
-| `bgalpha` | `0.90` | `panel-background-alpha` |
-| `hcolor` / `bgcolor2` | `(0.110,0.443,0.847)` | `accent-color` (converter para hex `#1C71D8`) |
-| `bg-change` + `bguri` | `true` + `~/.config/background` | `palette-from-wallpaper` + (wallpaper lido do sistema, não da chave) |
-| `palette1..12`, `light-*`, `dark-*` | paleta do wallpaper | `palette` (cache regenerável) — importar como cache, não como verdade |
-| `fitts-widgets` | `true` | `fitts-widgets` |
-| `neon`, `dshadow`, `dborder`, `menustyle`, `apply-menu-shell` | `false` | correspondentes (todos default off) |
-| `monitor-width/height` | 2560/1080 | — | detectar em runtime; descartar |
-| `count1..12`, `pause-reload`, `reloadstyle`, `trigger-reload`, `import-export` | — | — | estado interno; descartar |
-| ~250 chaves restantes | default | — | relatar |
+- `theme/shell-theme`: `''` → `'Orchis-Grey-Dark-Compact'`
+- `menu/show-lock` e `menu/show-power`: `true` → `false` (como o Logo Menu dele)
 
-## 4. Extensões menores
+As regras fantasmas por `wmId` do `windows.json` real somem na importação, e o resultado são as
+28 regras padrão.
 
-| Origem | Chave | Destino |
-|---|---|---|
-| `user-theme name` | `Orchis-Grey-Dark-Compact` | `theme.shell-theme` (a mesma chave global continua sendo a fonte de verdade) |
-| `gnome-ui-tune increase-thumbnails-size` | `'100%'` | `overview.thumbnails-scale` (converter `'100%'` → `2.0`) |
-| `gnome-ui-tune` (demais, default) | ligados | `overview.hide-search-until-typing`, `.thumbnails-background`, `.thumbnails-always`, `.firefox-pip` |
-| `impatience speed-factor` | `0.25` | `animation.speed-factor` |
-| `bluetooth_battery_indicator hide-indicator` | `true` | `bluetooth.hide-indicator` |
-| `… interval` | `4` (min) | `bluetooth.refresh-interval` (guardar em **segundos**: 240) |
-| `… devices` (JSON) | 4 dispositivos | `bluetooth.devices` — descartar a entrada com MAC inválido (`DELL 7FHHV94` / `248`) e relatar |
-| `osd-volume-number adapt-panel-menu` | `false` | `volume.adapt-panel-menu` |
-| `spotify-controls position` | `'mid-right'` | `media.panel-position` |
-| `… controls-position` | `'right'` | `media.controls-position` |
-| `… show-playback-controls` / `show-track-info` / `show-spotify-icon` | default | `media.show-controls` / `.show-track-info` / `.show-player-icon` |
-| `… enable-volume-control` / `enable-middle-click` / `minimize-on-second-click` | default | correspondentes em `media.*` |
-| `… max-width` | default | `media.max-width` |
-| `Logo-menu use-custom-icon/symbolic-icon/menu-button-icon-image` | `false/false/0` | `menu.icon-source` / `menu.symbolic` / `menu.icon-index` |
-| `… menu-button-icon-size` | `19` | `menu.icon-size` |
-| `… show-activities-button` | `false` | `panel.show-activities` |
-| `… menu-button-extensions-app` | Extension Manager | `menu.extensions-app` |
+## Interface
 
-## 5. Não migrado
+Preferências ▸ **Migração**: um botão "Importar" por extensão instalada, "Importar todas",
+"Desfazer a última importação" e os passos da troca. Cada importação mostra o relatório:
+alteradas, iguais, ajustadas, não importadas e sem equivalente.
+
+## Não migrado
 
 | Item | Motivo |
 |---|---|
-| — | — |
-| `rounded-window-corners-reborn` (resíduo em dconf) | extensão não instalada |
-| Atalhos globais do Mutter (`Super+W`, `Super+Z`, `Ctrl+Super+←→`, screenshots) | pertencem ao GNOME, não à extensão; o GnomeCustom deve **detectar colisão** com eles, não movê-los |
+| Atalhos do GNOME (`Super+W`, `Super+Z`, `Ctrl+Super+←→`, capturas) | pertencem ao GNOME, não às extensões |
 | `favorite-apps` | chave do próprio Shell; o dock lê a original |
-
-## 6. Interface
-
-```
-Preferências ▸ Avançado ▸ Importar configuração
-  [ Importar do Dash to Dock ]   [ Importar do Forge ]
-  [ Importar do Open Bar ]       [ Importar dos módulos menores ]
-  [ Importar do Spotify Controls ]
-  [ Importar tudo (baseline) ]
-```
-
-Cada importação abre um relatório: chaves migradas, convertidas, descartadas e por quê.
-
-## 7. Reversão
-
-Antes de qualquer importação, gravar `advanced.pre-migration-backup` com um dump das
-chaves do GnomeCustom. `[ Reverter última importação ]` restaura esse dump.
-A configuração das extensões originais nunca é tocada, então desabilitar o GnomeCustom
-e reabilitar as extensões antigas sempre funciona.
+| `rounded-window-corners-reborn` (resíduo em dconf) | extensão não instalada |

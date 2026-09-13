@@ -10,6 +10,8 @@
  * `tests/prefs-smoke.js` consegue exercitá-las.
  */
 
+import Gio from 'gi://Gio';
+
 import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
 import {GeneralPage} from './prefs/pages/general.js';
@@ -22,6 +24,7 @@ import {DockPage} from './prefs/pages/dock.js';
 import {OverviewPage} from './prefs/pages/overview.js';
 import {AnimationPage} from './prefs/pages/animation.js';
 import {TilingPage} from './prefs/pages/tiling.js';
+import {MigrationPage} from './prefs/pages/migration.js';
 import {AdvancedPage} from './prefs/pages/advanced.js';
 
 export default class GnomeCustomPreferences extends ExtensionPreferences {
@@ -31,7 +34,13 @@ export default class GnomeCustomPreferences extends ExtensionPreferences {
         const child = name =>
             this.getSettings(`${this.metadata['settings-schema']}.${name}`);
 
-        window.add(new GeneralPage(settings, _));
+        const openSettings = name => (name ? child(name) : settings);
+        const shell = new Gio.Settings({schema_id: 'org.gnome.shell'});
+        const isEnabled = uuid => !shell.get_boolean('disable-user-extensions') &&
+            !shell.get_strv('disabled-extensions').includes(uuid) &&
+            shell.get_strv('enabled-extensions').includes(uuid);
+
+        window.add(new GeneralPage(settings, _, {openSettings, isEnabled}));
         window.add(new ThemePage(child('theme'), _));
         window.add(new PanelPage(child('panel'), _));
         window.add(new MenuPage(child('menu'), _));
@@ -41,6 +50,7 @@ export default class GnomeCustomPreferences extends ExtensionPreferences {
         window.add(new OverviewPage(child('overview'), _));
         window.add(new AnimationPage(child('animation'), _));
         window.add(new TilingPage(child('tiling'), child('tiling.keybindings'), _));
+        window.add(new MigrationPage(openSettings, _, {isEnabled}));
         window.add(new AdvancedPage(settings, this.metadata, _));
 
         window.set_default_size(760, 680);

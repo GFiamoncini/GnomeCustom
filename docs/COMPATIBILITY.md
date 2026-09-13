@@ -62,3 +62,32 @@ Force Quit (do Logo Menu) precisa de caminho Wayland — via `Meta.Window.kill()
 - Wayland não recarrega o Shell sem logout: `Alt+F2 r` só existe no X11. Prever
   `make test-session` usando uma sessão aninhada
   (`dbus-run-session -- gnome-shell --nested --wayland`).
+
+## 6. GNOME 50: avaliação (Fase 9, 2026-09-13)
+
+**Decisão: não declarar suporte ao GNOME 50.** A regra do projeto (§1) é só declarar
+versão efetivamente testada, e não há GNOME 50 disponível nesta máquina (Fedora 43 traz o
+49.9). `metadata.json` continua com `"shell-version": ["49"]`.
+
+O que o levantamento mostra sobre o risco de uma atualização. O código declara 41 pontos de
+API interna com o comentário `// GNOME 49:` — todos em `services/`, como previsto em §2:
+
+| Risco | Onde | Por quê |
+|---|---|---|
+| **Alto** | `services/shell/dash.js` | campos privados do Dash (`_box`, `_showAppsIcon`, `_background`, `_separator`, `_maxWidth`) e do `AppIcon` (`_iconContainer`, `_dot`, `_updateRunningStyle`) |
+| **Alto** | `services/shell/overview.js` + `modules/overview` | `Main.overview._overview.controls._thumbnailsBox`; 4 patches de protótipo (`_updateShouldShow`, `_init`, `_isOverviewWindow` ×2) |
+| **Alto** | `services/shell/osd.js` + `modules/volume` | campos privados do `OsdWindow` (`_hbox`, `_icon`, `_vbox`, `_level`) e patch de `show` |
+| Médio | `services/shell/windows.js` | assinatura de `unmaximize()` já mudou no 49; tem ramo de reserva |
+| Médio | `services/shell/theme.js` | `Main.loadTheme` e o comportamento de `changed` do St (ver armadilhas registradas) |
+| Baixo | painel, atalhos, apps, sessão, quick settings, extensões | APIs usadas por quase toda extensão de painel; mudanças costumam ser anunciadas |
+
+Referências externas: o Dash to Dock (v106) e o Forge upstream já declaram o 50, e ambos tocam
+nas mesmas regiões de alto risco — é o primeiro lugar a comparar quando o 50 chegar.
+
+### Roteiro para declarar o 50
+1. `make check` num sistema com GNOME 50 (os testes do núcleo e das preferências não dependem
+   da versão; se falharem, é regressão de GJS/Adw).
+2. Sessão isolada (`make nested` ou o roteiro headless registrado) com **todos os módulos**
+   ligados e `strict-cleanup-check`: ciclos de ativação sem CRITICAL e com "nada pendente".
+3. Conferir um a um os pontos de risco alto da tabela, com uma janela real e as capturas.
+4. Só então acrescentar `"50"` a `shell-version` e registrar o resultado aqui.

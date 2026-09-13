@@ -235,3 +235,7 @@ Estimativa: 90–120 chaves na v1.
 | AD-26 | Janelas maximizadas em tiling são desmaximizadas; tela cheia é respeitada | o auto-maximize do Mutter deixaria janelas grandes fora do tiling |
 | AD-27 | O tiling fica em espera enquanto o Forge estiver ativo | dois gerenciadores sobre as mesmas janelas tornam a área de trabalho inutilizável |
 | AD-28 | Atalhos de modos não implementados (pilha, abas) não são registrados | não roubar teclas do sistema para não fazer nada |
+| AD-29 | A migração importa o valor efetivo de cada chave, não só o alterado | os padrões das extensões originais não são os nossos |
+| AD-30 | Importar nunca liga módulos; perfis ligam, com aviso sobre originais ativas | trocar extensões é decisão explícita, e duas implementações ativas brigam |
+| AD-31 | Backup antes de cada importação guarda também quais chaves estavam no padrão | "desfazer" precisa devolver ao padrão, não gravar o valor padrão por cima |
+| AD-32 | Não declarar GNOME 50 sem teste real | regra de §12 do briefing; os riscos estão mapeados em COMPATIBILITY §6 |

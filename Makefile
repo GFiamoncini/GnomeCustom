@@ -187,7 +187,7 @@ nested: install
 
 .PHONY: pot
 pot:
-	xgettext --from-code=UTF-8 --keyword=_ --keyword=C_:1c,2 \
+	xgettext --from-code=UTF-8 --keyword=_ --keyword=N_ --keyword=C_:1c,2 \
 		--package-name=GnomeCustom --package-version=0.1.0 \
 		--copyright-holder="Gabriel Fiamoncini" \
 		--msgid-bugs-address="https://github.com/gfiamoncini/gnomecustom/issues" \

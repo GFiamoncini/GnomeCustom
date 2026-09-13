@@ -24,11 +24,12 @@ export class DockModule extends Module {
     }
 
     static get requires() {
-        return ['dash'];
+        return ['dash', 'style'];
     }
 
     enable() {
         this._dash = this.service('dash');
+        this._style = this.service('style');
         this._settings = this.settings.child('dock');
 
         this._dock = new Dock({
@@ -43,8 +44,11 @@ export class DockModule extends Module {
             () => this._dock.dash.setIconSizeCap(this._settings.get_uint('icon-size')));
         this.signals.connectSetting(this._settings, 'length-fraction', () => this._place());
         this.signals.connectSetting(this._settings, 'background-opacity',
-            () => this._dock.dash.setBackgroundOpacity(this._settings.get_double('background-opacity')),
-            {fireNow: true});
+            () => this._syncBackground(), {fireNow: true});
+
+        // A cor do fundo pode vir do Theme Engine. Sem tokens publicados — tema
+        // desligado ou sem cor resolvida — o dock usa a própria cor padrão.
+        this._unsubscribeStyle = this._style.onChanged(() => this._syncBackground());
 
         this._unsubscribe = this._dash.onMonitorsChanged(() => this._place());
         this._place();
@@ -53,6 +57,8 @@ export class DockModule extends Module {
     disable() {
         this._unsubscribe?.();
         this._unsubscribe = null;
+        this._unsubscribeStyle?.();
+        this._unsubscribeStyle = null;
 
         if (this._dock) {
             // Desconecta antes de destruir: o sinal é do próprio contêiner.
@@ -64,7 +70,14 @@ export class DockModule extends Module {
         this._dash?.restoreOverviewDash();
 
         this._dash = null;
+        this._style = null;
         this._settings = null;
+    }
+
+    _syncBackground() {
+        const color = this._style.tokens?.dock?.backgroundRgb ?? null;
+        this._dock.dash.setBackgroundOpacity(
+            this._settings.get_double('background-opacity'), color);
     }
 
     _place() {

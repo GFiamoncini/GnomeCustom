@@ -102,6 +102,63 @@
       <description>Removes the dead zone above panel buttons so they can be
       clicked by slamming the pointer into the edge.</description>
     </key>
+    <!-- Superfícies além da barra (Fase 7). Desligadas por padrão: o baseline
+         do usuário não tematiza menus, OSD nem dock, e o motor só assume o que
+         for pedido. Todas usam a mesma cor base da barra, que é o que torna um
+         preset coerente entre elas. -->
+    <key name="style-menus" type="b">
+      <default>false</default>
+      <summary>Apply the theme colours to popup menus</summary>
+      <description>Panel menus, the logo menu, the applications menu and the
+      cards use the bar background and accent colour.</description>
+    </key>
+    <key name="style-osd" type="b">
+      <default>false</default>
+      <summary>Apply the theme colours to on-screen displays</summary>
+      <description>The volume and brightness pop-ups use the bar background,
+      and the level bar uses the accent colour.</description>
+    </key>
+    <key name="style-dock" type="b">
+      <default>false</default>
+      <summary>Apply the theme colours to the dock</summary>
+      <description>The dock background takes the bar colour (its opacity is still
+      set in the dock settings), and the running indicators take the accent.</description>
+    </key>
+    <key name="menu-radius" type="d">
+      <default>12</default>
+      <range min="0" max="30"/>
+      <summary>Corner radius of popup menus and on-screen displays</summary>
+    </key>
+    <key name="menu-background-alpha" type="d">
+      <default>0.95</default>
+      <range min="0.3" max="1"/>
+      <summary>Background opacity of popup menus and on-screen displays</summary>
+      <description>Kept above 0.3 so menu text stays readable over any window.</description>
+    </key>
+    <key name="dock-radius" type="d">
+      <default>12</default>
+      <range min="0" max="30"/>
+      <summary>Corner radius of the dock background</summary>
+    </key>
+
+    <!-- Bordas do tiling: tokens prontos para o módulo da Fase 8. Os defaults
+         são os do Forge no baseline (stylesheet.css do usuário). -->
+    <key name="tiling-border-color" type="s">
+      <default>'#9A9996'</default>
+      <summary>Colour of the focused window border in tiling mode</summary>
+      <description>Hexadecimal, “#RRGGBB”. Empty follows the accent colour.</description>
+    </key>
+    <key name="tiling-border-width" type="u">
+      <default>3</default>
+      <range min="0" max="12"/>
+      <summary>Thickness of the focused window border</summary>
+    </key>
+    <key name="tiling-border-radius" type="u">
+      <default>14</default>
+      <range min="0" max="40"/>
+      <summary>Corner radius of the focused window border</summary>
+    </key>
+
     <key name="shell-theme" type="s">
       <default>''</default>
       <summary>Shell theme name</summary>

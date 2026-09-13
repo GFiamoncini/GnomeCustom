@@ -94,7 +94,10 @@ Estado: `⬜` não iniciado · `🟡` em andamento · `✅` pronto · `⏸` adia
 | Fitts widgets | " | ligado | `theme/engine/stylesheet.js` | REWRITE | ✅ |
 | Shell theme do usuário | User Themes 69 | `Orchis-Grey-Dark-Compact` | `services/shell/theme.js` | REWRITE | ✅ |
 | Paleta clara/escura em variantes | " | 3 variantes de 12 cores | uma paleta por papel de parede em uso | DROP | ⏸ |
-| Tema de menus | Open Bar | **desligado** | `theme/engine/menu` | REWRITE | ⏸ |
+| Tema de menus | Open Bar | **desligado** | `theme/engine` + `style-menus` (padrão desligado) | REWRITE | ✅ |
+| Tema do OSD | — | — | `theme/engine` + `style-osd` (padrão desligado) | NOVO | ✅ |
+| Tema do dock | Dash to Dock | transparente | `theme/engine` + `services/theme/style.js` + `style-dock` | NOVO | ✅ |
+| Bordas do tiling (tokens) | Forge | `#9A9996`, 3 px, raio 14 | `tokens.tiling`; consumido na fase 8 | REWRITE | 🟡 |
 | Tema do Shell / apps GTK-Flatpak | " | **desligado** | — | DROP | ⏸ |
 | Neon / sombra / borda dupla | " | desligados | " | REWRITE | ⏸ |
 
@@ -114,4 +117,5 @@ Estado: `⬜` não iniciado · `🟡` em andamento · `✅` pronto · `⏸` adia
 | Build reproduzível | não | `Makefile` (build, check, install, pack) | ✅ |
 | Tradução pt-BR | parcial | `po/pt_BR.po` (57/57 das strings atuais) | ✅ |
 | Migração de config antiga | não | `core/migration/*` | ⬜ |
-| Presets/perfis | não | `core/profiles` | ⏸ |
+| Presets de tema | não | `theme/presets/` (5 presets + personalizado derivado) | ✅ |
+| Perfis de sistema (Developer, Laptop, Gaming…) | não | `core/profiles` | ⏸ |

@@ -3,8 +3,11 @@
 
 import Adw from 'gi://Adw';
 import GObject from 'gi://GObject';
+import Gtk from 'gi://Gtk';
 
 import {listThemes} from '../../lib/shell-themes.js';
+import {PRESETS, CUSTOM_PRESET, matchPreset} from '../../theme/presets/presets.js';
+import {applyPreset, readPresetValues} from '../../theme/presets/apply.js';
 import {switchRow, spinRow, enumRow, colorRow, stringChoiceRow} from '../widgets.js';
 
 export class ThemePage extends Adw.PreferencesPage {
@@ -25,9 +28,157 @@ export class ThemePage extends Adw.PreferencesPage {
         this._settings = settings;
         this._ = _;
 
+        this._addPresetGroup();
         this._addShapeGroup();
         this._addColorGroup();
+        this._addSurfacesGroup();
+        this._addTilingGroup();
         this._addShellThemeGroup();
+    }
+
+    /**
+     * Seletor de preset. O preset mostrado é *derivado* dos valores atuais
+     * (não há chave "preset"), então editar qualquer opção abaixo faz a linha
+     * mudar sozinha para "Personalizado".
+     */
+    _addPresetGroup() {
+        const _ = this._;
+        const group = new Adw.PreferencesGroup({
+            title: _('Preset'),
+            description: _('A starting point for every surface at once. Changing any option below turns it into a custom look.'),
+        });
+
+        const ids = [...PRESETS.map(preset => preset.id), CUSTOM_PRESET];
+        const model = new Gtk.StringList();
+        for (const id of ids) {
+            const preset = PRESETS.find(p => p.id === id);
+            model.append(preset ? _(preset.title) : _('Custom'));
+        }
+
+        const row = new Adw.ComboRow({title: _('Look'), model});
+        let updating = false;
+
+        const sync = () => {
+            const current = matchPreset(readPresetValues(this._settings));
+            updating = true;
+            row.selected = ids.indexOf(current);
+            updating = false;
+            const preset = PRESETS.find(p => p.id === current);
+            row.subtitle = preset
+                ? _(preset.summary)
+                : _('Your own combination of the options below');
+        };
+
+        row.connect('notify::selected', () => {
+            if (updating)
+                return;
+            const preset = PRESETS.find(p => p.id === ids[row.selected]);
+            // "Personalizado" não é algo que se aplica: é o que sobra.
+            if (!preset) {
+                sync();
+                return;
+            }
+            applyPreset(this._settings, preset);
+        });
+
+        const handler = this._settings.connect('changed', (_s, key) => {
+            if (key !== 'palette')
+                sync();
+        });
+        row.connect('destroy', () => this._settings.disconnect(handler));
+
+        sync();
+        group.add(row);
+        this.add(group);
+    }
+
+    _addSurfacesGroup() {
+        const _ = this._;
+        const group = new Adw.PreferencesGroup({
+            title: _('Menus, OSD and dock'),
+            description: _('Extends the bar colours to other surfaces. Each one keeps the look of the shell theme until turned on.'),
+        });
+
+        group.add(switchRow({
+            title: _('Style popup menus'),
+            subtitle: _('Panel menus, the logo menu, the applications menu and the cards'),
+            settings: this._settings,
+            key: 'style-menus',
+        }));
+        group.add(switchRow({
+            title: _('Style on-screen displays'),
+            subtitle: _('Volume and brightness pop-ups; the level bar takes the accent'),
+            settings: this._settings,
+            key: 'style-osd',
+        }));
+        group.add(switchRow({
+            title: _('Style the dock'),
+            subtitle: _('Background colour and running indicators; opacity stays in the dock settings'),
+            settings: this._settings,
+            key: 'style-dock',
+        }));
+        group.add(spinRow({
+            title: _('Menu and OSD corner radius'),
+            settings: this._settings,
+            key: 'menu-radius',
+            min: 0,
+            max: 30,
+            step: 1,
+            digits: 0,
+        }));
+        group.add(spinRow({
+            title: _('Menu and OSD opacity'),
+            settings: this._settings,
+            key: 'menu-background-alpha',
+            min: 0.3,
+            max: 1,
+            step: 0.01,
+            digits: 2,
+        }));
+        group.add(spinRow({
+            title: _('Dock corner radius'),
+            settings: this._settings,
+            key: 'dock-radius',
+            min: 0,
+            max: 30,
+            step: 1,
+            digits: 0,
+        }));
+
+        this.add(group);
+    }
+
+    _addTilingGroup() {
+        const _ = this._;
+        const group = new Adw.PreferencesGroup({
+            title: _('Tiling borders'),
+            description: _('Border of the focused window. Used by the tiling module, which is not implemented yet.'),
+        });
+
+        group.add(colorRow({
+            title: _('Border colour'),
+            subtitle: _('Clear to follow the accent colour'),
+            settings: this._settings,
+            key: 'tiling-border-color',
+            fallback: '#9A9996',
+            allowEmpty: true,
+        }));
+        group.add(spinRow({
+            title: _('Border thickness'),
+            settings: this._settings,
+            key: 'tiling-border-width',
+            min: 0,
+            max: 12,
+        }));
+        group.add(spinRow({
+            title: _('Border corner radius'),
+            settings: this._settings,
+            key: 'tiling-border-radius',
+            min: 0,
+            max: 40,
+        }));
+
+        this.add(group);
     }
 
     _addShapeGroup() {

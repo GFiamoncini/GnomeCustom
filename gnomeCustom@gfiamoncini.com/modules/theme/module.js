@@ -14,17 +14,11 @@
  */
 
 import {Module} from '../../core/module.js';
-import {buildTokens} from '../../theme/engine/tokens.js';
+import {buildTokens, SETTINGS_KEYS} from '../../theme/engine/tokens.js';
 import {generateStylesheet} from '../../theme/engine/stylesheet.js';
 
-/** Chaves que, ao mudar, exigem regerar a folha. */
-const STYLE_KEYS = [
-    'panel-style', 'panel-height', 'panel-margin-top', 'panel-margin-bottom',
-    'panel-margin-sides', 'panel-radius', 'panel-border-width',
-    'panel-border-alpha', 'panel-background-alpha', 'accent-color',
-    'background-color', 'foreground-color', 'palette-from-wallpaper',
-    'palette', 'palette-slot', 'fitts-widgets',
-];
+/** Chaves que, ao mudar, exigem regerar a folha: a lista única do engine. */
+const STYLE_KEYS = Object.keys(SETTINGS_KEYS);
 
 /** Espera antes de regerar, para agrupar mudanças em rajada. */
 const REBUILD_DEBOUNCE_MS = 120;
@@ -39,12 +33,13 @@ export class ThemeModule extends Module {
     }
 
     static get requires() {
-        return ['shellTheme', 'wallpaper'];
+        return ['shellTheme', 'wallpaper', 'style'];
     }
 
     enable() {
         this._theme = this.service('shellTheme');
         this._wallpaper = this.service('wallpaper');
+        this._style = this.service('style');
         this._settings = this.settings.child('theme');
         this._rebuildToken = undefined;
 
@@ -71,9 +66,11 @@ export class ThemeModule extends Module {
         this._theme?.clear().catch(e =>
             this.log.error('falha ao remover a folha de estilo', e));
         this._theme?.restoreUserTheme();
+        this._style?.clear();
 
         this._theme = null;
         this._wallpaper = null;
+        this._style = null;
         this._settings = null;
     }
 
@@ -97,12 +94,15 @@ export class ThemeModule extends Module {
         const tokens = buildTokens(this._readConfig());
         const css = generateStylesheet(tokens);
 
+        // Quem não se estiliza por CSS (o dock) recebe os tokens direto.
+        this._style?.publish(tokens);
+
         this._theme?.apply(css)
             .then(changed => {
                 if (changed) {
                     this.log.debug(tokens.enabled
-                        ? `folha regerada (${css.length} bytes)`
-                        : 'estilo do painel desligado');
+                        ? `folha regerada (${css.length} bytes; ${describeSurfaces(tokens)})`
+                        : 'nenhuma superfície estilizada');
                 }
             })
             .catch(e => this.log.error('falha ao aplicar o estilo', e));
@@ -145,26 +145,30 @@ export class ThemeModule extends Module {
             this.log.error(`falha ao aplicar o tema de Shell '${name}'`, e));
     }
 
-    /** Traduz o GSettings para o objeto simples que o engine espera. */
+    /**
+     * Traduz o GSettings para o objeto simples que o engine espera.
+     *
+     * `get_value().recursiveUnpack()` serve a todos os tipos do esquema (enum
+     * volta como o nick), então a leitura segue a lista única sem casos à parte.
+     */
     _readConfig() {
-        const s = this._settings;
-        return {
-            panelStyle: s.get_string('panel-style'),
-            panelHeight: s.get_uint('panel-height'),
-            marginTop: s.get_double('panel-margin-top'),
-            marginBottom: s.get_double('panel-margin-bottom'),
-            marginSides: s.get_double('panel-margin-sides'),
-            radius: s.get_double('panel-radius'),
-            borderWidth: s.get_double('panel-border-width'),
-            borderAlpha: s.get_double('panel-border-alpha'),
-            backgroundAlpha: s.get_double('panel-background-alpha'),
-            accentColor: s.get_string('accent-color'),
-            backgroundColor: s.get_string('background-color'),
-            foregroundColor: s.get_string('foreground-color'),
-            paletteFromWallpaper: s.get_boolean('palette-from-wallpaper'),
-            palette: s.get_strv('palette'),
-            paletteSlot: s.get_uint('palette-slot'),
-            fittsWidgets: s.get_boolean('fitts-widgets'),
-        };
+        const config = {};
+        for (const [key, name] of Object.entries(SETTINGS_KEYS))
+            config[name] = this._settings.get_value(key).recursiveUnpack();
+        return config;
     }
+}
+
+/** Resumo das superfícies ativas, para o log de depuração. */
+function describeSurfaces(tokens) {
+    const on = [];
+    if (tokens.panel.enabled)
+        on.push('barra');
+    if (tokens.menu.enabled)
+        on.push('menus');
+    if (tokens.osd.enabled)
+        on.push('OSD');
+    if (tokens.dock.enabled)
+        on.push('dock');
+    return on.join(', ');
 }

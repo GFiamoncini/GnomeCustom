@@ -162,11 +162,30 @@ Entrega: extensão que carrega, não faz nada visível, e descarrega sem deixar 
       pt-BR 263/263
 - **Aceite:** Impatience pode ser desabilitado.
 
-## Fase 7 — Theme Engine completo
-- [ ] Tokens para dock, menus, OSD, bordas de tiling
-- [ ] Presets (Adwaita, Dark, Minimal, Fedora, Custom)
-- [ ] Regeneração assíncrona e *debounced* na troca de wallpaper
-- **Aceite:** um preset altera painel, dock, menus e OSD de forma coerente.
+## Fase 7 — Theme Engine completo ✅
+- [x] Tokens para menus, OSD, dock e bordas de tiling, **todos derivados da mesma cor base**
+      da barra (menus e OSD um passo afastados, para profundidade). Contraste AA garantido em
+      cada superfície
+- [x] Superfícies ligadas por chave (`style-menus`, `style-osd`, `style-dock`), **desligadas
+      por padrão** — o baseline do usuário não tematiza menus, OSD nem dock
+- [x] CSS por superfície, com seletores conferidos no `gnome-shell-dark.css` do gresource do
+      GNOME 49 (`.popup-menu-content`, `.popup-menu-item`, `.osd-window .level` com
+      `-barlevel-*`); com cor, os ícones do dock perdem o disco `#38383b` do tema
+- [x] Dock: cor publicada pelo novo `services/theme/style.js` e aplicada pelo próprio dock com
+      a opacidade dele — estilo inline vence folha, e o dock segue sem depender do módulo de tema
+- [x] Presets como dados puros (`theme/presets/presets.js`): Papel de parede (= defaults do
+      esquema = baseline), Adwaita, Escuro, Mínimo, Fedora; "Personalizado" é **derivado** dos
+      valores, sem chave de estado que possa dessincronizar
+- [x] Seletor de preset nas preferências, mais os grupos de superfícies e de bordas de tiling
+- [x] Regeneração assíncrona e *debounced* (já existia) + **correção**: trocar o papel de parede
+      durante uma extração era descartado; agora vira uma nova rodada
+- [x] Lista única chave→configuração (`SETTINGS_KEYS`): o módulo lê, observa e os presets são
+      validados por ela
+- [x] 19 testes novos do núcleo (117) e 5 passos novos das prefs; pt-BR 308/308
+- [x] **Aceite verificado** em GNOME Shell 49.9 headless: preset Fedora com barra, menu do
+      logotipo, OSD de volume e dock coerentes (conferido por captura e amostragem de pixels);
+      troca a quente para o preset Escuro; zero CRITICAL; limpeza "nada pendente"
+- **Aceite:** um preset altera painel, dock, menus e OSD de forma coerente. ✅
 
 ## Fase 8 — Tiling
 Pesquisa antecipada a partir da Fase 4 (estudo do Forge em paralelo, sem código).
@@ -199,7 +218,7 @@ Pesquisa antecipada a partir da Fase 4 (estudo do Forge em paralelo, sem código
 | **M2** (parcial) | Fase 2 ✅ | Open Bar, Logo Menu, apps-menu, User Themes |
 | **M2** ✅ | Fase 3 ✅ | + BT Battery, OSD Volume, Spotify Controls |
 | **M3 (MVP)** ✅ | Fase 4–6 ✅ | + Dash to Dock, GNOME UI Tune, Impatience |
-| **M4** | Fases 7–8 | + Forge → **todas as 11** |
+| **M4** | Fase 7 ✅, Fase 8 | + Forge → **todas as 11** |
 | **M5** | Fase 9 | migração, presets, i18n |
 
 O MVP da §33 do briefing corresponde a **M3**. O tiling entra em **M4**, conforme previsto.

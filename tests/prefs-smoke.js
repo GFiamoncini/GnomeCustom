@@ -77,6 +77,8 @@ const metadata = JSON.parse(new TextDecoder().decode(
 
 const {GeneralPage} = await import(`../${UUID}/prefs/pages/general.js`);
 const {ThemePage} = await import(`../${UUID}/prefs/pages/theme.js`);
+const Presets = await import(`../${UUID}/theme/presets/presets.js`);
+const {applyPreset, readPresetValues} = await import(`../${UUID}/theme/presets/apply.js`);
 const {PanelPage} = await import(`../${UUID}/prefs/pages/panel.js`);
 const {MenuPage} = await import(`../${UUID}/prefs/pages/menu.js`);
 const {MediaPage} = await import(`../${UUID}/prefs/pages/media.js`);
@@ -175,6 +177,91 @@ step('ThemePage lista a paleta em cache', () => {
     if (!titles.includes('#602011'))
         throw new Error(`a paleta não apareceu: ${titles.join(' | ')}`);
     settings.reset('palette');
+});
+
+step('presets: aplicar grava as 24 chaves com o tipo certo e de uma vez', () => {
+    const settings = childSettings('theme');
+    const fedora = Presets.findPreset('fedora');
+
+    let changes = 0;
+    const handler = settings.connect('changed', () => changes++);
+    applyPreset(settings, fedora);
+    settings.disconnect(handler);
+
+    const values = readPresetValues(settings);
+    if (Presets.matchPreset(values) !== 'fedora')
+        throw new Error(`depois de aplicar, o preset lido foi '${Presets.matchPreset(values)}'`);
+    if (settings.get_uint('panel-height') !== 30 || settings.get_double('panel-margin-sides') !== 9)
+        throw new Error('tipos u/d não foram gravados corretamente');
+    if (settings.get_string('panel-style') !== 'floating')
+        throw new Error('enum não foi gravado');
+    if (changes === 0)
+        throw new Error('nenhuma notificação de mudança');
+
+    for (const key of Presets.PRESET_KEYS)
+        settings.reset(key);
+    if (Presets.matchPreset(readPresetValues(settings)) !== 'default')
+        throw new Error('os defaults do esquema deveriam casar com o preset "default"');
+});
+
+step('presets: aplicar não deixa o objeto de quem chama em modo de atraso', () => {
+    const settings = childSettings('theme');
+    applyPreset(settings, Presets.findPreset('minimal'));
+
+    // Uma edição comum depois do preset precisa chegar ao backend.
+    settings.set_uint('panel-height', 41);
+    const other = childSettings('theme');
+    if (other.get_uint('panel-height') !== 41)
+        throw new Error(`edição ficou pendente: outro objeto leu ${other.get_uint('panel-height')}`);
+    if (settings.delay_apply)
+        throw new Error('o objeto de quem chama ficou em delay-apply');
+
+    for (const key of Presets.PRESET_KEYS)
+        settings.reset(key);
+});
+
+step('ThemePage: escolher preset aplica, e editar uma opção vira "Personalizado"', () => {
+    const settings = childSettings('theme');
+    const page = new ThemePage(settings, _);
+
+    const combo = descendants(page).find(w => w instanceof Adw.ComboRow && w.title === 'Look');
+    if (!combo)
+        throw new Error('linha de preset não encontrada');
+
+    const ids = [...Presets.PRESETS.map(p => p.id), Presets.CUSTOM_PRESET];
+    if (combo.model.get_n_items() !== ids.length)
+        throw new Error(`esperava ${ids.length} opções, achei ${combo.model.get_n_items()}`);
+    if (ids[combo.selected] !== 'default')
+        throw new Error(`com os defaults deveria mostrar "default", mostrou '${ids[combo.selected]}'`);
+
+    combo.selected = ids.indexOf('dark');
+    if (settings.get_string('background-color').toUpperCase() !== '#1E1E1E' ||
+        !settings.get_boolean('style-menus'))
+        throw new Error('escolher "dark" não gravou os valores do preset');
+
+    settings.set_uint('panel-height', 44);
+    if (ids[combo.selected] !== Presets.CUSTOM_PRESET)
+        throw new Error(`editar a altura deveria virar personalizado, ficou '${ids[combo.selected]}'`);
+
+    // Escolher "Personalizado" não muda nada.
+    combo.selected = ids.indexOf(Presets.CUSTOM_PRESET);
+    if (settings.get_uint('panel-height') !== 44)
+        throw new Error('"Personalizado" não deveria gravar valores');
+
+    for (const key of Presets.PRESET_KEYS)
+        settings.reset(key);
+});
+
+step('ThemePage traz as linhas de superfícies e de bordas de tiling', () => {
+    const page = new ThemePage(childSettings('theme'), _);
+    const titles = descendants(page)
+        .filter(w => w instanceof Adw.PreferencesRow)
+        .map(w => w.title);
+    for (const wanted of ['Style popup menus', 'Style on-screen displays', 'Style the dock',
+        'Border colour', 'Border corner radius']) {
+        if (!titles.includes(wanted))
+            throw new Error(`linha ausente: ${wanted}`);
+    }
 });
 
 step('PanelPage é construída', () => {

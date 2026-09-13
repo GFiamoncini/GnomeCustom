@@ -225,3 +225,8 @@ Estimativa: 90–120 chaves na v1.
 | AD-16 | Uma única folha gerada, em caminho estável no diretório de execução | reescrever o mesmo arquivo com `unload`+`load` é o caminho que o Open Bar validou, e não acumula arquivos |
 | AD-17 | O logotipo da distribuição vem do campo `LOGO` do `os-release` | nenhuma imagem é embarcada, o que também dispensa auditar licença de ícones |
 | AD-18 | Regras de tiling e ações de energia passam por serviços do GNOME (`SystemActions`), não por `systemctl` | respeita inibidores, polkit e disponibilidade real |
+| AD-19 | Menus, OSD e dock partem da **mesma** cor base da barra | é o que faz um preset parecer uma coisa só; superfícies elevadas só se afastam um passo |
+| AD-20 | Superfícies além da barra são opt-in e nascem desligadas | o baseline do usuário não as tematiza; o motor só assume o que for pedido |
+| AD-21 | Tokens para quem não se estiliza por CSS passam por `services/theme/style.js` | estilo inline vence folha; o consumidor lê um valor que pode ser `null`, sem saber se o módulo de tema existe (§6) |
+| AD-22 | O preset em uso é derivado dos valores, não armazenado | editar uma opção vira "Personalizado" sozinho; não há estado para dessincronizar |
+| AD-23 | `SETTINGS_KEYS` é a lista única chave→configuração do tema | leitura, observação e validação de presets seguem uma fonte só |

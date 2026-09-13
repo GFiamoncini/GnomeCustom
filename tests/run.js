@@ -30,8 +30,11 @@ const {MODULES_INFO} = await import(`${EXT}/lib/modules-info.js`);
 const {KNOWN_EXTENSIONS} = await import(`${EXT}/lib/known-extensions.js`);
 const Color = await import(`${EXT}/theme/engine/color.js`);
 const {quantize} = await import(`${EXT}/theme/engine/quantize.js`);
-const {buildTokens, DEFAULT_CONFIG} = await import(`${EXT}/theme/engine/tokens.js`);
+const {buildTokens, DEFAULT_CONFIG, SETTINGS_KEYS} = await import(`${EXT}/theme/engine/tokens.js`);
 const {generateStylesheet} = await import(`${EXT}/theme/engine/stylesheet.js`);
+const Presets = await import(`${EXT}/theme/presets/presets.js`);
+const {StyleService} = await import(`${EXT}/services/theme/style.js`);
+const {WallpaperService} = await import(`${EXT}/services/system/wallpaper.js`);
 const {parseOsRelease} = await import(`${EXT}/services/system/distro.js`);
 const {VolumeModule, formatLevel} = await import(`${EXT}/modules/volume/module.js`);
 const Mpris = await import(`${EXT}/lib/mpris.js`);
@@ -926,6 +929,369 @@ test('stylesheet: DEFAULT_CONFIG e o esquema não divergem', () => {
     }
 });
 
+// ------------------------------------------------- theme engine: fase 7
+
+/** Lê os defaults do esquema do tema, já convertidos para JS. */
+function themeSchemaDefaults() {
+    const file = Gio.File.new_for_path(GLib.build_filenamev([GLib.get_current_dir(),
+        'gnomeCustom@gfiamoncini.com', 'schemas',
+        'org.gnome.shell.extensions.gnomecustom.theme.gschema.xml']));
+    const xml = new TextDecoder().decode(file.load_contents(null)[1]);
+
+    const keys = {};
+    const re = /<key name="([^"]+)"(?: type="([^"]+)")?(?: enum="[^"]+")?>([\s\S]*?)<\/key>/g;
+    for (const [, name, type, body] of xml.matchAll(re)) {
+        const raw = /<default>([\s\S]*?)<\/default>/.exec(body)[1].trim();
+        const range = /<range min="([^"]+)" max="([^"]+)"\/>/.exec(body);
+        let value;
+        if (type === 'b')
+            value = raw === 'true';
+        else if (type === 'u' || type === 'd' || type === 'i')
+            value = Number(raw);
+        else if (type === 'as')
+            value = [];
+        else
+            value = raw.replace(/^'|'$/g, '');   // 's' e enum
+        keys[name] = {
+            type: type ?? 'enum',
+            value,
+            min: range ? Number(range[1]) : null,
+            max: range ? Number(range[2]) : null,
+        };
+    }
+
+    // Nicks aceitos por cada enum referenciado.
+    const enums = {};
+    for (const [, id, body] of xml.matchAll(/<enum id="([^"]+)">([\s\S]*?)<\/enum>/g))
+        enums[id] = [...body.matchAll(/nick="([^"]+)"/g)].map(m => m[1]);
+    for (const [, name, enumId] of xml.matchAll(/<key name="([^"]+)" enum="([^"]+)"/g))
+        keys[name].nicks = enums[enumId];
+
+    return keys;
+}
+
+/** Converte valores por chave do esquema em configuração do engine. */
+function configFromKeys(values) {
+    const config = {};
+    for (const [key, name] of Object.entries(SETTINGS_KEYS)) {
+        if (key in values)
+            config[name] = values[key];
+    }
+    return config;
+}
+
+test('fase 7: superfícies novas nascem desligadas (baseline intacto)', () => {
+    const t = buildTokens({palette: ['#602011']});
+    assertEqual([t.menu.enabled, t.osd.enabled, t.dock.enabled], [false, false, false]);
+
+    const css = generateStylesheet(t);
+    for (const selector of ['.popup-menu-content', '.osd-window', '.gnomecustom-dock'])
+        assert(!css.includes(selector), `o baseline não deveria estilizar ${selector}`);
+});
+
+test('fase 7: menus, OSD e dock partem da mesma cor base da barra', () => {
+    const t = buildTokens({
+        palette: ['#294172'], styleMenus: true, styleOsd: true, styleDock: true,
+    });
+
+    assertEqual(t.dock.backgroundRgb, Color.parseHex(t.panel.backgroundHex),
+        'o dock deveria usar exatamente a cor da barra:');
+
+    // Menus e OSD ficam um passo afastados, mas próximos da base.
+    for (const surface of [t.menu.background, t.osd.background]) {
+        const [r, g, b] = /rgba\((\d+), (\d+), (\d+)/.exec(surface).slice(1).map(Number);
+        const base = Color.parseHex(t.panel.backgroundHex);
+        const distance = Math.max(Math.abs(r - base[0]), Math.abs(g - base[1]), Math.abs(b - base[2]));
+        assert(distance > 0 && distance < 40, `superfície ${surface} longe demais da base`);
+    }
+    assertEqual(t.osd.levelFill, t.accent.hex, 'a barra de nível usa o destaque:');
+    assertEqual(t.dock.dotFocused, t.accent.hex, 'o ponto focado usa o destaque:');
+});
+
+test('fase 7: texto de menus e OSD passa do contraste AA', () => {
+    for (const color of ['#602011', '#eeeeee', '#7f7f7f', '#1c71d8', '#294172', '#000000']) {
+        const t = buildTokens({palette: [color], styleMenus: true, styleOsd: true});
+        for (const [name, section] of [['menu', t.menu], ['osd', t.osd]]) {
+            const bg = /rgba\((\d+), (\d+), (\d+)/.exec(section.background).slice(1).map(Number);
+            const ratio = Color.contrastRatio(bg, Color.parseHex(section.foreground));
+            assert(ratio >= 4.5, `${name} sobre ${color}: contraste ${ratio.toFixed(2)}`);
+        }
+    }
+});
+
+test('fase 7: sem cor resolvida, menus e OSD recebem só geometria (AD-14)', () => {
+    const t = buildTokens({palette: [], styleMenus: true, styleOsd: true, styleDock: true});
+    assert(t.menu.enabled && t.menu.background === null, 'menu sem cor');
+    assertEqual(t.dock.backgroundRgb, null, 'dock sem cor:');
+
+    const css = generateStylesheet(t);
+    assert(css.includes('.popup-menu-content'), 'o raio do menu deveria sair');
+    const colorLines = css.split('\n').filter(line =>
+        /background-color|-barlevel|(^|\s)color:/.test(line) &&
+        !line.includes('#panel'));
+    assertEqual(colorLines, [], 'nenhuma cor fora da barra deveria sair:');
+});
+
+test('fase 7: OSD usa as propriedades -barlevel e o dock não emite fundo', () => {
+    const css = generateStylesheet(buildTokens({
+        palette: ['#294172'], styleOsd: true, styleDock: true,
+    }));
+    assert(css.includes('-barlevel-active-background-color'), 'barra de nível ausente');
+
+    const dockBackground = /\.gnomecustom-dock #dash \.dash-background \{([^}]*)\}/.exec(css);
+    assert(dockBackground !== null, 'bloco do fundo do dock ausente');
+    assert(!dockBackground[1].includes('background-color'),
+        'o fundo do dock é estilo próprio do ator; a folha não deve disputá-lo');
+});
+
+test('fase 7: com cor, os ícones do dock perdem o disco cinza do tema', () => {
+    const colored = generateStylesheet(buildTokens({palette: ['#294172'], styleDock: true}));
+    assert(/\.overview-tile \.overview-icon \{\s*background-color: transparent !important;/.test(colored),
+        'o disco do tema deveria ficar transparente');
+    assert(colored.includes('.overview-tile:hover .overview-icon'), 'realce de hover ausente');
+
+    const plain = generateStylesheet(buildTokens({palette: [], styleDock: true}));
+    assert(!plain.includes('.overview-icon'), 'sem cor resolvida o tema continua decidindo (AD-14)');
+});
+
+test('fase 7: barra desligada não impede menus estilizados', () => {
+    const css = generateStylesheet(buildTokens({
+        panelStyle: 'none', palette: ['#294172'], styleMenus: true,
+    }));
+    assert(css.includes('.popup-menu-content'), 'menus deveriam sair');
+    assert(!css.includes('#panel'), 'a barra não deveria sair');
+});
+
+test('fase 7: todas as superfícies ligadas continuam com !important', () => {
+    const css = generateStylesheet(buildTokens({
+        palette: ['#294172'], styleMenus: true, styleOsd: true, styleDock: true,
+    }));
+    const without = css.split('\n')
+        .filter(line => line.trim().endsWith(';') && !line.includes('!important'));
+    assertEqual(without, [], 'declarações sem !important:');
+});
+
+test('fase 7: borda do tiling segue o baseline e, vazia, o destaque', () => {
+    const baseline = buildTokens({});
+    assertEqual([baseline.tiling.border, baseline.tiling.width, baseline.tiling.radius],
+        ['#9a9996', 3, 14], 'baseline do Forge:');
+    assertEqual(baseline.tiling.followsAccent, false);
+
+    const follow = buildTokens({tilingBorderColor: '', accentColor: '#51A2DA'});
+    assertEqual(follow.tiling.border, '#51a2da');
+    assert(follow.tiling.followsAccent, 'deveria seguir o destaque');
+});
+
+test('fase 7: SETTINGS_KEYS, PRESET_KEYS e o esquema concordam', () => {
+    const schema = themeSchemaDefaults();
+    for (const key of Object.keys(SETTINGS_KEYS))
+        assert(key in schema, `chave do engine ausente no esquema: ${key}`);
+
+    for (const key of Presets.PRESET_KEYS)
+        assert(key in SETTINGS_KEYS, `chave de preset fora do engine: ${key}`);
+
+    const notInPresets = Object.keys(SETTINGS_KEYS)
+        .filter(key => !Presets.PRESET_KEYS.includes(key));
+    assertEqual(notInPresets, ['palette'], 'só o cache da paleta fica fora dos presets:');
+
+    // Toda chave de estilo do esquema é conhecida pelo engine (exceto o tema de Shell).
+    const unknown = Object.keys(schema)
+        .filter(key => !(key in SETTINGS_KEYS) && key !== 'shell-theme');
+    assertEqual(unknown, [], 'chaves do esquema que o engine ignora:');
+});
+
+test('fase 7: DEFAULT_CONFIG reproduz todos os defaults do esquema', () => {
+    const schema = themeSchemaDefaults();
+    for (const [key, name] of Object.entries(SETTINGS_KEYS)) {
+        const expected = schema[key].value;
+        const actual = DEFAULT_CONFIG[name];
+        assertEqual(typeof actual === 'string' ? actual.toLowerCase() : actual,
+            typeof expected === 'string' ? expected.toLowerCase() : expected,
+            `default de ${key}:`);
+    }
+});
+
+test('presets: o preset "default" é exatamente o esquema (e o baseline)', () => {
+    const schema = themeSchemaDefaults();
+    const preset = Presets.findPreset('default');
+    for (const key of Presets.PRESET_KEYS) {
+        const a = preset.values[key];
+        const b = schema[key].value;
+        assertEqual(typeof a === 'string' ? a.toLowerCase() : a,
+            typeof b === 'string' ? b.toLowerCase() : b, `preset default, ${key}:`);
+    }
+});
+
+test('presets: cada preset define todas as chaves com valores válidos', () => {
+    const schema = themeSchemaDefaults();
+    const ids = new Set();
+
+    for (const preset of Presets.PRESETS) {
+        assert(!ids.has(preset.id), `id repetido: ${preset.id}`);
+        ids.add(preset.id);
+
+        assertEqual(Object.keys(preset.values).sort(), [...Presets.PRESET_KEYS].sort(),
+            `chaves do preset ${preset.id}:`);
+
+        for (const [key, value] of Object.entries(preset.values)) {
+            const spec = schema[key];
+            const where = `${preset.id}.${key}`;
+            if (spec.type === 'b') {
+                assertEqual(typeof value, 'boolean', `${where} tipo:`);
+            } else if (['u', 'd', 'i'].includes(spec.type)) {
+                assertEqual(typeof value, 'number', `${where} tipo:`);
+                if (spec.type === 'u')
+                    assert(Number.isInteger(value) && value >= 0, `${where} não é uint`);
+                if (spec.min !== null)
+                    assert(value >= spec.min && value <= spec.max,
+                        `${where}=${value} fora de [${spec.min}, ${spec.max}]`);
+            } else if (spec.nicks) {
+                assert(spec.nicks.includes(value), `${where}='${value}' não é nick válido`);
+            } else {
+                assertEqual(typeof value, 'string', `${where} tipo:`);
+                if (key.endsWith('color') && value !== '')
+                    assert(Color.parseHex(value) !== null, `${where} cor inválida: ${value}`);
+            }
+        }
+    }
+    assert(!ids.has(Presets.CUSTOM_PRESET), 'nenhum preset pode usar o id reservado');
+});
+
+test('presets: matchPreset reconhece, detecta edição e ignora caixa das cores', () => {
+    const fedora = {...Presets.findPreset('fedora').values};
+    assertEqual(Presets.matchPreset(fedora), 'fedora');
+
+    assertEqual(Presets.matchPreset({...fedora, 'accent-color': '#51a2da'}), 'fedora',
+        'cor em minúsculas:');
+    assertEqual(Presets.matchPreset({...fedora, 'panel-height': 31}), Presets.CUSTOM_PRESET,
+        'um valor editado vira personalizado:');
+    assertEqual(Presets.matchPreset({}), Presets.CUSTOM_PRESET, 'valores ausentes:');
+});
+
+test('CRITÉRIO fase 7: presets alteram barra, dock, menus e OSD de forma coerente', () => {
+    for (const id of ['dark', 'minimal', 'fedora']) {
+        const t = buildTokens(configFromKeys(Presets.findPreset(id).values));
+
+        assert(t.panel.enabled && t.menu.enabled && t.osd.enabled && t.dock.enabled,
+            `${id}: as quatro superfícies deveriam estar ligadas`);
+        assert(t.panel.background && t.menu.background && t.osd.background,
+            `${id}: todas deveriam ter cor resolvida`);
+        assertEqual(t.dock.backgroundRgb, Color.parseHex(t.panel.backgroundHex),
+            `${id}: dock e barra com a mesma base:`);
+
+        // Mesmo destaque em todo lugar onde ele aparece.
+        const accentUses = [t.osd.levelFill, t.dock.dotFocused];
+        assert(accentUses.every(hex => hex === t.accent.hex), `${id}: destaque divergente`);
+
+        // Legibilidade em cada superfície.
+        const ratio = (bg, fg) => Color.contrastRatio(
+            typeof bg === 'string' && bg.startsWith('#') ? Color.parseHex(bg)
+                : /rgba\((\d+), (\d+), (\d+)/.exec(bg).slice(1).map(Number),
+            Color.parseHex(fg));
+        assert(ratio(t.panel.backgroundHex, t.panel.foreground) >= 4.5, `${id}: barra ilegível`);
+        assert(ratio(t.menu.background, t.menu.foreground) >= 4.5, `${id}: menu ilegível`);
+        assert(ratio(t.osd.background, t.osd.foreground) >= 4.5, `${id}: OSD ilegível`);
+
+        const css = generateStylesheet(t);
+        for (const selector of ['#panel {', '.popup-menu-content', '.osd-window', '.gnomecustom-dock-dot'])
+            assert(css.includes(selector), `${id}: ${selector} ausente no CSS`);
+    }
+
+    // E o preset Adwaita devolve tudo ao tema: nada é gerado.
+    const adwaita = buildTokens(configFromKeys(Presets.findPreset('adwaita').values));
+    assertEqual(generateStylesheet(adwaita), '', 'Adwaita não deveria gerar CSS:');
+});
+
+// ----------------------------------------------------------------- estilo
+
+test('style: publicar, observar, retirar e isolar falha de observador', () => {
+    const service = new StyleService({logger: new Logger({level: 'silent', sink: new FakeSink()})});
+    const seen = [];
+    service.onChanged(() => {
+        throw new Error('observador quebrado');
+    });
+    const unsubscribe = service.onChanged(tokens => seen.push(tokens));
+
+    assertEqual(service.tokens, null, 'começa vazio:');
+    service.publish({dock: {backgroundRgb: [1, 2, 3]}});
+    assertEqual(service.tokens.dock.backgroundRgb, [1, 2, 3]);
+
+    service.clear();
+    assertEqual(service.tokens, null, 'após clear:');
+    service.clear();
+    assertEqual(seen.length, 2, 'clear repetido não notifica de novo:');
+
+    unsubscribe();
+    service.publish({});
+    assertEqual(seen.length, 2, 'observador removido:');
+    service.destroy();
+});
+
+// ------------------------------------------------------------- papel de parede
+
+function makeWallpaper() {
+    const background = new FakeSettings({
+        'picture-uri': 'file:///fake/a.png', 'picture-uri-dark': 'file:///fake/a.png',
+    });
+    const iface = new FakeSettings({'color-scheme': 'prefer-dark'});
+    const service = new WallpaperService({
+        logger: new Logger({level: 'silent', sink: new FakeSink()}),
+        backgroundSettings: background,
+        interfaceSettings: iface,
+    });
+    return {service, background, iface};
+}
+
+test('papel de parede: rajada de mudanças agenda uma única extração', () => {
+    const {service, background} = makeWallpaper();
+
+    for (let i = 0; i < 5; i++)
+        background.set('picture-uri-dark', `file:///fake/${i}.png`);
+
+    assertEqual(service._signals.pending.sources, 1, 'temporizadores pendentes:');
+    service.destroy();
+    assertEqual(background.handlerCount, 0, 'sinais após destroy:');
+});
+
+test('papel de parede: troca durante a extração não é descartada', async () => {
+    const {service} = makeWallpaper();
+
+    // Extração controlada: só termina quando o teste manda.
+    let finish;
+    service._samplePixels = () => new Promise(resolve => {
+        finish = () => resolve([[200, 30, 40], [10, 10, 10], [200, 30, 40]]);
+    });
+    let rescheduled = 0;
+    service._schedule = () => rescheduled++;
+
+    const first = service.extract({force: true});
+
+    // Pedido que chega no meio da primeira extração.
+    await service.extract({force: true});
+    assertEqual(rescheduled, 0, 'ainda não deveria reagendar:');
+
+    finish();
+    const palette = await first;
+    assert(palette.length > 0, 'a primeira extração deveria produzir paleta');
+    assertEqual(rescheduled, 1, 'o pedido do meio deveria virar uma nova rodada:');
+    service.destroy();
+});
+
+test('papel de parede: extração sem mudanças não roda de novo', async () => {
+    const {service} = makeWallpaper();
+    let calls = 0;
+    service._samplePixels = () => {
+        calls++;
+        return Promise.resolve([[120, 60, 30]]);
+    };
+
+    await service.extract({force: true});
+    await service.extract();
+
+    assertEqual(calls, 1, 'a mesma URI não deveria ser relida:');
+    service.destroy();
+});
+
 // -------------------------------------------------------------- os-release
 
 test('os-release: interpreta o formato', () => {
@@ -1580,4 +1946,4 @@ test('dados: uuid de extensão conhecida não se repete', () => {
     assertEqual(uuids.length, new Set(uuids).size, 'uuids duplicados:');
 });
 
-imports.system.exit(run());
+imports.system.exit(await run());

@@ -29,6 +29,7 @@ import {MprisService} from './services/mpris/players.js';
 import {CoverArtService} from './services/system/cover-art.js';
 import {DistroService} from './services/system/distro.js';
 import {WallpaperService} from './services/system/wallpaper.js';
+import {StyleService} from './services/theme/style.js';
 
 import {ThemeModule} from './modules/theme/module.js';
 import {PanelModule} from './modules/panel/module.js';
@@ -86,6 +87,7 @@ export default class GnomeCustomExtension extends Extension {
                 coverArt: ({logger}) => new CoverArtService({logger}),
                 distro: ({logger}) => new DistroService({logger}),
                 wallpaper: ({logger}) => new WallpaperService({logger}),
+                style: ({logger}) => new StyleService({logger}),
             },
             modules: MODULES,
         });

@@ -30,6 +30,8 @@ import {CoverArtService} from './services/system/cover-art.js';
 import {DistroService} from './services/system/distro.js';
 import {WallpaperService} from './services/system/wallpaper.js';
 import {StyleService} from './services/theme/style.js';
+import {WindowsService} from './services/shell/windows.js';
+import {QuickSettingsService} from './services/shell/quick-settings.js';
 
 import {ThemeModule} from './modules/theme/module.js';
 import {PanelModule} from './modules/panel/module.js';
@@ -40,6 +42,7 @@ import {MediaModule} from './modules/media/module.js';
 import {DockModule} from './modules/dock/module.js';
 import {OverviewModule} from './modules/overview/module.js';
 import {AnimationModule} from './modules/animation/module.js';
+import {TilingModule} from './modules/tiling/module.js';
 import {DiagnosticsModule} from './modules/diagnostics/module.js';
 
 /**
@@ -58,6 +61,7 @@ const MODULES = [
     DockModule,
     OverviewModule,
     AnimationModule,
+    TilingModule,
     DiagnosticsModule,
 ];
 
@@ -88,6 +92,8 @@ export default class GnomeCustomExtension extends Extension {
                 distro: ({logger}) => new DistroService({logger}),
                 wallpaper: ({logger}) => new WallpaperService({logger}),
                 style: ({logger}) => new StyleService({logger}),
+                windows: ({logger}) => new WindowsService({logger}),
+                quickSettings: ({logger}) => new QuickSettingsService({logger}),
             },
             modules: MODULES,
         });

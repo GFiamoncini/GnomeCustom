@@ -49,6 +49,7 @@ help:
 	@echo '  make logs         acompanha o journal filtrado por [GnomeCustom]'
 	@echo '  make nested       abre um GNOME Shell aninhado para testar'
 	@echo ''
+	@echo '  make tiling-schemas regenera os esquemas do tiling a partir do JS'
 	@echo '  make pot          regenera po/$(GETTEXT).pot'
 	@echo '  make update-po    atualiza os .po a partir do .pot'
 	@echo '  make clean        remove artefatos gerados'
@@ -77,6 +78,12 @@ $(SRC)/locale/%/LC_MESSAGES/$(GETTEXT).mo: po/%.po
 
 .PHONY: check
 check: lint schemas-check test test-prefs
+
+# Esquemas do tiling gerados de lib/tiling/actions.js e rules.js.
+.PHONY: tiling-schemas
+tiling-schemas:
+	gjs -m tools/gen-tiling-schemas.js
+	@$(MAKE) --no-print-directory schemas-check
 
 .PHONY: schemas-check
 schemas-check:

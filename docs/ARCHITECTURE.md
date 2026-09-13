@@ -230,3 +230,8 @@ Estimativa: 90–120 chaves na v1.
 | AD-21 | Tokens para quem não se estiliza por CSS passam por `services/theme/style.js` | estilo inline vence folha; o consumidor lê um valor que pode ser `null`, sem saber se o módulo de tema existe (§6) |
 | AD-22 | O preset em uso é derivado dos valores, não armazenado | editar uma opção vira "Personalizado" sozinho; não há estado para dessincronizar |
 | AD-23 | `SETTINGS_KEYS` é a lista única chave→configuração do tema | leitura, observação e validação de presets seguem uma fonte só |
+| AD-24 | Toda decisão do tiling fica num controlador puro com adaptador de janelas | comportamento inteiro testável sem Shell; o módulo é só ponte |
+| AD-25 | Flutuar por janela é estado em memória; só regras de classe/título persistem | elimina por construção os "fantasmas" por `wmId` que quebravam o `Super+C` do Forge |
+| AD-26 | Janelas maximizadas em tiling são desmaximizadas; tela cheia é respeitada | o auto-maximize do Mutter deixaria janelas grandes fora do tiling |
+| AD-27 | O tiling fica em espera enquanto o Forge estiver ativo | dois gerenciadores sobre as mesmas janelas tornam a área de trabalho inutilizável |
+| AD-28 | Atalhos de modos não implementados (pilha, abas) não são registrados | não roubar teclas do sistema para não fazer nada |

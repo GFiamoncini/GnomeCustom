@@ -22,3 +22,8 @@ gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.dock.
 gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.overview.gschema.xml
 gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.animation.gschema.xml
 gnomeCustom@gfiamoncini.com/theme/presets/presets.js
+gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js
+gnomeCustom@gfiamoncini.com/lib/tiling/actions.js
+gnomeCustom@gfiamoncini.com/modules/tiling/module.js
+gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml
+gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml

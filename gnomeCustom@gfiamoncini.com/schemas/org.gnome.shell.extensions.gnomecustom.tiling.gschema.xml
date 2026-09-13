@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 Gabriel Fiamoncini
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<schemalist gettext-domain="gnomecustom">
+  <schema id="org.gnome.shell.extensions.gnomecustom.tiling"
+          path="/org/gnome/shell/extensions/gnomecustom/tiling/">
+
+    <key name="tiling-mode" type="b">
+      <default>true</default>
+      <summary>Tile windows</summary>
+      <description>When off, the module stays loaded but every window floats. Toggled
+      by the quick settings switch and the keyboard shortcut.</description>
+    </key>
+    <key name="auto-split" type="b">
+      <default>false</default>
+      <summary>Split automatically</summary>
+      <description>A new window splits the focused one along its longer side, instead
+      of joining the focused window's container.</description>
+    </key>
+    <key name="gap-size" type="u">
+      <default>2</default>
+      <range min="0" max="32"/>
+      <summary>Gap size in pixels</summary>
+      <description>Multiplied by the gap step. Windows are 2 × gap × step apart, and
+      the same distance from the screen edges.</description>
+    </key>
+    <key name="gap-increment" type="u">
+      <default>1</default>
+      <range min="0" max="8"/>
+      <summary>Gap step</summary>
+      <description>Changed by the “increase gaps” and “decrease gaps” shortcuts.</description>
+    </key>
+    <key name="gap-hidden-on-single" type="b">
+      <default>true</default>
+      <summary>No gaps around a single window</summary>
+    </key>
+    <key name="float-always-on-top" type="b">
+      <default>true</default>
+      <summary>Keep floating windows above tiled ones</summary>
+      <description>Applies to windows floated with the shortcut; the setting is undone
+      when the window is tiled again or the module is turned off.</description>
+    </key>
+    <key name="focus-border" type="b">
+      <default>true</default>
+      <summary>Draw a border around the focused window</summary>
+      <description>Its colour, thickness and corners come from the theme settings.</description>
+    </key>
+    <key name="resize-amount" type="u">
+      <default>15</default>
+      <range min="1" max="200"/>
+      <summary>Pixels moved by each resize shortcut</summary>
+    </key>
+    <key name="drag-swap" type="b">
+      <default>true</default>
+      <summary>Swap windows by dragging</summary>
+      <description>Dropping a tiled window over another swaps their places; dropping
+      it elsewhere puts it back.</description>
+    </key>
+    <key name="quick-settings-toggle" type="b">
+      <default>true</default>
+      <summary>Show a tiling switch in quick settings</summary>
+    </key>
+    <key name="skip-workspaces" type="ai">
+      <default>[]</default>
+      <summary>Workspaces where tiling is off</summary>
+      <description>Workspace indices, starting at 0.</description>
+    </key>
+    <key name="window-rules" type="s">
+      <default>'[{"wmClass":"org.gnome.Shell.Extensions","wmTitle":"Forge Settings","mode":"float"},{"wmClass":"jetbrains-toolbox","mode":"float"},{"wmClass":"jetbrains-goland","wmTitle":"splash","mode":"float"},{"wmClass":"jetbrains-webstorm","wmTitle":"splash","mode":"float"},{"wmClass":"jetbrains-phpstorm","wmTitle":"splash","mode":"float"},{"wmClass":"jetbrains-datagrip","wmTitle":"splash","mode":"float"},{"wmClass":"jetbrains-rubymine","wmTitle":"splash","mode":"float"},{"wmClass":"jetbrains-idea","wmTitle":"splash","mode":"float"},{"wmClass":"com.github.amezin.ddterm","mode":"float"},{"wmClass":"com.github.donadigo.eddy","mode":"float"},{"wmClass":"Conky","mode":"float"},{"wmClass":"Gnome-initial-setup","mode":"float"},{"wmClass":"org.gnome.Calculator","mode":"float"},{"wmClass":"gnome-terminal-server","wmTitle":"Preferences – General","mode":"float"},{"wmClass":"gnome-terminal-preferences","mode":"float"},{"wmClass":"Guake","mode":"float"},{"wmClass":"zoom","mode":"float"},{"wmClass":"firefox","wmTitle":"About Mozilla Firefox","mode":"float"},{"wmClass":"firefox","wmTitle":"!Mozilla Firefox","mode":"float"},{"wmClass":"org.mozilla.firefox.desktop","wmTitle":"About Mozilla Firefox","mode":"float"},{"wmClass":"org.mozilla.firefox.desktop","wmTitle":"!Mozilla Firefox","mode":"float"},{"wmClass":"thunderbird","wmTitle":"About Mozilla Thunderbird","mode":"float"},{"wmClass":"thunderbird","wmTitle":"!Mozilla Thunderbird","mode":"float"},{"wmClass":"org.mozilla.Thunderbird.desktop","wmTitle":"About Mozilla Thunderbird","mode":"float"},{"wmClass":"org.mozilla.Thunderbird.desktop","wmTitle":"!Mozilla Thunderbird","mode":"float"},{"wmClass":"evolution-alarm-notify","mode":"float"},{"wmClass":"variety","mode":"float"},{"wmClass":"update-manager","mode":"float"}]'</default>
+      <summary>Windows that always float</summary>
+      <description>JSON list of rules with “wmClass” and optionally “wmTitle”, in the
+      format of Forge's windows.json. Rules by window id are ignored on purpose.</description>
+    </key>
+  </schema>
+</schemalist>

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnomeCustom 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/gfiamoncini/gnomecustom/issues\n"
-"POT-Creation-Date: 2026-09-13 13:35-0300\n"
+"POT-Creation-Date: 2026-09-13 14:43-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -354,6 +354,7 @@ msgid "Keyboard shortcut"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/panel.js:42
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:217
 msgid "none"
 msgstr ""
 
@@ -402,6 +403,7 @@ msgid "Custom image"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:50
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:77
 msgid "Size"
 msgstr ""
 
@@ -1358,4 +1360,423 @@ msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/theme/presets/presets.js:189
 msgid "Floating bar in Fedora blue with a light-blue accent"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:25
+#: gnomeCustom@gfiamoncini.com/modules/tiling/module.js:335
+msgid "Tiling"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:43
+msgid "Behaviour"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:44
+msgid ""
+"Arranges windows side by side automatically. While the Forge extension is "
+"active, this module waits and does nothing."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:48
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:12
+msgid "Tile windows"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:48
+msgid "Also toggled from quick settings and with Shift+Super+P"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:49
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:18
+msgid "Split automatically"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:49
+msgid "A new window splits the focused one along its longer side"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:50
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:57
+msgid "Swap windows by dragging"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:50
+msgid "Drop a window over another to swap them"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:51
+msgid "Keep floating windows on top"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:52
+msgid "Border around the focused window"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:52
+msgid "Colour and thickness are set on the Theme page"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:53
+msgid "Switch in quick settings"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:59
+msgid "Resize step"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:60
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:53
+msgid "Pixels moved by each resize shortcut"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:73
+msgid "Gaps"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:74
+msgid ""
+"Windows end up 2 × size × step apart, and the same distance from the screen "
+"edges."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:79
+msgid "Step"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:80
+msgid "Changed by Ctrl+Super+Plus and Ctrl+Super+Minus"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:87
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:37
+msgid "No gaps around a single window"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:104
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:72
+msgid "Windows that always float"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:105
+msgid ""
+"Matched by application class and, optionally, by text in the title. Separate "
+"several titles with commas; start one with “!” to match titles that do not "
+"contain it."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:109
+msgid "Application class, e.g. org.gnome.Calculator"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:110
+msgid "Title contains (optional)"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:112
+msgid "Add rule"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:158
+msgid "title"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:159
+msgid "whole application"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:165
+msgid "Remove rule"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:177
+msgid "Workspaces without tiling"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:178
+msgid "Workspaces"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:180
+msgid "Tile everywhere"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:191
+msgid "none — toggle the current one with Shift+Super+W"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:205
+msgid "Keyboard shortcuts"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:206
+msgid ""
+"The same keys as the Forge extension. Stacked and tabbed layouts are not "
+"available, so their shortcuts stay free."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:32
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:12
+msgid "Focus the window on the left"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:33
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:16
+msgid "Focus the window on the right"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:34
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:20
+msgid "Focus the window above"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:35
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:24
+msgid "Focus the window below"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:38
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:28
+msgid "Move the window left"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:39
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:32
+msgid "Move the window right"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:40
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:36
+msgid "Move the window up"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:41
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:40
+msgid "Move the window down"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:44
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:44
+msgid "Swap with the window on the left"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:45
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:48
+msgid "Swap with the window below"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:46
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:52
+msgid "Swap with the window above"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:47
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:56
+msgid "Swap with the window on the right"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:48
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:60
+msgid "Swap with the previously focused window"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:51
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:64
+msgid "Split side by side"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:52
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:68
+msgid "Split one above the other"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:53
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:72
+msgid "Toggle the split direction"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:56
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:76
+msgid "Float or tile this window"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:57
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:80
+msgid "Always float windows of this application"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:60
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:84
+msgid "Grow the top edge"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:61
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:88
+msgid "Shrink the top edge"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:62
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:92
+msgid "Grow the bottom edge"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:63
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:96
+msgid "Shrink the bottom edge"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:64
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:100
+msgid "Grow the left edge"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:65
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:104
+msgid "Shrink the left edge"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:66
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:108
+msgid "Grow the right edge"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:67
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:112
+msgid "Shrink the right edge"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:70
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:116
+msgid "Center the window"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:71
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:120
+msgid "Snap to the left third"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:72
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:124
+msgid "Snap to the right third"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:73
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:128
+msgid "Snap to the left two thirds"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:74
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:132
+msgid "Snap to the right two thirds"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:77
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:136
+msgid "Increase the gaps"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:78
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:140
+msgid "Decrease the gaps"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:79
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:144
+msgid "Show or hide the focus border"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:80
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:148
+msgid "Turn tiling on or off"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:81
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:152
+msgid "Turn tiling on or off for this workspace"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:84
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:156
+msgid "Stacked layout (not available)"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:85
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:160
+msgid "Tabbed layout (not available)"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:86
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:164
+msgid "Tab decorations (not available)"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:13
+msgid ""
+"When off, the module stays loaded but every window floats. Toggled by the "
+"quick settings switch and the keyboard shortcut."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:19
+msgid ""
+"A new window splits the focused one along its longer side, instead of "
+"joining the focused window's container."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:25
+msgid "Gap size in pixels"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:26
+msgid ""
+"Multiplied by the gap step. Windows are 2 × gap × step apart, and the same "
+"distance from the screen edges."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:32
+msgid "Gap step"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:33
+msgid "Changed by the “increase gaps” and “decrease gaps” shortcuts."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:41
+msgid "Keep floating windows above tiled ones"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:42
+msgid ""
+"Applies to windows floated with the shortcut; the setting is undone when the "
+"window is tiled again or the module is turned off."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:47
+msgid "Draw a border around the focused window"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:48
+msgid "Its colour, thickness and corners come from the theme settings."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:58
+msgid ""
+"Dropping a tiled window over another swaps their places; dropping it "
+"elsewhere puts it back."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:63
+msgid "Show a tiling switch in quick settings"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:67
+msgid "Workspaces where tiling is off"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:68
+msgid "Workspace indices, starting at 0."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:73
+msgid ""
+"JSON list of rules with “wmClass” and optionally “wmTitle”, in the format of "
+"Forge's windows.json. Rules by window id are ignored on purpose."
 msgstr ""

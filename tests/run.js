@@ -12,7 +12,7 @@ import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
 
 import {test, assert, assertEqual, assertThrows, run} from './harness.js';
-import {FakeEmitter, FakeSettings, FakeInjectionManager, FakeExtension, FakeSink} from './fakes.js';
+import {FakeEmitter, FakeSettings, FakeInjectionManager, FakeExtension, FakeSink, FakeWindowSystem} from './fakes.js';
 
 const EXT = '../gnomeCustom@gfiamoncini.com';
 
@@ -35,6 +35,12 @@ const {generateStylesheet} = await import(`${EXT}/theme/engine/stylesheet.js`);
 const Presets = await import(`${EXT}/theme/presets/presets.js`);
 const {StyleService} = await import(`${EXT}/services/theme/style.js`);
 const {WallpaperService} = await import(`${EXT}/services/system/wallpaper.js`);
+const {TilingTree, leavesOf} = await import(`${EXT}/lib/tiling/tree.js`);
+const {computeLayout, distribute, inset} = await import(`${EXT}/lib/tiling/layout.js`);
+const Rules = await import(`${EXT}/lib/tiling/rules.js`);
+const Geometry = await import(`${EXT}/lib/tiling/geometry.js`);
+const {TILING_ACTIONS, normalizeAccel, findCollisions} = await import(`${EXT}/lib/tiling/actions.js`);
+const {TilingController, keyFor, GAP_INCREMENT_MAX} = await import(`${EXT}/lib/tiling/controller.js`);
 const {parseOsRelease} = await import(`${EXT}/services/system/distro.js`);
 const {VolumeModule, formatLevel} = await import(`${EXT}/modules/volume/module.js`);
 const Mpris = await import(`${EXT}/lib/mpris.js`);
@@ -1290,6 +1296,926 @@ test('papel de parede: extração sem mudanças não roda de novo', async () => 
 
     assertEqual(calls, 1, 'a mesma URI não deveria ser relida:');
     service.destroy();
+});
+
+// ------------------------------------------------------------ tiling: árvore
+
+const K = '0:0';
+
+/** Árvore com as janelas inseridas em sequência, cada uma depois da anterior. */
+function treeWith(...ids) {
+    const tree = new TilingTree();
+    let previous = null;
+    for (const id of ids) {
+        tree.insert(id, K, {after: previous});
+        previous = id;
+    }
+    return tree;
+}
+
+test('árvore: inserir segue a janela de referência e cai no fim sem ela', () => {
+    const tree = treeWith(1, 2, 3);
+    assertEqual(tree.describe(K), 'h[1 2 3]');
+
+    tree.insert(4, K, {after: 1});
+    assertEqual(tree.describe(K), 'h[1 4 2 3]', 'depois da janela 1:');
+
+    tree.insert(5, K);
+    assertEqual(tree.describe(K), 'h[1 4 2 3 5]', 'sem referência vai para o fim:');
+
+    assertEqual(tree.insert(5, K), false, 'id repetido é recusado:');
+    assertEqual(tree.size, 5);
+});
+
+test('árvore: split com uma janela só muda a orientação; com várias, aninha', () => {
+    const tree = treeWith(1);
+    tree.split(1, 'v');
+    assertEqual(tree.describe(K), 'v[1]', 'única janela:');
+
+    tree.insert(2, K, {after: 1});
+    assertEqual(tree.describe(K), 'v[1 2]');
+
+    tree.split(2, 'h');
+    tree.insert(3, K, {after: 2});
+    assertEqual(tree.describe(K), 'v[1 h[2 3]]', 'a janela nova entra na divisão pedida:');
+});
+
+test('árvore: remover achata contêineres de um filho só', () => {
+    const tree = treeWith(1, 2);
+    tree.split(2, 'v');
+    tree.insert(3, K, {after: 2});
+    assertEqual(tree.describe(K), 'h[1 v[2 3]]');
+
+    tree.remove(3);
+    assertEqual(tree.describe(K), 'h[1 2]', 'contêiner com um filho some:');
+
+    tree.remove(1);
+    tree.remove(2);
+    assertEqual(tree.describe(K), 'h[]', 'a raiz fica, vazia:');
+    assertEqual(tree.remove(99), false, 'id desconhecido:');
+});
+
+test('árvore: raiz com um único contêiner herda a orientação dele', () => {
+    const tree = treeWith(1, 2);
+    tree.split(2, 'v');
+    tree.insert(3, K, {after: 2});   // h[1 v[2 3]]
+    tree.remove(1);
+    assertEqual(tree.describe(K), 'v[2 3]');
+});
+
+test('árvore: vizinho por direção em layout aninhado', () => {
+    const tree = treeWith(1, 2);
+    tree.split(2, 'v');
+    tree.insert(3, K, {after: 2});   // h[1 v[2 3]]
+
+    assertEqual(tree.neighbor(1, 'right'), 2, '1 → direita:');
+    assertEqual(tree.neighbor(3, 'left'), 1, '3 → esquerda sobe até a raiz:');
+    assertEqual(tree.neighbor(2, 'down'), 3);
+    assertEqual(tree.neighbor(3, 'up'), 2);
+    assertEqual(tree.neighbor(1, 'up'), null, 'borda:');
+    assertEqual(tree.neighbor(2, 'right'), null, 'borda direita:');
+});
+
+test('árvore: vizinho prefere a janela usada mais recentemente', () => {
+    const tree = treeWith(1, 2);
+    tree.split(2, 'v');
+    tree.insert(3, K, {after: 2});   // h[1 v[2 3]]
+
+    assertEqual(tree.neighbor(1, 'right'), 2, 'sem histórico, a primeira:');
+    assertEqual(tree.neighbor(1, 'right', {recent: [3, 2]}), 3, 'com histórico, a mais recente:');
+});
+
+test('árvore: swap troca lugares e tamanhos', () => {
+    const tree = treeWith(1, 2);
+    tree.split(2, 'v');
+    tree.insert(3, K, {after: 2});   // h[1 v[2 3]]
+    tree.leaf(1).weight = 3;
+
+    assert(tree.swap(1, 3), 'swap deveria funcionar');
+    assertEqual(tree.describe(K), 'h[3 v[2 1]]');
+    assertEqual([tree.leaf(3).weight, tree.leaf(1).weight], [3, 1], 'pesos acompanham o lugar:');
+    assertEqual(tree.swap(1, 1), false, 'consigo mesma:');
+});
+
+test('árvore: mover troca com a vizinha e entra em contêineres', () => {
+    const tree = treeWith(1, 2, 3);
+    assertEqual(tree.move(1, 'right'), {moved: true, edge: false});
+    assertEqual(tree.describe(K), 'h[2 1 3]', 'troca com a vizinha:');
+
+    tree.split(3, 'v');
+    tree.insert(4, K, {after: 3});   // h[2 1 v[3 4]]
+    tree.move(1, 'right');
+    assertEqual(tree.describe(K), 'h[2 v[1 3 4]]', 'entra no contêiner pela ponta de onde veio:');
+});
+
+test('árvore: mover sai do contêiner perpendicular', () => {
+    const tree = treeWith(1, 2);
+    tree.split(2, 'v');
+    tree.insert(3, K, {after: 2});   // h[1 v[2 3]]
+
+    tree.move(3, 'right');
+    assertEqual(tree.describe(K), 'h[1 2 3]', 'sai pela direita:');
+
+    const other = treeWith(1, 2);
+    other.split(2, 'v');
+    other.insert(3, K, {after: 2});  // h[1 v[2 3]]
+    other.move(2, 'left');
+    assertEqual(other.describe(K), 'h[1 2 3]', 'sai pela esquerda, ficando ao lado do ramo:');
+});
+
+test('árvore: mover na ponta de raiz perpendicular envolve a raiz', () => {
+    const tree = treeWith(1, 2);
+    tree.split(1, 'v');              // raiz com uma janela vira v… depois 2 entra
+    const fresh = new TilingTree();
+    fresh.insert(1, K);
+    fresh.split(1, 'v');
+    fresh.insert(2, K, {after: 1});  // v[1 2]
+
+    assertEqual(fresh.move(2, 'right'), {moved: true, edge: false});
+    assertEqual(fresh.describe(K), 'h[1 2]', 'a janela vai para o lado:');
+
+    void tree;
+});
+
+test('árvore: borda real é reportada, e aninhamento na mesma orientação não engana', () => {
+    const tree = treeWith(1, 2);
+    assertEqual(tree.move(2, 'right'), {moved: false, edge: true}, 'ponta da raiz:');
+    assertEqual(treeWith(1).move(1, 'left'), {moved: false, edge: true}, 'janela única:');
+
+    // h[1 h[2 3]]: mover 3 para a direita não muda nada visualmente → borda.
+    const nested = treeWith(1, 2);
+    nested.split(2, 'h');
+    nested.insert(3, K, {after: 2});
+    assertEqual(nested.describe(K), 'h[1 h[2 3]]');
+    assertEqual(nested.move(3, 'right'), {moved: false, edge: true});
+    assertEqual(nested.describe(K), 'h[1 h[2 3]]', 'a árvore não deveria mudar:');
+});
+
+test('árvore: sair de contêiner aninhado não deixa contêiner vazio', () => {
+    // h[1 v[h[2] 3]]: a janela 2 está num contêiner de um filho só, dentro de v.
+    const tree = treeWith(1, 2);
+    tree.split(2, 'v');
+    tree.insert(3, K, {after: 2});   // h[1 v[2 3]]
+    tree.split(2, 'h');              // h[1 v[h[2] 3]]
+    assertEqual(tree.describe(K), 'h[1 v[h[2] 3]]');
+
+    tree.move(2, 'left');
+    assertEqual(tree.describe(K), 'h[1 2 3]', 'sem contêiner vazio nem de um filho no caminho:');
+
+    // Mesmo caso pela raiz perpendicular: v[h[1] 2] movendo 1 para a direita.
+    const root = new TilingTree();
+    root.insert(1, K);
+    root.split(1, 'v');
+    root.insert(2, K, {after: 1});   // v[1 2]
+    root.split(1, 'h');              // v[h[1] 2]
+    root.move(1, 'right');
+    assertEqual(root.describe(K), 'h[2 1]');
+});
+
+for (const seed of [7, 42, 1234, 98765]) test(`árvore: mover preserva todas as janelas (invariante, semente ${seed})`, () => {
+    runRandomInvariant(seed);
+});
+
+function runRandomInvariant(initialSeed) {
+    const tree = treeWith(1, 2, 3, 4, 5, 6);
+    const directions = ['left', 'right', 'up', 'down'];
+    let seed = initialSeed;
+    const rand = n => {
+        seed = (seed * 1103515245 + 12345) % 2147483648;
+        return seed % n;
+    };
+
+    for (let step = 0; step < 1500; step++) {
+        const id = 1 + rand(6);
+        const op = rand(4);
+        if (op === 0)
+            tree.split(id, rand(2) ? 'h' : 'v');
+        else if (op === 1)
+            tree.move(id, directions[rand(4)]);
+        else if (op === 2)
+            tree.swap(id, 1 + rand(6));
+        else
+            tree.toggleLayout(id);
+
+        const ids = tree.ids(K).sort((a, b) => a - b);
+        assertEqual(ids, [1, 2, 3, 4, 5, 6], `passo ${step}: janelas perdidas ou duplicadas:`);
+
+        // Nenhum contêiner vazio abaixo da raiz, e pais coerentes. (Contêiner de
+        // um filho só é legítimo: é o que o split deixa à espera da próxima janela.)
+        const check = (node, parent) => {
+            if (node.parent !== parent)
+                throw new Error(`passo ${step}: ponteiro de pai incoerente em ${tree.describe(K)}`);
+            if (node.kind === 'split') {
+                if (parent && node.children.length === 0)
+                    throw new Error(`passo ${step}: contêiner vazio: ${tree.describe(K)}`);
+                node.children.forEach(child => check(child, node));
+            }
+        };
+        check(tree.root(K), null);
+    }
+}
+
+test('árvore: moveToKey leva a janela para outro monitor', () => {
+    const tree = treeWith(1, 2);
+    assert(tree.moveToKey(2, '1:0'), 'deveria mover');
+    assertEqual(tree.keyOf(2), '1:0');
+    assertEqual(tree.describe(K), 'h[1]');
+    assertEqual(tree.describe('1:0'), 'h[2]');
+    assertEqual(tree.moveToKey(2, '1:0'), false, 'mesma chave:');
+});
+
+test('árvore: redimensionar passa espaço ao vizinho e respeita o mínimo', () => {
+    const tree = treeWith(1, 2);
+    const area = {x: 0, y: 0, width: 1000, height: 500};
+    let layout = computeLayout(tree, K, area);
+
+    assert(tree.resize(1, 'right', 100, layout.containers), 'deveria redimensionar');
+    layout = computeLayout(tree, K, area);
+    assertEqual([layout.windows.get(1).width, layout.windows.get(2).width], [600, 400]);
+
+    // Borda esquerda da janela 1 está na tela: o espaço vem do outro lado.
+    assert(tree.resize(1, 'left', 100, layout.containers), 'deveria usar o lado oposto');
+    layout = computeLayout(tree, K, area);
+    assertEqual(layout.windows.get(1).width, 700);
+
+    // Encolher muito para no mínimo de 10%.
+    tree.resize(1, 'right', -5000, layout.containers);
+    layout = computeLayout(tree, K, area);
+    assertEqual(layout.windows.get(1).width, 100, 'mínimo de 10% do contêiner:');
+
+    assertEqual(tree.resize(1, 'up', 50, layout.containers), false, 'sem vizinho vertical:');
+});
+
+// ----------------------------------------------------------- tiling: layout
+
+test('layout: distribuição soma exatamente o total', () => {
+    assertEqual(distribute(100, [1, 1, 1]), [34, 33, 33]);
+    assertEqual(distribute(1000, [1, 1, 1, 1, 1, 1, 1]).reduce((a, b) => a + b, 0), 1000);
+    assertEqual(distribute(10, [0, 0]), [5, 5], 'pesos inválidos viram iguais:');
+    for (const total of [1, 7, 333, 1599, 2560]) {
+        const sizes = distribute(total, [0.3, 1.7, 1, 2.2]);
+        assertEqual(sizes.reduce((a, b) => a + b, 0), total, `total ${total}:`);
+    }
+});
+
+test('layout: fórmula de gaps do Forge (2·gap entre janelas e na borda)', () => {
+    const tree = treeWith(1, 2);
+    const area = {x: 0, y: 32, width: 1600, height: 868};
+    const {windows} = computeLayout(tree, K, area, {gap: 2, smartGaps: true});
+
+    assertEqual(windows.get(1), {x: 4, y: 36, width: 794, height: 860});
+    assertEqual(windows.get(2), {x: 802, y: 36, width: 794, height: 860});
+    const between = windows.get(2).x - (windows.get(1).x + windows.get(1).width);
+    assertEqual(between, 4, 'espaço entre janelas:');
+});
+
+test('layout: janela única sem gaps, e sem a opção, com gaps', () => {
+    const tree = treeWith(1);
+    const area = {x: 0, y: 32, width: 1600, height: 868};
+    assertEqual(computeLayout(tree, K, area, {gap: 2}).windows.get(1), area, 'smart gaps:');
+    assertEqual(computeLayout(tree, K, area, {gap: 2, smartGaps: false}).windows.get(1),
+        {x: 4, y: 36, width: 1592, height: 860});
+});
+
+test('layout: janelas fora do tiling não ocupam espaço', () => {
+    const tree = treeWith(1, 2, 3);
+    const area = {x: 0, y: 0, width: 900, height: 600};
+    const {windows} = computeLayout(tree, K, area, {isTiled: id => id !== 2});
+    assertEqual(windows.has(2), false);
+    assertEqual([windows.get(1).width, windows.get(3).width], [450, 450]);
+
+    const empty = computeLayout(tree, K, area, {isTiled: () => false});
+    assertEqual(empty.windows.size, 0, 'tudo minimizado:');
+});
+
+test('layout: layout aninhado cobre a área sem sobreposição', () => {
+    const tree = treeWith(1, 2);
+    tree.split(2, 'v');
+    tree.insert(3, K, {after: 2});
+    tree.split(3, 'h');
+    tree.insert(4, K, {after: 3});  // h[1 v[2 h[3 4]]]
+    const area = {x: 10, y: 20, width: 1001, height: 777};
+    const {windows} = computeLayout(tree, K, area);
+
+    const cells = [...windows.values()];
+    assertEqual(cells.reduce((sum, r) => sum + r.width * r.height, 0), area.width * area.height,
+        'as áreas somam a área útil:');
+    for (let i = 0; i < cells.length; i++) {
+        for (let j = i + 1; j < cells.length; j++) {
+            const [a, b] = [cells[i], cells[j]];
+            const overlap = a.x < b.x + b.width && b.x < a.x + a.width &&
+                a.y < b.y + b.height && b.y < a.y + a.height;
+            assert(!overlap, `janelas ${i} e ${j} se sobrepõem`);
+        }
+    }
+});
+
+test('layout: inset não some com janelas minúsculas', () => {
+    assertEqual(inset({x: 0, y: 0, width: 3, height: 50}, 2), {x: 0, y: 0, width: 3, height: 50});
+});
+
+// ----------------------------------------------------------- tiling: regras
+
+const win = (over = {}) => ({
+    wmClass: 'org.gnome.TextEditor', title: 'Documento', type: 'normal',
+    transient: false, allowsResize: true, ...over,
+});
+
+test('regras: tipo da janela decide antes das regras', () => {
+    assert(Rules.floatsByType(win({type: 'dialog'})), 'diálogo');
+    assert(Rules.floatsByType(win({type: 'modal-dialog'})), 'diálogo modal');
+    assert(Rules.floatsByType(win({transient: true})), 'transitória');
+    assert(Rules.floatsByType(win({title: ''})), 'sem título');
+    assert(Rules.floatsByType(win({wmClass: null})), 'sem classe');
+    assert(Rules.floatsByType(win({allowsResize: false})), 'tamanho fixo');
+    assert(!Rules.floatsByType(win()), 'janela comum');
+});
+
+test('regras: semântica de correspondência do Forge', () => {
+    const splash = {wmClass: 'jetbrains-idea', wmTitle: 'splash', mode: 'float'};
+    assert(Rules.ruleMatches(splash, win({wmClass: 'jetbrains-idea', title: 'splash'})), 'título contém');
+    assert(!Rules.ruleMatches(splash, win({wmClass: 'jetbrains-idea', title: 'Projeto'})), 'título diferente');
+
+    const list = {wmClass: 'firefox', wmTitle: 'About Mozilla Firefox,Library', mode: 'float'};
+    assert(Rules.ruleMatches(list, win({wmClass: 'firefox', title: 'Library'})), 'item da lista');
+
+    const negated = {wmClass: 'code', wmTitle: '!Visual Studio Code', mode: 'float'};
+    assert(Rules.ruleMatches(negated, win({wmClass: 'code', title: 'Abrir pasta'})), 'negação casa');
+    assert(!Rules.ruleMatches(negated, win({wmClass: 'code', title: 'x - Visual Studio Code'})), 'negação não casa');
+
+    const space = {wmClass: 'zoom', wmTitle: ' ', mode: 'float'};
+    assert(Rules.ruleMatches(space, win({wmClass: 'zoom', title: ' '})), 'título espaço');
+    assert(!Rules.ruleMatches(space, win({wmClass: 'zoom', title: 'Reunião'})), 'espaço é exato');
+
+    // A classe da regra *contém* a classe da janela (comportamento do Forge).
+    assert(Rules.ruleMatches({wmClass: 'org.gnome.Calculator', mode: 'float'},
+        win({wmClass: 'org.gnome.Calculator'})), 'classe exata');
+});
+
+test('regras: as padrão são as 28 do Forge, sem nenhum wmId', () => {
+    const file = Gio.File.new_for_path(GLib.build_filenamev([GLib.get_current_dir(),
+        'reference', 'forge', 'config', 'windows.json']));
+    if (!file.query_exists(null)) {
+        print('        (reference/forge ausente: comparação com o Forge ignorada)');
+    } else {
+        const forge = JSON.parse(new TextDecoder().decode(file.load_contents(null)[1])).overrides;
+        assertEqual(Rules.DEFAULT_RULES.map(r => [r.wmClass, r.wmTitle ?? null]),
+            forge.map(r => [r.wmClass, r.wmTitle ?? null]), 'regras padrão:');
+    }
+    assertEqual(Rules.DEFAULT_RULES.length, 28);
+    assert(Rules.DEFAULT_RULES.every(r => !('wmId' in r)), 'nenhuma regra por id');
+});
+
+test('regras: ler descarta wmId, aceita o formato do Forge e rejeita lixo', () => {
+    const forgeFormat = JSON.stringify({overrides: [
+        {wmClass: 'org.gnome.Calculator', mode: 'float'},
+        {wmClass: 'google-chrome', wmId: 2694494745, mode: 'float'},
+        {wmClass: 'org.gnome.Ptyxis', wmId: 2694494746, mode: 'float'},
+        {wmTitle: 'sem classe', mode: 'float'},
+    ]});
+    const parsed = Rules.parseRules(forgeFormat);
+    assertEqual(parsed.rules, [{wmClass: 'org.gnome.Calculator', mode: 'float'}]);
+    assertEqual([parsed.droppedById, parsed.invalid], [2, 1]);
+
+    assertEqual(Rules.parseRules('isto não é json'), {rules: [], droppedById: 0, invalid: 1});
+    assertEqual(Rules.parseRules(Rules.serializeRules([...Rules.DEFAULT_RULES])).rules.length, 28,
+        'ida e volta:');
+});
+
+test('regras: sempre-flutuar alterna por classe e nunca grava id', () => {
+    const base = [{wmClass: 'jetbrains-idea', wmTitle: 'splash', mode: 'float'}];
+
+    const on = Rules.toggleClassRule(base, 'google-chrome');
+    assertEqual(on.floating, true);
+    assertEqual(on.rules.at(-1), {wmClass: 'google-chrome', mode: 'float'});
+    assert(!Rules.serializeRules(on.rules).includes('wmId'), 'sem wmId no JSON');
+
+    const off = Rules.toggleClassRule(on.rules, 'google-chrome');
+    assertEqual([off.floating, off.rules], [false, base]);
+
+    const titled = Rules.toggleClassRule(base, 'jetbrains-idea');
+    assertEqual(titled.rules.length, 2, 'regra com título não conta como regra de classe:');
+});
+
+// --------------------------------------------------------- tiling: geometria
+
+test('geometria: snaps de 1/3 e 2/3 com gap, centro e flutuante', () => {
+    const area = {x: 0, y: 32, width: 1500, height: 868};
+    assertEqual(Geometry.snapRect(area, 'left', 1 / 3, 2), {x: 2, y: 34, width: 496, height: 864});
+    assertEqual(Geometry.snapRect(area, 'right', 2 / 3, 0), {x: 500, y: 32, width: 1000, height: 868});
+    assertThrows(() => Geometry.snapRect(area, 'up', 0.5));
+
+    assertEqual(Geometry.centerRect(area, {x: 5, y: 5, width: 500, height: 300}),
+        {x: 500, y: 316, width: 500, height: 300});
+    assertEqual(Geometry.centerRect(area, {width: 9000, height: 9000}), area, 'limitado à área:');
+
+    assertEqual(Geometry.floatRect(area), {x: 263, y: 141, width: 975, height: 651});
+    assert(Geometry.containsPoint(area, 0, 32) && !Geometry.containsPoint(area, 1500, 32), 'contém');
+});
+
+// ------------------------------------------------ tiling: atalhos e esquema
+
+test('tiling: catálogo, esquema de atalhos e baseline do Forge concordam', () => {
+    const read = name => new TextDecoder().decode(Gio.File.new_for_path(
+        GLib.build_filenamev([GLib.get_current_dir(), ...name])).load_contents(null)[1]);
+
+    const schema = read(['gnomeCustom@gfiamoncini.com', 'schemas',
+        'org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml']);
+    const inSchema = [...schema.matchAll(/<key name="([^"]+)" type="as">\s*<default>([^<]*)<\/default>/g)]
+        .map(([, key, value]) => [key, value.replace(/&lt;/g, '<').replace(/&gt;/g, '>')]);
+    assertEqual(inSchema.map(([key]) => key), TILING_ACTIONS.map(spec => spec.key), 'chaves:');
+
+    const keys = new Set();
+    for (const spec of TILING_ACTIONS) {
+        assert(!keys.has(spec.key), `chave repetida: ${spec.key}`);
+        keys.add(spec.key);
+    }
+
+    // Baseline: todo atalho do Forge do usuário existe, com o mesmo valor —
+    // exceto "sempre flutuar", que o usuário desligou depois da captura.
+    const baseline = read(['baseline', 'dconf-ext-forge.ini']);
+    const section = baseline.slice(baseline.indexOf('[keybindings]'));
+    const forgeKeys = [...section.matchAll(/^([a-z-]+)=(\[.*\])$/gm)];
+    assertEqual(forgeKeys.length, 39, 'atalhos no baseline:');
+
+    for (const [, key, value] of forgeKeys) {
+        const spec = TILING_ACTIONS.find(s => s.key === key);
+        assert(spec, `atalho do baseline sem ação: ${key}`);
+        const baselineAccels = [...value.matchAll(/'([^']+)'/g)].map(m => m[1]);
+        if (key === 'window-toggle-always-float')
+            assertEqual(spec.accels, [], 'sempre flutuar nasce sem atalho (decisão do usuário):');
+        else
+            assertEqual(spec.accels, baselineAccels, `${key}:`);
+    }
+});
+
+test('tiling: o padrão de window-rules do esquema é o das regras padrão', () => {
+    const xml = new TextDecoder().decode(Gio.File.new_for_path(GLib.build_filenamev([
+        GLib.get_current_dir(), 'gnomeCustom@gfiamoncini.com', 'schemas',
+        'org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml'])).load_contents(null)[1]);
+    const raw = /<key name="window-rules" type="s">\s*<default>'([\s\S]*?)'<\/default>/.exec(xml)[1]
+        .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/\\'/g, "'");
+    assertEqual(raw, Rules.serializeRules([...Rules.DEFAULT_RULES]));
+});
+
+// ------------------------------------------------------- tiling: geometria 2
+
+test('geometria: grabEdges decodifica os valores do Mutter 17', () => {
+    assertEqual(Geometry.grabEdges(1), {moving: true, resizing: false, keyboard: false, edges: []}, 'moving:');
+    assertEqual(Geometry.grabEdges(1025).moving, true, 'moving_unconstrained:');
+    assertEqual(Geometry.grabEdges(257), {moving: true, resizing: false, keyboard: true, edges: []}, 'keyboard_moving:');
+    assertEqual(Geometry.grabEdges(8193).edges, ['right'], 'resizing_e:');
+    assertEqual(Geometry.grabEdges(36865).edges, ['up', 'left'], 'resizing_nw:');
+    assertEqual(Geometry.grabEdges(24577).edges, ['down', 'right'], 'resizing_se:');
+    assertEqual(Geometry.grabEdges(8449), {moving: false, resizing: true, keyboard: true, edges: ['right']}, 'keyboard_resizing_e:');
+    assertEqual(Geometry.grabEdges(769).resizing, true, 'keyboard_resizing_unknown:');
+    assertEqual(Geometry.grabEdges(0), {moving: false, resizing: false, keyboard: false, edges: []}, 'none:');
+});
+
+test('geometria: deslocamento de bordas, borda de foco e vizinho geométrico', () => {
+    const before = {x: 100, y: 100, width: 400, height: 300};
+    assertEqual(Geometry.edgeDeltas(before, {x: 80, y: 100, width: 460, height: 300}, ['left', 'right']),
+        {left: 20, right: 40});
+    assertEqual(Geometry.edgeDeltas(before, before, ['up']), {}, 'sem mudança:');
+
+    const frame = {x: 100, y: 100, width: 400, height: 300};
+    assertEqual(Geometry.borderRect(frame, 3, 2), {x: 97, y: 97, width: 406, height: 306}, 'no gap:');
+    assertEqual(Geometry.borderRect(frame, 3, 0), frame, 'sem gap, por dentro:');
+    assertEqual(Geometry.borderRect(frame, 8, 1), {x: 98, y: 98, width: 404, height: 304}, 'limitada a 2·gap:');
+
+    const from = {x: 400, y: 400, width: 100, height: 100};
+    const candidates = [
+        {id: 1, rect: {x: 700, y: 400, width: 100, height: 100}},   // direita, alinhada
+        {id: 2, rect: {x: 600, y: 800, width: 100, height: 100}},   // direita, bem abaixo
+        {id: 3, rect: {x: 100, y: 400, width: 100, height: 100}},   // esquerda
+    ];
+    assertEqual(Geometry.nearestInDirection(from, candidates, 'right'), 1, 'prefere alinhada:');
+    assertEqual(Geometry.nearestInDirection(from, candidates, 'left'), 3);
+    assertEqual(Geometry.nearestInDirection(from, candidates, 'up'), null, 'nada acima:');
+});
+
+test('atalhos: forma canônica e colisões com o sistema', () => {
+    assertEqual(normalizeAccel('<Super>V'), '<super>v');
+    assertEqual(normalizeAccel('<Shift><Control><Super>i'), normalizeAccel('<Super><Primary><Shift>I'));
+
+    const collisions = findCollisions(
+        [{key: 'con-split-vertical', accels: ['<Super>v']}, {key: 'window-focus-left', accels: ['<Super>Left']}],
+        [{schema: 'org.gnome.shell.keybindings', key: 'toggle-message-tray', accels: ['<Super>v', '<Super>m']}]);
+    assertEqual(collisions, [{accel: '<Super>v', ours: 'con-split-vertical',
+        schema: 'org.gnome.shell.keybindings', theirs: 'toggle-message-tray'}]);
+});
+
+// ---------------------------------------------------- tiling: controlador
+
+/**
+ * Controlador sobre o sistema falso. As gravações pedidas voltam por
+ * `setConfig` na mesma pilha, como acontece com o GSettings no Shell.
+ */
+function makeTiling({monitors, workspaces, config = {}} = {}) {
+    const ws = new FakeWindowSystem({monitors, workspaces});
+    const requests = [];
+    let renders = 0;
+    const toConfig = {
+        'tiling-mode': 'tilingMode', 'focus-border': 'focusBorder',
+        'gap-increment': 'gapIncrement', 'skip-workspaces': 'skipWorkspaces', 'window-rules': 'rules',
+    };
+    const controller = new TilingController({
+        windows: ws,
+        logger: new Logger({level: 'silent', sink: new FakeSink()}),
+        requestRender: () => renders++,
+        onRequestSetting: (key, value) => {
+            requests.push([key, value]);
+            controller.setConfig({[toConfig[key]]: value});
+        },
+    });
+    controller.setConfig({rules: [...Rules.DEFAULT_RULES], ...config});
+    return {ws, controller, requests, renders: () => renders};
+}
+
+const rectOf = (ws, id) => ws.frameRect(id);
+
+test('controlador: split seguido de janela nova abre dentro da divisão', () => {
+    // O bug visto no Shell era o adaptador descartar o foco de janelas ainda não
+    // prontas; isso é conferido ao vivo. Aqui fica o contrato do controlador.
+
+    const {ws, controller} = makeTiling();
+    const a = ws.add();
+    const b = ws.add();
+    controller.start();
+
+    // Como no Shell: o foco chega na janela nova antes de ela ser adicionada.
+    const c = ws.add();
+    ws.focused = c;
+    controller.focusChanged(c);
+    controller.windowAdded(c);
+    controller.run({type: 'split', orientation: 'v'});
+
+    const d = ws.add();
+    ws.focused = d;
+    controller.focusChanged(d);
+    controller.windowAdded(d);
+
+    assertEqual(controller.tree.describe('0:0'), `h[${a} ${b} v[${c} ${d}]]`);
+});
+
+test('controlador: não repete o pedido enquanto o cliente não confirma o tamanho', () => {
+    const {ws, controller} = makeTiling();
+    const a = ws.add();
+    const b = ws.add();
+    ws.deferConfigure = true;
+    controller.start();
+
+    assertEqual(controller.render(), 2, 'primeiro layout pede as duas:');
+    assertEqual(controller.render(), 0, 'antes da confirmação, não pede de novo:');
+
+    ws.configureAll();
+    assertEqual(controller.render(), 0, 'confirmado, nada a fazer:');
+
+    // Movida por fora (estado mudou): o layout precisa repor, mesmo retângulo.
+    ws.deferConfigure = false;
+    ws.windows.get(a).rect = {x: 0, y: 0, width: 10, height: 10};
+    controller.windowChanged(a, 'maximized');
+    assertEqual(controller.render(), 1, 'depois de mudança externa, repõe:');
+    void b;
+});
+
+test('controlador: adota as janelas em ordem visual e aplica os gaps do baseline', () => {
+    const {ws, controller} = makeTiling();
+    const right = ws.add({rect: {x: 900, y: 50, width: 300, height: 300}});
+    const left = ws.add({rect: {x: 50, y: 50, width: 300, height: 300}});
+    ws.focused = right;
+
+    controller.start();
+    controller.render();
+
+    assertEqual(controller.tree.ids('0:0'), [left, right], 'ordem visual:');
+    assertEqual(rectOf(ws, left), {x: 4, y: 36, width: 794, height: 860});
+    assertEqual(rectOf(ws, right), {x: 802, y: 36, width: 794, height: 860});
+    assertEqual(controller.render(), 0, 'segundo render não move nada:');
+});
+
+test('controlador: janela nova entra depois da usada antes dela', () => {
+    const {ws, controller} = makeTiling();
+    const a = ws.add();
+    const b = ws.add();
+    const c = ws.add();
+    controller.start();
+    controller.focusChanged(a);
+
+    const d = ws.add();
+    ws.focused = d;               // o foco já passou para a janela nova
+    controller.focusChanged(d);
+    controller.windowAdded(d);
+
+    assertEqual(controller.tree.ids('0:0'), [a, d, b, c]);
+});
+
+test('controlador: diálogos, regras e skip-taskbar ficam fora da árvore', () => {
+    const {ws, controller} = makeTiling();
+    const normal = ws.add();
+    const dialog = ws.add({type: 'dialog'});
+    const calculator = ws.add({wmClass: 'org.gnome.Calculator'});
+    const splash = ws.add({wmClass: 'jetbrains-idea', title: 'splash'});
+    const hidden = ws.add({skipTaskbar: true});
+    controller.start();
+
+    assertEqual(controller.tree.ids('0:0'), [normal]);
+    for (const id of [dialog, calculator, splash, hidden])
+        assert(!controller.isTiled(id), `janela ${id} não deveria estar na árvore`);
+});
+
+test('controlador: flutuar por janela é só memória, centraliza e fica no topo', () => {
+    const {ws, controller, requests} = makeTiling();
+    const a = ws.add();
+    const b = ws.add();
+    controller.start();
+    controller.render();
+    ws.focused = b;
+
+    assert(controller.run({type: 'float-toggle'}), 'deveria flutuar');
+    assert(!controller.isTiled(b) && controller.isFloating(b));
+    assertEqual(rectOf(ws, b), Geometry.floatRect(ws.workArea(0)), 'centralizada 65×75%:');
+    assert(ws.above.has(b), 'sempre no topo');
+    controller.render();
+    assertEqual(rectOf(ws, a), ws.workArea(0), 'a outra ocupa tudo, sem gaps:');
+
+    assert(controller.run({type: 'float-toggle'}), 'deveria voltar');
+    assert(controller.isTiled(b) && !ws.above.has(b), 'volta ao tiling e sai do topo');
+    assertEqual(requests, [], 'flutuar por janela nunca grava configuração:');
+});
+
+test('controlador: sempre-flutuar grava regra de classe e centraliza (regressão de ordem)', () => {
+    const {ws, controller, requests} = makeTiling();
+    ws.add();
+    const chrome = ws.add({wmClass: 'google-chrome'});
+    controller.start();
+    controller.render();
+    ws.focused = chrome;
+
+    controller.run({type: 'float-class-toggle'});
+
+    assertEqual(requests.length, 1);
+    const [key, rules] = requests[0];
+    assertEqual(key, 'window-rules');
+    assertEqual(rules.at(-1), {wmClass: 'google-chrome', mode: 'float'});
+    assert(!JSON.stringify(rules).includes('wmId'), 'sem wmId');
+    assert(!controller.isTiled(chrome), 'a regra tirou a janela da árvore');
+    assertEqual(rectOf(ws, chrome), Geometry.floatRect(ws.workArea(0)),
+        'centralizada mesmo com a regra voltando na mesma pilha:');
+
+    controller.run({type: 'float-class-toggle'});
+    assert(controller.isTiled(chrome), 'desligar a regra devolve ao tiling');
+    assert(!ws.above.has(chrome), 'e tira do topo');
+});
+
+test('controlador: foco por direção na árvore, entre monitores e a partir de flutuante', () => {
+    const {ws, controller} = makeTiling({monitors: [{width: 1600, height: 900}, {width: 1280, height: 720}]});
+    const a = ws.add();
+    const b = ws.add();
+    const c = ws.add({monitor: 1});
+    controller.start();
+    controller.render();
+
+    ws.focused = a;
+    controller.run({type: 'focus', direction: 'right'});
+    assertEqual(ws.focused, b, 'vizinha na árvore:');
+
+    controller.run({type: 'focus', direction: 'right'});
+    assertEqual(ws.focused, c, 'borda → monitor vizinho:');
+
+    controller.run({type: 'focus', direction: 'left'});
+    assertEqual(ws.focused, b, 'e de volta, pela mais recente:');
+
+    const floater = ws.add({type: 'dialog', rect: {x: 50, y: 300, width: 200, height: 200}});
+    controller.windowAdded(floater);
+    ws.focused = floater;
+    assert(controller.run({type: 'focus', direction: 'right'}), 'flutuante usa geometria');
+    assert([a, b].includes(ws.focused), 'focou uma janela à direita');
+});
+
+test('controlador: mover na borda leva a janela ao monitor vizinho', () => {
+    const {ws, controller} = makeTiling({monitors: [{width: 1600, height: 900}, {width: 1280, height: 720}]});
+    const a = ws.add();
+    const b = ws.add();
+    const c = ws.add({monitor: 1, workspace: -1});   // monitor secundário: "em todas"
+    controller.start();
+    controller.render();
+    ws.focused = b;
+
+    assert(controller.run({type: 'move', direction: 'right'}), 'deveria ir para o outro monitor');
+    assertEqual(controller.tree.keyOf(b), '1:*', 'entra na chave que já existe ali:');
+    controller.render();
+    assertEqual(ws.describe(b).monitor, 1);
+    assertEqual(rectOf(ws, a), ws.workArea(0), 'a que ficou ocupa o monitor:');
+    assertEqual(controller.tree.ids('1:*'), [c, b]);
+});
+
+test('controlador: swap por direção e com a janela anterior', () => {
+    const {ws, controller} = makeTiling();
+    const a = ws.add();
+    const b = ws.add();
+    const c = ws.add();
+    controller.start();
+
+    ws.focused = a;
+    controller.run({type: 'swap', direction: 'right'});
+    assertEqual(controller.tree.ids('0:0'), [b, a, c]);
+
+    controller.focusChanged(c);
+    controller.focusChanged(a);
+    ws.focused = a;
+    controller.run({type: 'swap-last'});
+    assertEqual(controller.tree.ids('0:0'), [b, c, a], 'troca com a usada antes:');
+});
+
+test('controlador: maximizada (inclusive pelo auto-maximize do Mutter) volta ao tiling', () => {
+    const {ws, controller} = makeTiling();
+    const a = ws.add();
+    const b = ws.add({maximized: true, rect: ws.workArea(0)});
+    controller.start();
+    controller.render();
+
+    assert(!ws.describe(b).maximized, 'o layout desmaximiza');
+    assertEqual([rectOf(ws, a).width, rectOf(ws, b).width], [794, 794], 'e divide o espaço:');
+
+    ws.set(b, {maximized: true});
+    ws.windows.get(b).rect = ws.workArea(0);
+    controller.windowChanged(b, 'maximized');
+    controller.render();
+    assertEqual(rectOf(ws, b).width, 794, 'maximizar uma janela em tiling é desfeito, como no Forge:');
+});
+
+test('controlador: minimizada e tela cheia guardam o lugar sem ocupar espaço', () => {
+    const {ws, controller} = makeTiling();
+    const a = ws.add();
+    const b = ws.add();
+    controller.start();
+    controller.render();
+
+    for (const state of ['minimized', 'fullscreen']) {
+        ws.set(b, {[state]: true});
+        controller.windowChanged(b, state);
+        controller.render();
+        assertEqual(rectOf(ws, a), ws.workArea(0), `${state}: a outra ocupa tudo:`);
+        assert(controller.isTiled(b), `${state}: continua na árvore`);
+
+        ws.set(b, {[state]: false});
+        controller.windowChanged(b, state);
+        controller.render();
+        assertEqual(rectOf(ws, a).width, 794, `${state}: volta a dividir:`);
+    }
+});
+
+test('controlador: só a área de trabalho ativa é renderizada, e dá para pular uma', () => {
+    const {ws, controller, requests} = makeTiling({workspaces: 2});
+    const a = ws.add({workspace: 0});
+    const b = ws.add({workspace: 1, rect: {x: 5, y: 5, width: 100, height: 100}});
+    controller.start();
+    controller.render();
+
+    assertEqual(rectOf(ws, b), {x: 5, y: 5, width: 100, height: 100}, 'área inativa intocada:');
+
+    ws.active = 1;
+    controller.workspaceSwitched();
+    controller.render();
+    assertEqual(rectOf(ws, b), ws.workArea(0), 'ao trocar, é renderizada:');
+
+    controller.run({type: 'workspace-toggle'});
+    assertEqual(requests.at(-1), ['skip-workspaces', [1]], 'valor explícito:');
+    assert(!controller.isTiled(b) && controller.isTiled(a), 'só a área pulada solta as janelas');
+
+    controller.run({type: 'workspace-toggle'});
+    assertEqual(requests.at(-1), ['skip-workspaces', []]);
+    assert(controller.isTiled(b), 'volta');
+});
+
+test('controlador: desligar o tiling solta tudo e desfaz o "no topo"', () => {
+    const {ws, controller, requests} = makeTiling();
+    const a = ws.add();
+    const b = ws.add();
+    controller.start();
+    ws.focused = b;
+    controller.run({type: 'float-toggle'});
+    assert(ws.above.has(b));
+
+    controller.run({type: 'setting-toggle', setting: 'tiling-mode'});
+    assertEqual(requests.at(-1), ['tiling-mode', false], 'valor explícito, não "alternar":');
+    assertEqual(controller.tree.size, 0, 'nenhuma janela na árvore');
+    assert(!ws.above.has(b), 'no topo desfeito');
+
+    controller.run({type: 'setting-toggle', setting: 'tiling-mode'});
+    assertEqual(controller.tree.ids('0:0').sort(), [a, b].sort(), 'religado, readota as duas');
+});
+
+test('controlador: gaps por atalho com limites e valores explícitos', () => {
+    const {controller, requests} = makeTiling();
+    controller.start();
+    controller.run({type: 'gap', amount: 1});
+    assertEqual(requests.at(-1), ['gap-increment', 2]);
+    assertEqual(controller.gap, 4, 'tamanho × passo:');
+
+    controller.setConfig({gapIncrement: GAP_INCREMENT_MAX});
+    assertEqual(controller.run({type: 'gap', amount: 1}), false, 'no máximo não pede nada:');
+    controller.setConfig({gapIncrement: 0});
+    assertEqual(controller.run({type: 'gap', amount: -1}), false, 'no zero também:');
+});
+
+test('controlador: redimensionar por teclado e pelo mouse muda os pesos', () => {
+    const {ws, controller} = makeTiling({config: {gapSize: 0}});
+    const a = ws.add();
+    const b = ws.add();
+    controller.start();
+    controller.render();
+    ws.focused = a;
+
+    controller.run({type: 'resize', edge: 'right', sign: 1});
+    controller.render();
+    assertEqual([rectOf(ws, a).width, rectOf(ws, b).width], [815, 785], 'resize-amount 15:');
+
+    // Arrasto da borda direita de `a` com o mouse (resizing_e = 8193).
+    controller.grabBegin(a, 8193);
+    ws.moveResize(a, {...rectOf(ws, a), width: rectOf(ws, a).width + 100});
+    controller.render();
+    assertEqual(rectOf(ws, a).width, 915, 'durante o arrasto o layout não briga:');
+    controller.grabEnd(a, 8193);
+    controller.render();
+    assertEqual([rectOf(ws, a).width, rectOf(ws, b).width], [915, 685], 'o arrasto vira peso:');
+});
+
+test('controlador: arrastar sobre outra janela troca; em outro monitor, muda de árvore', () => {
+    const {ws, controller} = makeTiling({monitors: [{width: 1600, height: 900}, {width: 1280, height: 720}]});
+    const a = ws.add();
+    const b = ws.add();
+    controller.start();
+    controller.render();
+
+    controller.grabBegin(a, 1);
+    ws.pointerAt = [1200, 400];              // sobre `b`
+    controller.grabEnd(a, 1);
+    assertEqual(controller.tree.ids('0:0'), [b, a], 'troca:');
+
+    controller.grabBegin(a, 1);
+    ws.pointerAt = [2000, 300];              // monitor 1, vazio
+    controller.grabEnd(a, 1);
+    assertEqual(controller.tree.keyOf(a), '1:0', 'foi para o outro monitor:');
+
+    controller.setConfig({dragSwap: false});
+    controller.grabBegin(b, 1);
+    ws.pointerAt = [2000, 300];
+    controller.grabEnd(b, 1);
+    assertEqual(controller.tree.keyOf(b), '0:0', 'sem drag-swap, nada muda:');
+});
+
+test('controlador: snap solta só aquela janela; divisão automática segue o lado maior', () => {
+    const {ws, controller} = makeTiling();
+    const a = ws.add();
+    const b = ws.add();
+    controller.start();
+    ws.focused = b;
+
+    controller.run({type: 'snap', side: 'right', fraction: 2 / 3});
+    assertEqual(rectOf(ws, b), Geometry.snapRect(ws.workArea(0), 'right', 2 / 3, 2));
+    assert(controller.isFloating(b) && controller.isTiled(a), 'só a do snap flutua');
+
+    const auto = makeTiling({config: {autoSplit: true}});
+    const wide = auto.ws.add({rect: {x: 0, y: 0, width: 1000, height: 400}});
+    auto.controller.start();
+    auto.controller.focusChanged(wide);
+    const tall = auto.ws.add();
+    auto.controller.windowAdded(tall);
+    assertEqual(auto.controller.tree.describe('0:0'), 'h[' + wide + ' ' + tall + ']',
+        'janela única: split só muda a orientação da raiz (larga → h):');
+});
+
+test('controlador: janela fechada sai e o resto se reorganiza; stop não move nada', () => {
+    const {ws, controller} = makeTiling();
+    const a = ws.add();
+    const b = ws.add();
+    controller.start();
+    controller.render();
+
+    ws.remove(b);
+    controller.windowRemoved(b);
+    controller.render();
+    assertEqual(rectOf(ws, a), ws.workArea(0));
+
+    ws.focused = a;
+    controller.run({type: 'float-toggle'});
+    const moves = ws.moves.length;
+    controller.stop();
+    assertEqual(ws.moves.length, moves, 'stop não mexe nas janelas:');
+    assert(!ws.above.has(a), 'mas desfaz o "no topo"');
+    assertEqual(controller.run({type: 'focus', direction: 'left'}), false, 'parado não age:');
+});
+
+test('controlador: janela que muda de monitor por fora vai para a árvore certa', () => {
+    const {ws, controller} = makeTiling({monitors: [{width: 1600, height: 900}, {width: 1280, height: 720}]});
+    const a = ws.add();
+    controller.start();
+    ws.set(a, {monitor: 1});
+    controller.windowChanged(a, 'monitor');
+    assertEqual(controller.tree.keyOf(a), '1:0');
+    assertEqual(keyFor({monitor: 1, workspace: -1}), '1:*');
 });
 
 // -------------------------------------------------------------- os-release

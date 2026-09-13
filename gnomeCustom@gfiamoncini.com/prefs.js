@@ -21,6 +21,7 @@ import {MediaPage} from './prefs/pages/media.js';
 import {DockPage} from './prefs/pages/dock.js';
 import {OverviewPage} from './prefs/pages/overview.js';
 import {AnimationPage} from './prefs/pages/animation.js';
+import {TilingPage} from './prefs/pages/tiling.js';
 import {AdvancedPage} from './prefs/pages/advanced.js';
 
 export default class GnomeCustomPreferences extends ExtensionPreferences {
@@ -39,6 +40,7 @@ export default class GnomeCustomPreferences extends ExtensionPreferences {
         window.add(new DockPage(child('dock'), _));
         window.add(new OverviewPage(child('overview'), _));
         window.add(new AnimationPage(child('animation'), _));
+        window.add(new TilingPage(child('tiling'), child('tiling.keybindings'), _));
         window.add(new AdvancedPage(settings, this.metadata, _));
 
         window.set_default_size(760, 680);

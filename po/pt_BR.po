@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnomeCustom 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/gfiamoncini/gnomecustom/issues\n"
-"POT-Creation-Date: 2026-09-13 13:35-0300\n"
+"POT-Creation-Date: 2026-09-13 14:43-0300\n"
 "PO-Revision-Date: 2026-09-09 23:30-0300\n"
 "Last-Translator: Gabriel Fiamoncini\n"
 "Language-Team: português do Brasil\n"
@@ -85,7 +85,9 @@ msgstr "Predefinição"
 msgid ""
 "A starting point for every surface at once. Changing any option below turns "
 "it into a custom look."
-msgstr "Um ponto de partida para todas as superfícies de uma vez. Mudar qualquer opção abaixo transforma o visual em personalizado."
+msgstr ""
+"Um ponto de partida para todas as superfícies de uma vez. Mudar qualquer "
+"opção abaixo transforma o visual em personalizado."
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:55
 msgid "Custom"
@@ -107,7 +109,9 @@ msgstr "Menus, OSD e dock"
 msgid ""
 "Extends the bar colours to other surfaces. Each one keeps the look of the "
 "shell theme until turned on."
-msgstr "Estende as cores da barra a outras superfícies. Cada uma mantém o visual do tema do Shell até ser ligada."
+msgstr ""
+"Estende as cores da barra a outras superfícies. Cada uma mantém o visual do "
+"tema do Shell até ser ligada."
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:103
 msgid "Style popup menus"
@@ -132,7 +136,9 @@ msgstr "Estilizar o dock"
 #: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:116
 msgid ""
 "Background colour and running indicators; opacity stays in the dock settings"
-msgstr "Cor de fundo e indicadores de execução; a opacidade continua nas configurações do dock"
+msgstr ""
+"Cor de fundo e indicadores de execução; a opacidade continua nas "
+"configurações do dock"
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:121
 msgid "Menu and OSD corner radius"
@@ -154,7 +160,9 @@ msgstr "Bordas do mosaico"
 msgid ""
 "Border of the focused window. Used by the tiling module, which is not "
 "implemented yet."
-msgstr "Borda da janela em foco. Usada pelo módulo de mosaico, que ainda não foi implementado."
+msgstr ""
+"Borda da janela em foco. Usada pelo módulo de mosaico, que ainda não foi "
+"implementado."
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:159
 msgid "Border colour"
@@ -365,6 +373,7 @@ msgid "Keyboard shortcut"
 msgstr "Atalho de teclado"
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/panel.js:42
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:217
 msgid "none"
 msgstr "nenhum"
 
@@ -415,6 +424,7 @@ msgid "Custom image"
 msgstr "Imagem personalizada"
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:50
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:77
 msgid "Size"
 msgstr "Tamanho"
 
@@ -1095,7 +1105,9 @@ msgstr "Aplicar as cores do tema aos menus"
 msgid ""
 "Panel menus, the logo menu, the applications menu and the cards use the bar "
 "background and accent colour."
-msgstr "Os menus do painel, o menu do logotipo, o menu de aplicações e os cartões usam o fundo da barra e a cor de destaque."
+msgstr ""
+"Os menus do painel, o menu do logotipo, o menu de aplicações e os cartões "
+"usam o fundo da barra e a cor de destaque."
 
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:117
 msgid "Apply the theme colours to on-screen displays"
@@ -1105,7 +1117,9 @@ msgstr "Aplicar as cores do tema aos avisos na tela"
 msgid ""
 "The volume and brightness pop-ups use the bar background, and the level bar "
 "uses the accent colour."
-msgstr "Os avisos de volume e brilho usam o fundo da barra, e a barra de nível usa a cor de destaque."
+msgstr ""
+"Os avisos de volume e brilho usam o fundo da barra, e a barra de nível usa a "
+"cor de destaque."
 
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:123
 msgid "Apply the theme colours to the dock"
@@ -1115,7 +1129,9 @@ msgstr "Aplicar as cores do tema ao dock"
 msgid ""
 "The dock background takes the bar colour (its opacity is still set in the "
 "dock settings), and the running indicators take the accent."
-msgstr "O fundo do dock usa a cor da barra (a opacidade continua nas configurações do dock), e os indicadores de execução usam a cor de destaque."
+msgstr ""
+"O fundo do dock usa a cor da barra (a opacidade continua nas configurações "
+"do dock), e os indicadores de execução usam a cor de destaque."
 
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:130
 msgid "Corner radius of popup menus and on-screen displays"
@@ -1127,7 +1143,9 @@ msgstr "Opacidade do fundo dos menus e dos avisos na tela"
 
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:136
 msgid "Kept above 0.3 so menu text stays readable over any window."
-msgstr "Mantida acima de 0,3 para que o texto dos menus continue legível sobre qualquer janela."
+msgstr ""
+"Mantida acima de 0,3 para que o texto dos menus continue legível sobre "
+"qualquer janela."
 
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:141
 msgid "Corner radius of the dock background"
@@ -1399,7 +1417,9 @@ msgstr "Papel de parede"
 msgid ""
 "Floating bar coloured from the wallpaper; menus, OSD and dock left to the "
 "shell theme"
-msgstr "Barra flutuante com as cores do papel de parede; menus, OSD e dock ficam com o tema do Shell"
+msgstr ""
+"Barra flutuante com as cores do papel de parede; menus, OSD e dock ficam com "
+"o tema do Shell"
 
 #: gnomeCustom@gfiamoncini.com/theme/presets/presets.js:95
 msgid "Adwaita"
@@ -1415,7 +1435,8 @@ msgstr "Escuro"
 
 #: gnomeCustom@gfiamoncini.com/theme/presets/presets.js:127
 msgid "Solid dark bar attached to the edge, with menus, OSD and dock to match"
-msgstr "Barra escura e sólida encostada na borda, com menus, OSD e dock combinando"
+msgstr ""
+"Barra escura e sólida encostada na borda, com menus, OSD e dock combinando"
 
 #: gnomeCustom@gfiamoncini.com/theme/presets/presets.js:157
 msgid "Minimal"
@@ -1432,3 +1453,422 @@ msgstr "Fedora"
 #: gnomeCustom@gfiamoncini.com/theme/presets/presets.js:189
 msgid "Floating bar in Fedora blue with a light-blue accent"
 msgstr "Barra flutuante no azul do Fedora com destaque azul-claro"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:25
+#: gnomeCustom@gfiamoncini.com/modules/tiling/module.js:335
+msgid "Tiling"
+msgstr "Mosaico"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:43
+msgid "Behaviour"
+msgstr "Comportamento"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:44
+msgid ""
+"Arranges windows side by side automatically. While the Forge extension is "
+"active, this module waits and does nothing."
+msgstr "Organiza as janelas lado a lado automaticamente. Enquanto a extensão Forge estiver ativa, este módulo espera e não faz nada."
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:48
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:12
+msgid "Tile windows"
+msgstr "Organizar janelas em mosaico"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:48
+msgid "Also toggled from quick settings and with Shift+Super+P"
+msgstr "Também pelas configurações rápidas e com Shift+Super+P"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:49
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:18
+msgid "Split automatically"
+msgstr "Dividir automaticamente"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:49
+msgid "A new window splits the focused one along its longer side"
+msgstr "Uma janela nova divide a janela em foco pelo lado maior"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:50
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:57
+msgid "Swap windows by dragging"
+msgstr "Trocar janelas arrastando"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:50
+msgid "Drop a window over another to swap them"
+msgstr "Solte uma janela sobre outra para trocá-las de lugar"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:51
+msgid "Keep floating windows on top"
+msgstr "Manter janelas flutuantes por cima"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:52
+msgid "Border around the focused window"
+msgstr "Borda em volta da janela em foco"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:52
+msgid "Colour and thickness are set on the Theme page"
+msgstr "Cor e espessura ficam na página Tema"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:53
+msgid "Switch in quick settings"
+msgstr "Interruptor nas configurações rápidas"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:59
+msgid "Resize step"
+msgstr "Passo do redimensionamento"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:60
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:53
+msgid "Pixels moved by each resize shortcut"
+msgstr "Pixels movidos por cada atalho de redimensionamento"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:73
+msgid "Gaps"
+msgstr "Espaçamento"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:74
+msgid ""
+"Windows end up 2 × size × step apart, and the same distance from the screen "
+"edges."
+msgstr "As janelas ficam a 2 × tamanho × passo umas das outras, e à mesma distância das bordas da tela."
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:79
+msgid "Step"
+msgstr "Passo"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:80
+msgid "Changed by Ctrl+Super+Plus and Ctrl+Super+Minus"
+msgstr "Alterado com Ctrl+Super+Mais e Ctrl+Super+Menos"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:87
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:37
+msgid "No gaps around a single window"
+msgstr "Sem espaçamento em volta de uma janela sozinha"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:104
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:72
+msgid "Windows that always float"
+msgstr "Janelas que sempre flutuam"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:105
+msgid ""
+"Matched by application class and, optionally, by text in the title. Separate "
+"several titles with commas; start one with “!” to match titles that do not "
+"contain it."
+msgstr "Identificadas pela classe da aplicação e, opcionalmente, por um texto no título. Separe vários títulos com vírgulas; comece um com “!” para casar com títulos que não o contêm."
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:109
+msgid "Application class, e.g. org.gnome.Calculator"
+msgstr "Classe da aplicação, ex. org.gnome.Calculator"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:110
+msgid "Title contains (optional)"
+msgstr "O título contém (opcional)"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:112
+msgid "Add rule"
+msgstr "Adicionar regra"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:158
+msgid "title"
+msgstr "título"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:159
+msgid "whole application"
+msgstr "a aplicação inteira"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:165
+msgid "Remove rule"
+msgstr "Remover regra"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:177
+msgid "Workspaces without tiling"
+msgstr "Áreas de trabalho sem mosaico"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:178
+msgid "Workspaces"
+msgstr "Áreas de trabalho"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:180
+msgid "Tile everywhere"
+msgstr "Mosaico em todas"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:191
+msgid "none — toggle the current one with Shift+Super+W"
+msgstr "nenhuma — alterne a atual com Shift+Super+W"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:205
+msgid "Keyboard shortcuts"
+msgstr "Atalhos de teclado"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:206
+msgid ""
+"The same keys as the Forge extension. Stacked and tabbed layouts are not "
+"available, so their shortcuts stay free."
+msgstr "As mesmas teclas da extensão Forge. Os layouts em pilha e em abas não estão disponíveis, então os atalhos deles ficam livres."
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:32
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:12
+msgid "Focus the window on the left"
+msgstr "Focar a janela à esquerda"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:33
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:16
+msgid "Focus the window on the right"
+msgstr "Focar a janela à direita"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:34
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:20
+msgid "Focus the window above"
+msgstr "Focar a janela acima"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:35
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:24
+msgid "Focus the window below"
+msgstr "Focar a janela abaixo"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:38
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:28
+msgid "Move the window left"
+msgstr "Mover a janela para a esquerda"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:39
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:32
+msgid "Move the window right"
+msgstr "Mover a janela para a direita"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:40
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:36
+msgid "Move the window up"
+msgstr "Mover a janela para cima"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:41
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:40
+msgid "Move the window down"
+msgstr "Mover a janela para baixo"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:44
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:44
+msgid "Swap with the window on the left"
+msgstr "Trocar com a janela à esquerda"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:45
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:48
+msgid "Swap with the window below"
+msgstr "Trocar com a janela abaixo"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:46
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:52
+msgid "Swap with the window above"
+msgstr "Trocar com a janela acima"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:47
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:56
+msgid "Swap with the window on the right"
+msgstr "Trocar com a janela à direita"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:48
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:60
+msgid "Swap with the previously focused window"
+msgstr "Trocar com a janela usada antes"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:51
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:64
+msgid "Split side by side"
+msgstr "Dividir lado a lado"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:52
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:68
+msgid "Split one above the other"
+msgstr "Dividir uma sobre a outra"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:53
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:72
+msgid "Toggle the split direction"
+msgstr "Alternar a direção da divisão"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:56
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:76
+msgid "Float or tile this window"
+msgstr "Flutuar ou encaixar esta janela"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:57
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:80
+msgid "Always float windows of this application"
+msgstr "Sempre flutuar as janelas desta aplicação"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:60
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:84
+msgid "Grow the top edge"
+msgstr "Aumentar pela borda de cima"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:61
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:88
+msgid "Shrink the top edge"
+msgstr "Diminuir pela borda de cima"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:62
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:92
+msgid "Grow the bottom edge"
+msgstr "Aumentar pela borda de baixo"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:63
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:96
+msgid "Shrink the bottom edge"
+msgstr "Diminuir pela borda de baixo"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:64
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:100
+msgid "Grow the left edge"
+msgstr "Aumentar pela borda esquerda"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:65
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:104
+msgid "Shrink the left edge"
+msgstr "Diminuir pela borda esquerda"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:66
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:108
+msgid "Grow the right edge"
+msgstr "Aumentar pela borda direita"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:67
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:112
+msgid "Shrink the right edge"
+msgstr "Diminuir pela borda direita"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:70
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:116
+msgid "Center the window"
+msgstr "Centralizar a janela"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:71
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:120
+msgid "Snap to the left third"
+msgstr "Encaixar no terço esquerdo"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:72
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:124
+msgid "Snap to the right third"
+msgstr "Encaixar no terço direito"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:73
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:128
+msgid "Snap to the left two thirds"
+msgstr "Encaixar nos dois terços esquerdos"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:74
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:132
+msgid "Snap to the right two thirds"
+msgstr "Encaixar nos dois terços direitos"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:77
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:136
+msgid "Increase the gaps"
+msgstr "Aumentar o espaçamento"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:78
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:140
+msgid "Decrease the gaps"
+msgstr "Diminuir o espaçamento"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:79
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:144
+msgid "Show or hide the focus border"
+msgstr "Mostrar ou esconder a borda de foco"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:80
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:148
+msgid "Turn tiling on or off"
+msgstr "Ligar ou desligar o mosaico"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:81
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:152
+msgid "Turn tiling on or off for this workspace"
+msgstr "Ligar ou desligar o mosaico nesta área de trabalho"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:84
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:156
+msgid "Stacked layout (not available)"
+msgstr "Layout em pilha (indisponível)"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:85
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:160
+msgid "Tabbed layout (not available)"
+msgstr "Layout em abas (indisponível)"
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:86
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:164
+msgid "Tab decorations (not available)"
+msgstr "Decoração das abas (indisponível)"
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:13
+msgid ""
+"When off, the module stays loaded but every window floats. Toggled by the "
+"quick settings switch and the keyboard shortcut."
+msgstr "Desligado, o módulo continua carregado, mas todas as janelas flutuam. Alternado pelo interruptor das configurações rápidas e pelo atalho de teclado."
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:19
+msgid ""
+"A new window splits the focused one along its longer side, instead of "
+"joining the focused window's container."
+msgstr "Uma janela nova divide a janela em foco pelo lado maior, em vez de entrar no contêiner dela."
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:25
+msgid "Gap size in pixels"
+msgstr "Tamanho do espaçamento em pixels"
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:26
+msgid ""
+"Multiplied by the gap step. Windows are 2 × gap × step apart, and the same "
+"distance from the screen edges."
+msgstr "Multiplicado pelo passo. As janelas ficam a 2 × espaçamento × passo umas das outras, e à mesma distância das bordas da tela."
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:32
+msgid "Gap step"
+msgstr "Passo do espaçamento"
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:33
+msgid "Changed by the “increase gaps” and “decrease gaps” shortcuts."
+msgstr "Alterado pelos atalhos “aumentar o espaçamento” e “diminuir o espaçamento”."
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:41
+msgid "Keep floating windows above tiled ones"
+msgstr "Manter as janelas flutuantes acima das encaixadas"
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:42
+msgid ""
+"Applies to windows floated with the shortcut; the setting is undone when the "
+"window is tiled again or the module is turned off."
+msgstr "Vale para janelas postas para flutuar pelo atalho; é desfeito quando a janela volta ao mosaico ou o módulo é desligado."
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:47
+msgid "Draw a border around the focused window"
+msgstr "Desenhar uma borda em volta da janela em foco"
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:48
+msgid "Its colour, thickness and corners come from the theme settings."
+msgstr "Cor, espessura e cantos vêm das configurações de tema."
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:58
+msgid ""
+"Dropping a tiled window over another swaps their places; dropping it "
+"elsewhere puts it back."
+msgstr "Soltar uma janela encaixada sobre outra troca as duas de lugar; soltá-la em outro ponto a devolve ao lugar."
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:63
+msgid "Show a tiling switch in quick settings"
+msgstr "Mostrar um interruptor de mosaico nas configurações rápidas"
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:67
+msgid "Workspaces where tiling is off"
+msgstr "Áreas de trabalho sem mosaico"
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:68
+msgid "Workspace indices, starting at 0."
+msgstr "Índices das áreas de trabalho, começando em 0."
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml:73
+msgid ""
+"JSON list of rules with “wmClass” and optionally “wmTitle”, in the format of "
+"Forge's windows.json. Rules by window id are ignored on purpose."
+msgstr "Lista JSON de regras com “wmClass” e, opcionalmente, “wmTitle”, no formato do windows.json do Forge. Regras por id de janela são ignoradas de propósito."

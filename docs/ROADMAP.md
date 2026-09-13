@@ -187,19 +187,40 @@ Entrega: extensão que carrega, não faz nada visível, e descarrega sem deixar 
       troca a quente para o preset Escuro; zero CRITICAL; limpeza "nada pendente"
 - **Aceite:** um preset altera painel, dock, menus e OSD de forma coerente. ✅
 
-## Fase 8 — Tiling
-Pesquisa antecipada a partir da Fase 4 (estudo do Forge em paralelo, sem código).
+## Fase 8 — Tiling ✅
+Camada pura (`lib/tiling/`, testada fora do Shell) + ponte com o Mutter.
 
-- [ ] `services/shell/window-manager.js`, `services/windows`
-- [ ] `tree.js`: containers, split H/V, foco, movimentação, swap
-- [ ] `layout.js`: geometria + gaps (2px, ocultos em janela única)
-- [ ] `keybindings.js`: os 40 atalhos do baseline
-- [ ] `rules.js`: overrides por `wmClass`/`wmTitle` (as 32 regras, menos as 4 por `wmId`)
-- [ ] Float por janela e sempre-flutuar por classe; float sempre no topo
-- [ ] Snap (centro, 1/3, 2/3); borda de foco
-- [ ] Toggle no Quick Settings
-- [ ] Multi-monitor; caso `num-workspaces = 1`
-- **Aceite:** Forge pode ser desabilitado; testes automatizados da árvore passam.
+- [x] `lib/tiling/tree.js`: árvore no modelo i3 — split, foco com histórico, mover (incluindo
+      sair de contêiner e envolver a raiz), swap, redimensionar por pesos, troca de chave
+- [x] `lib/tiling/layout.js`: fórmula de gaps do Forge (2·gap), gaps ocultos em janela única,
+      fatias que somam exatamente a área
+- [x] `lib/tiling/rules.js` + `default-rules.js`: as 28 regras do Forge, semântica de
+      correspondência dele; **regras por `wmId` não existem** — flutuar por janela é memória
+- [x] `lib/tiling/actions.js`: os 39 atalhos do baseline (o 40º item era o modificador do
+      mouse); esquema gerado deles por `make tiling-schemas`
+- [x] `lib/tiling/controller.js`: toda a decisão — eventos, flutuar, sempre-flutuar, snap,
+      resize por teclado e mouse, arrastar para trocar, monitor vizinho, área sem tiling
+- [x] `services/shell/windows.js` (adaptador do Mutter 17), `ui/tiling/focus-border.js`,
+      `ui/tiling/quick-toggle.js`, `services/shell/quick-settings.js`, `modules/tiling`
+- [x] Espera automática enquanto o Forge estiver ativo, e aviso de atalhos em colisão
+- [x] Página de preferências: comportamento, gaps, regras (adicionar/remover), áreas sem
+      tiling, atalhos
+- [x] 36 testes novos do núcleo (172) e 3 passos das prefs; pt-BR 396/396
+- [x] **Aceite verificado** em GNOME Shell 49.9 headless com o Editor de Texto de verdade:
+      tiling com os gaps do baseline, `Super+V` + janela nova, `Super+C`, `Ctrl+Super+H`,
+      `Ctrl+Alt+D`, mudança de monitor com dois monitores virtuais, espera com o Forge
+      ativo e retomada ao desativá-lo; zero CRITICAL com a extensão ativa
+- **Aceite:** Forge pode ser desabilitado; testes automatizados da árvore passam. ✅
+
+Descobertas ao rodar no Shell (todas com teste ou correção):
+- O Mutter maximiza sozinho janelas que abrem grandes, e `allows_resize()` é falso enquanto a
+  janela está maximizada: usar `resizeable` e desmaximizar no layout, como o Forge.
+- O foco chega na janela nova antes de ela estar pronta: o evento de foco não pode esperar.
+- No Wayland o retângulo só muda quando o cliente confirma: não repetir o mesmo pedido.
+- O aviso de desativação do Forge chega antes de ele soltar os atalhos: sair da espera com atraso
+  e tentar de novo atalhos recusados.
+- `Super+V` do baseline colide com `toggle-message-tray` do GNOME, que vence — **inclusive na
+  sessão real do usuário** (decisão dele se quer liberar).
 
 ## Fase 9 — Migração e polimento
 - [ ] `core/migration/*` conforme `MIGRATION.md`, com relatório e reversão
@@ -218,7 +239,7 @@ Pesquisa antecipada a partir da Fase 4 (estudo do Forge em paralelo, sem código
 | **M2** (parcial) | Fase 2 ✅ | Open Bar, Logo Menu, apps-menu, User Themes |
 | **M2** ✅ | Fase 3 ✅ | + BT Battery, OSD Volume, Spotify Controls |
 | **M3 (MVP)** ✅ | Fase 4–6 ✅ | + Dash to Dock, GNOME UI Tune, Impatience |
-| **M4** | Fase 7 ✅, Fase 8 | + Forge → **todas as 11** |
+| **M4** ✅ | Fases 7 e 8 | + Forge → **todas as 11** |
 | **M5** | Fase 9 | migração, presets, i18n |
 
 O MVP da §33 do briefing corresponde a **M3**. O tiling entra em **M4**, conforme previsto.

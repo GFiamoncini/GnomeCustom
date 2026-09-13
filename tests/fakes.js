@@ -172,3 +172,149 @@ export class FakeSink {
         return this.lines.map(([, m]) => m).join('\n');
     }
 }
+
+/**
+ * Sistema de janelas em memória, com a interface do adaptador que o
+ * `TilingController` espera. Monitores lado a lado; área útil = monitor menos
+ * uma barra de 32 px no topo.
+ */
+export class FakeWindowSystem {
+    /**
+     * @param {object} [options]
+     * @param {Array<{width: number, height: number}>} [options.monitors]
+     * @param {number} [options.workspaces]
+     */
+    constructor({monitors = [{width: 1600, height: 900}], workspaces = 1} = {}) {
+        let x = 0;
+        this._monitors = monitors.map(size => {
+            const monitor = {x, y: 0, ...size};
+            x += size.width;
+            return monitor;
+        });
+        this.workspaces = workspaces;
+        this.active = 0;
+        this.windows = new Map();
+        this.focused = null;
+        this.pointerAt = [0, 0];
+        this.moves = [];
+        this.pending = new Map();
+        this.deferConfigure = false;
+        this.above = new Set();
+        this._nextId = 100;
+    }
+
+    /** Cria uma janela; `rect` padrão encosta no canto do monitor. */
+    add(over = {}) {
+        const id = over.id ?? this._nextId++;
+        const monitor = over.monitor ?? 0;
+        const m = this._monitors[monitor];
+        const desc = {
+            id, wmClass: 'org.gnome.TextEditor', title: `Janela ${id}`, type: 'normal',
+            transient: false, allowsResize: true, minimized: false, fullscreen: false,
+            maximized: false, skipTaskbar: false, monitor, workspace: 0, ...over,
+        };
+        delete desc.rect;
+        const rect = over.rect ?? {x: m.x + 10 * this.windows.size, y: 40, width: 400, height: 300};
+        this.windows.set(id, {desc, rect: {...rect}});
+        return id;
+    }
+
+    remove(id) {
+        this.windows.delete(id);
+        if (this.focused === id)
+            this.focused = null;
+    }
+
+    set(id, changes) {
+        Object.assign(this.windows.get(id).desc, changes);
+    }
+
+    // ---------------------------------------------------------- adaptador
+
+    describe(id) {
+        const entry = this.windows.get(id);
+        return entry ? {...entry.desc} : null;
+    }
+
+    list() {
+        return [...this.windows.keys()];
+    }
+
+    workArea(monitor) {
+        const m = this._monitors[monitor];
+        return {x: m.x, y: m.y + 32, width: m.width, height: m.height - 32};
+    }
+
+    activeWorkspace() {
+        return this.active;
+    }
+
+    monitors() {
+        return this._monitors.length;
+    }
+
+    monitorNeighbor(monitor, direction) {
+        if (direction === 'left')
+            return monitor > 0 ? monitor - 1 : -1;
+        if (direction === 'right')
+            return monitor < this._monitors.length - 1 ? monitor + 1 : -1;
+        return -1;
+    }
+
+    monitorAt(x, y) {
+        return this._monitors.findIndex(m =>
+            x >= m.x && x < m.x + m.width && y >= m.y && y < m.y + m.height);
+    }
+
+    frameRect(id) {
+        return {...this.windows.get(id).rect};
+    }
+
+    moveResize(id, rect) {
+        const entry = this.windows.get(id);
+        this.moves.push([id, {...rect}]);
+        if (this.deferConfigure) {
+            // Cliente Wayland: o retângulo só muda quando `configureAll()` rodar.
+            this.pending.set(id, {...rect});
+            return;
+        }
+        entry.rect = {...rect};
+        entry.desc.maximized = false;     // como o adaptador real, desmaximiza antes
+        // O monitor acompanha o centro da janela, como no Mutter.
+        const monitor = this.monitorAt(rect.x + rect.width / 2, rect.y + rect.height / 2);
+        if (monitor >= 0)
+            entry.desc.monitor = monitor;
+    }
+
+    /** Aplica os tamanhos pendentes, como um cliente que acabou de confirmar. */
+    configureAll() {
+        const pending = [...this.pending.entries()];
+        this.pending.clear();
+        const defer = this.deferConfigure;
+        this.deferConfigure = false;
+        for (const [id, rect] of pending) {
+            this.moveResize(id, rect);
+            this.moves.pop();
+        }
+        this.deferConfigure = defer;
+    }
+
+    activate(id) {
+        this.focused = id;
+    }
+
+    setAbove(id, above) {
+        if (above)
+            this.above.add(id);
+        else
+            this.above.delete(id);
+    }
+
+    focusedId() {
+        return this.focused;
+    }
+
+    pointer() {
+        return [...this.pointerAt];
+    }
+}

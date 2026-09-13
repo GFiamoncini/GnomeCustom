@@ -47,23 +47,28 @@ Estado: `⬜` não iniciado · `🟡` em andamento · `✅` pronto · `⏸` adia
 
 | Funcionalidade | Extensão atual | Configuração atual | Nova implementação | Classe | Status |
 |---|---|---|---|---|---|
-| Tiling em árvore | Forge 89 | `tiling-mode-enabled=true` | `modules/tiling` | ADAPT (arquitetura) | ⬜ |
-| Split H / V / toggle | " | `Super+K` / `Super+V` / `Super+G` | " | ADAPT | ⬜ |
-| Auto-split | " | **desligado** | " | ADAPT | ⬜ |
-| Foco direcional | " | `Super+←↑↓→` | " | ADAPT | ⬜ |
-| Mover janela | " | `Shift+Super+←↑↓→` | " | ADAPT | ⬜ |
-| Swap | " | `Ctrl+Super+H/J/K/L`, `Super+Return` | " | ADAPT | ⬜ |
-| Resize | " | `Ctrl+Super+Y/U/I/O` (+`Shift` p/ reduzir) | " | ADAPT | ⬜ |
-| Snap (centro, 1/3, 2/3) | " | `Ctrl+Alt+C/D/G/E/T` | " | ADAPT | ⬜ |
-| Float por janela / sempre | " | `Super+C` / `Shift+Super+C` | " | ADAPT | ⬜ |
-| Float sempre no topo | " | ligado | " | ADAPT | ⬜ |
-| Smart gaps | " | `size=2`, oculto em janela única | " | ADAPT | ⬜ |
-| Borda de foco + CSS custom | " | ligado, `stylesheet.css` próprio | `modules/tiling` + Theme Engine | ADAPT | ⬜ |
-| Regras de override por app | " | `windows.json`, 32 regras | `modules/tiling` (só `wmClass`/`wmTitle`) | REWRITE | ⬜ |
-| Override por `wmId` | " | 4 regras corrompidas | **não implementar** | DROP | ❌ |
-| Stacked / tabbed | " | desligados | `modules/tiling` (pós-MVP) | ADAPT | ⏸ |
-| Foco por hover / mouse tile | " | desligados | " | ADAPT | ⏸ |
-| Toggle no Quick Settings | " | ligado | `modules/tiling` | ADAPT | ⬜ |
+| Tiling em árvore | Forge 89 | `tiling-mode-enabled=true` | `lib/tiling/tree.js` + `controller.js` + `modules/tiling` | REWRITE (modelo i3) | ✅ |
+| Split H / V / toggle | " | `Super+K` / `Super+V` / `Super+G` | " | REWRITE | ✅ |
+| Auto-split | " | **desligado** | " | REWRITE | ✅ |
+| Foco direcional | " | `Super+←↑↓→` | " + monitor vizinho e janelas flutuantes | REWRITE | ✅ |
+| Mover janela | " | `Shift+Super+←↑↓→` | " + monitor vizinho na borda | REWRITE | ✅ |
+| Swap | " | `Ctrl+Super+H/J/K/L`, `Super+Return` | " | REWRITE | ✅ |
+| Resize por teclado e mouse | " | `Ctrl+Super+Y/U/I/O` (+`Shift` p/ reduzir) | pesos na árvore | REWRITE | ✅ |
+| Snap (centro, 1/3, 2/3) | " | `Ctrl+Alt+C/D/G/E/T` | `lib/tiling/geometry.js` | REWRITE | ✅ |
+| Float por janela / sempre | " | `Super+C` / `Shift+Super+C` (este desligado pelo usuário) | em memória / regra por classe | REWRITE | ✅ |
+| Float sempre no topo | " | ligado | `make_above` desfeito ao voltar | REWRITE | ✅ |
+| Smart gaps | " | `size=2`, oculto em janela única | fórmula do Forge, soma exata | REWRITE | ✅ |
+| Borda de foco | " | ligado, `stylesheet.css` próprio | `ui/tiling/focus-border.js` + tokens do tema | REWRITE | ✅ |
+| Arrastar para trocar | " | `preview-hint-enabled=true` | troca ao soltar, sem prévia | REWRITE | ✅ |
+| Prévia durante o arrasto | " | ligada | — | — | ⏸ |
+| Regras de override por app | " | `windows.json`, 28 regras + fantasmas | `lib/tiling/rules.js` (28 do Forge, só `wmClass`/`wmTitle`) | REWRITE | ✅ |
+| Override por `wmId` | " | 2 a 4 regras corrompidas | **impossível por construção** | DROP | ❌ |
+| Área de trabalho sem tiling | " | `Shift+Super+W` | `skip-workspaces` | REWRITE | ✅ |
+| Multi-monitor / área única | " | 2 monitores, `num-workspaces=1` | chaves monitor:área (`*` = em todas) | REWRITE | ✅ |
+| Espera com o Forge ativo | — | — | `modules/tiling` | NOVO | ✅ |
+| Stacked / tabbed | " | desligados | atalhos ficam livres | — | ⏸ |
+| Foco por hover / mouse tile | " | desligados | — | — | ⏸ |
+| Toggle no Quick Settings | " | ligado | `ui/tiling/quick-toggle.js` | REWRITE | ✅ |
 
 ## 4. Overview
 
@@ -97,7 +102,7 @@ Estado: `⬜` não iniciado · `🟡` em andamento · `✅` pronto · `⏸` adia
 | Tema de menus | Open Bar | **desligado** | `theme/engine` + `style-menus` (padrão desligado) | REWRITE | ✅ |
 | Tema do OSD | — | — | `theme/engine` + `style-osd` (padrão desligado) | NOVO | ✅ |
 | Tema do dock | Dash to Dock | transparente | `theme/engine` + `services/theme/style.js` + `style-dock` | NOVO | ✅ |
-| Bordas do tiling (tokens) | Forge | `#9A9996`, 3 px, raio 14 | `tokens.tiling`; consumido na fase 8 | REWRITE | 🟡 |
+| Bordas do tiling (tokens) | Forge | `#9A9996`, 3 px, raio 14 | `tokens.tiling` → `ui/tiling/focus-border.js` | REWRITE | ✅ |
 | Tema do Shell / apps GTK-Flatpak | " | **desligado** | — | DROP | ⏸ |
 | Neon / sombra / borda dupla | " | desligados | " | REWRITE | ⏸ |
 

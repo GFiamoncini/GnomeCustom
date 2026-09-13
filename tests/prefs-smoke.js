@@ -86,6 +86,8 @@ const {BluetoothPage} = await import(`../${UUID}/prefs/pages/bluetooth.js`);
 const {DockPage} = await import(`../${UUID}/prefs/pages/dock.js`);
 const {OverviewPage} = await import(`../${UUID}/prefs/pages/overview.js`);
 const {AnimationPage} = await import(`../${UUID}/prefs/pages/animation.js`);
+const {TilingPage} = await import(`../${UUID}/prefs/pages/tiling.js`);
+const {TILING_ACTIONS} = await import(`../${UUID}/lib/tiling/actions.js`);
 const {AdvancedPage} = await import(`../${UUID}/prefs/pages/advanced.js`);
 const {MODULES_INFO} = await import(`../${UUID}/lib/modules-info.js`);
 
@@ -371,6 +373,65 @@ step('MediaPage traz o Spotify ligado e acompanha a chave', () => {
     // Spotify + tempo decorrido + fundo da capa.
     if (switches.length < 3)
         throw new Error(`esperava ao menos 3 interruptores, achei ${switches.length}`);
+});
+
+step('TilingPage lista as regras padrão e remove uma pelo botão', () => {
+    const settings = childSettings('tiling');
+    const page = new TilingPage(settings, childSettings('tiling.keybindings'), _);
+
+    const ruleRows = () => descendants(page)
+        .filter(w => w instanceof Adw.ActionRow && !(w instanceof Adw.SwitchRow) &&
+            (w.subtitle === 'whole application' || w.subtitle?.startsWith('title: ')));
+    if (ruleRows().length !== 28)
+        throw new Error(`esperava 28 regras, achei ${ruleRows().length}`);
+
+    const calculator = ruleRows().find(row => row.title === 'org.gnome.Calculator');
+    if (!calculator)
+        throw new Error('regra da Calculadora ausente');
+    const trash = descendants(calculator).find(w => w instanceof Gtk.Button);
+    trash.emit('clicked');
+
+    const json = settings.get_string('window-rules');
+    if (json.includes('org.gnome.Calculator') || JSON.parse(json).length !== 27)
+        throw new Error('o botão não removeu a regra');
+    if (ruleRows().length !== 27)
+        throw new Error('a lista não acompanhou a chave');
+    settings.reset('window-rules');
+});
+
+step('TilingPage acrescenta regra por classe e título, nunca por id', () => {
+    const settings = childSettings('tiling');
+    const page = new TilingPage(settings, childSettings('tiling.keybindings'), _);
+
+    const entries = descendants(page).filter(w => w instanceof Adw.EntryRow);
+    const [classRow, titleRow] = entries;
+    classRow.text = 'google-chrome';
+    titleRow.text = 'Picture-in-Picture';
+    const add = descendants(titleRow).find(w => w instanceof Gtk.Button && w.label === 'Add rule');
+    add.emit('clicked');
+
+    const rules = JSON.parse(settings.get_string('window-rules'));
+    const last = rules.at(-1);
+    if (last.wmClass !== 'google-chrome' || last.wmTitle !== 'Picture-in-Picture' || 'wmId' in last)
+        throw new Error(`regra gravada errada: ${JSON.stringify(last)}`);
+    if (classRow.text !== '')
+        throw new Error('os campos deveriam ser limpos');
+    settings.reset('window-rules');
+});
+
+step('TilingPage mostra os atalhos; os indisponíveis ficam insensíveis', () => {
+    const page = new TilingPage(childSettings('tiling'), childSettings('tiling.keybindings'), _);
+    const labels = descendants(page).filter(w => w instanceof Gtk.ShortcutLabel);
+    if (labels.length !== TILING_ACTIONS.length)
+        throw new Error(`esperava ${TILING_ACTIONS.length} atalhos, achei ${labels.length}`);
+
+    const split = labels.find(l => l.accelerator === '<Super>v');
+    if (!split)
+        throw new Error('atalho <Super>v ausente');
+    const insensitive = descendants(page)
+        .filter(w => w instanceof Adw.ActionRow && !w.sensitive).length;
+    if (insensitive !== 3)
+        throw new Error(`esperava 3 atalhos indisponíveis, achei ${insensitive}`);
 });
 
 step('AdvancedPage é construída', () => {

@@ -103,7 +103,7 @@ export const MODULES_INFO = Object.freeze([
         title: 'Tiling',
         summary: 'Tree-based window tiling',
         phase: 8,
-        implemented: false,
+        implemented: true,
     },
     {
         id: 'diagnostics',

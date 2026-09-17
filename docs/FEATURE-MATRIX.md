@@ -21,7 +21,8 @@ Estado: `⬜` não iniciado · `🟡` em andamento · `✅` pronto · `⏸` adia
 | Fundo do card com a cor da capa | " | — | `services/system/cover-art.js` + `theme/engine/color.js` | ADAPT | ✅ |
 | Largura máxima do nome | spotify-controls | default | chave `panel-max-width` | ADAPT | ✅ |
 | Players permitidos, configuráveis | não existe | — | `services/mpris` + chave `allowed-players` | NOVO | ✅ |
-| Botões de playback, scroll de volume, clique do meio | spotify-controls | default (ligado) | **não implementar**: card sem controles, pedido do usuário | DROP | ❌ |
+| Botões de playback | spotify-controls | default (ligado) | anterior, tocar/pausar e próxima na barra (`media/show-controls`), mais atalhos `media/shortcut-*` (padrão Ctrl+Alt+Super + ←/↑/→, no espírito do WinDock); revisto a pedido do usuário em 2026-09-16 | KEEP | ✅ |
+| Scroll de volume, clique do meio | spotify-controls | default (ligado) | **não implementar**: pedido do usuário | DROP | ❌ |
 | Curtir, playlists locais, letra, capa girando | spotify-controller | — | **não implementar**, pedido do usuário | DROP | ❌ |
 
 ## 2. Dock

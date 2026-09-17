@@ -62,7 +62,7 @@ Mexer em qualquer opção coberta por um perfil faz o seletor mostrar **Personal
 | Menu do logotipo | Logo Menu | Menu do logotipo |
 | Bluetooth | Bluetooth Battery Indicator | Bluetooth: limite de bateria baixa |
 | Volume | OSD Volume Number | — (o número substitui o ícone do aviso de volume) |
-| Mídia | Spotify Controls | Mídia: players permitidos, posição, largura |
+| Mídia | Spotify Controls | Mídia: players permitidos, posição, largura, controles na barra, atalhos (padrão Ctrl+Alt+Super + ← anterior, ↑ tocar/pausar, → próxima) |
 | Dock | Dash to Dock | Dock: tamanho dos ícones, comprimento, opacidade |
 | Visão geral | GNOME UI Tune | Visão geral |
 | Animação | Impatience | Animação: fator de velocidade |

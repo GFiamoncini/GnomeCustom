@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnomeCustom 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/gfiamoncini/gnomecustom/issues\n"
-"POT-Creation-Date: 2026-09-13 15:09-0300\n"
+"POT-Creation-Date: 2026-09-16 22:19-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,6 +16,37 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+#: gnomeCustom@gfiamoncini.com/prefs/widgets.js:297
+msgid "Disabled"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/widgets.js:304
+msgid "Restore default"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/widgets.js:310
+msgid "Disable shortcut"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/widgets.js:328
+#, javascript-format
+msgid "Also used by “%s” (%s)"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/widgets.js:345
+msgid "Press the new shortcut. Esc cancels, Backspace disables."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/widgets.js:347
+#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:137
+msgid "Cancel"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/widgets.js:356
+msgid ""
+"Use Ctrl, Alt or Super with the key (function and media keys work alone)."
+msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:23
 msgid "Silent"
@@ -68,10 +99,6 @@ msgstr ""
 msgid ""
 "%s would run alongside the modules that replace them. Disable them in the "
 "Extensions app first, or apply anyway and disable them afterwards."
-msgstr ""
-
-#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:137
-msgid "Cancel"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:138
@@ -205,7 +232,7 @@ msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:187
 #: gnomeCustom@gfiamoncini.com/prefs/pages/bluetooth.js:25
-#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:141
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:146
 msgid "Top bar"
 msgstr ""
 
@@ -549,22 +576,22 @@ msgid ""
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/bluetooth.js:29
-#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:144
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:149
 msgid "Position"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/bluetooth.js:33
-#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:148
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:153
 msgid "Left"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/bluetooth.js:34
-#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:149
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:154
 msgid "Centre"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/bluetooth.js:35
-#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:150
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:155
 msgid "Right"
 msgstr ""
 
@@ -580,48 +607,66 @@ msgstr ""
 msgid "In percent; the device turns red. 0 turns the warning off"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:23
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:26
 msgid "Media"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:48
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:53
 msgid "Players"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:49
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:54
 msgid ""
 "Only the applications turned on here appear in the top bar. Players open "
 "right now are listed automatically; when several play at once, the first one "
 "turned on wins."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:154
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:159
 msgid "Maximum width of the track name"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:155
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:160
 msgid "In pixels; longer names end with an ellipsis"
 msgstr ""
 
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:168
+msgid "Playback controls"
+msgstr ""
+
 #: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:169
-msgid "Card"
-msgstr ""
-
-#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:170
-msgid ""
-"Opens with a click on the track name. It shows the cover, the track and the "
-"artist, without playback controls."
-msgstr ""
-
-#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:174
-msgid "Show elapsed time"
-msgstr ""
-
-#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:179
-msgid "Background from the album cover"
+msgid "Previous, play or pause, and next beside the track name"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:180
+msgid "Shortcuts"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:181
+msgid ""
+"Work from any application, on the player shown in the top bar. Click a row "
+"to record a new combination."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:200
+msgid "Card"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:201
+msgid ""
+"Opens with a click on the track name. It shows the cover, the track and the "
+"artist."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:205
+msgid "Show elapsed time"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:210
+msgid "Background from the album cover"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:211
 msgid "When off, the card follows the shell theme"
 msgstr ""
 
@@ -1299,14 +1344,40 @@ msgid "Maximum width of the track name in the top bar, in pixels"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.media.gschema.xml:35
+msgid "Show playback controls in the top bar"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.media.gschema.xml:36
+msgid "Previous, play or pause, and next buttons beside the track name."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.media.gschema.xml:41
+msgid "Shortcut to play or pause"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.media.gschema.xml:42
+msgid ""
+"Acts on the player shown in the top bar or, when none is shown, on the first "
+"allowed player that is open."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.media.gschema.xml:47
+msgid "Shortcut to skip to the next track"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.media.gschema.xml:51
+msgid "Shortcut to go back to the previous track"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.media.gschema.xml:55
 msgid "Show the elapsed time in the card"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.media.gschema.xml:39
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.media.gschema.xml:59
 msgid "Colour the card from the album cover"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.media.gschema.xml:40
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.media.gschema.xml:60
 msgid ""
 "A gradient from the dominant colour of the cover to black. When off, the "
 "card follows the shell theme."
@@ -1412,7 +1483,7 @@ msgid "Floating bar in Fedora blue with a light-blue accent"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:25
-#: gnomeCustom@gfiamoncini.com/modules/tiling/module.js:335
+#: gnomeCustom@gfiamoncini.com/modules/tiling/module.js:329
 #: gnomeCustom@gfiamoncini.com/lib/modules-info.js:109
 msgid "Tiling"
 msgstr ""
@@ -2104,4 +2175,16 @@ msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/lib/modules-info.js:118
 msgid "Warns about extensions that duplicate an active module"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/mpris.js:153
+msgid "Play or pause"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/mpris.js:154
+msgid "Next track"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/mpris.js:155
+msgid "Previous track"
 msgstr ""

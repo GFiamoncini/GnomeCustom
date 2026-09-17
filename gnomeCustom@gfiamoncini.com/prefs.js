@@ -45,7 +45,7 @@ export default class GnomeCustomPreferences extends ExtensionPreferences {
         window.add(new PanelPage(child('panel'), _));
         window.add(new MenuPage(child('menu'), _));
         window.add(new BluetoothPage(child('bluetooth'), _));
-        window.add(new MediaPage(child('media'), _));
+        window.add(new MediaPage(child('media'), _, {openSettings}));
         window.add(new DockPage(child('dock'), _));
         window.add(new OverviewPage(child('overview'), _));
         window.add(new AnimationPage(child('animation'), _));

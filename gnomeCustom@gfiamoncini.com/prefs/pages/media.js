@@ -6,8 +6,8 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 
-import {MPRIS_PREFIX, playerIdFromBusName, toggleAllowed} from '../../lib/mpris.js';
-import {switchRow, spinRow, enumRow, escapeMarkup} from '../widgets.js';
+import {MEDIA_ACTIONS, MPRIS_PREFIX, playerIdFromBusName, toggleAllowed} from '../../lib/mpris.js';
+import {switchRow, spinRow, enumRow, escapeMarkup, readKeybindings, shortcutRow} from '../widgets.js';
 
 export class MediaPage extends Adw.PreferencesPage {
     static {
@@ -17,8 +17,11 @@ export class MediaPage extends Adw.PreferencesPage {
     /**
      * @param {object} settings Gio.Settings de `…gnomecustom.media`
      * @param {Function} _ função de tradução
+     * @param {object} [options]
+     * @param {Function} [options.openSettings] nome → Gio.Settings de um esquema filho,
+     *     para conferir os atalhos do mosaico
      */
-    constructor(settings, _) {
+    constructor(settings, _, {openSettings = null} = {}) {
         super({
             title: _('Media'),
             icon_name: 'audio-x-generic-symbolic',
@@ -28,9 +31,11 @@ export class MediaPage extends Adw.PreferencesPage {
         this._ = _;
         this._playerRows = new Map();   // id -> Adw.SwitchRow
         this._destroyed = false;
+        this._openSettings = openSettings;
 
         this._addPlayersGroup();
         this._addPanelGroup();
+        this._addShortcutsGroup();
         this._addCardGroup();
 
         this.connect('destroy', () => {
@@ -159,6 +164,32 @@ export class MediaPage extends Adw.PreferencesPage {
             max: 600,
             step: 10,
         }));
+        group.add(switchRow({
+            title: _('Playback controls'),
+            subtitle: _('Previous, play or pause, and next beside the track name'),
+            settings: this._settings,
+            key: 'show-controls',
+        }));
+
+        this.add(group);
+    }
+
+    _addShortcutsGroup() {
+        const _ = this._;
+        const group = new Adw.PreferencesGroup({
+            title: _('Shortcuts'),
+            description: _('Work from any application, on the player shown in the top bar. Click a row to record a new combination.'),
+        });
+
+        // Lido de novo a cada mudança: o aviso precisa enxergar os outros atalhos atuais.
+        const extra = [{settings: this._settings}];
+        const tiling = this._openSettings?.('tiling.keybindings');
+        if (tiling)
+            extra.push({settings: tiling});
+        const others = () => readKeybindings(extra);
+
+        for (const {key, title} of MEDIA_ACTIONS)
+            group.add(shortcutRow({title: _(title), settings: this._settings, key, _, others}));
 
         this.add(group);
     }
@@ -167,7 +198,7 @@ export class MediaPage extends Adw.PreferencesPage {
         const _ = this._;
         const group = new Adw.PreferencesGroup({
             title: _('Card'),
-            description: _('Opens with a click on the track name. It shows the cover, the track and the artist, without playback controls.'),
+            description: _('Opens with a click on the track name. It shows the cover, the track and the artist.'),
         });
 
         group.add(switchRow({

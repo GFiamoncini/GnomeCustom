@@ -19,7 +19,8 @@ import GLib from 'gi://GLib';
 
 import {Module} from '../../core/module.js';
 import {TilingController} from '../../lib/tiling/controller.js';
-import {TILING_ACTIONS, findCollisions} from '../../lib/tiling/actions.js';
+import {TILING_ACTIONS} from '../../lib/tiling/actions.js';
+import {SYSTEM_KEYBINDING_SCHEMAS, findCollisions} from '../../lib/shortcuts.js';
 import {parseRules, serializeRules} from '../../lib/tiling/rules.js';
 import {buildTokens} from '../../theme/engine/tokens.js';
 import {FocusBorder} from '../../ui/tiling/focus-border.js';
@@ -37,13 +38,6 @@ const LEAVE_STANDBY_DELAY_MS = 750;
 /** Espera antes de tentar de novo os atalhos que o Shell recusou. */
 const KEYBINDING_RETRY_MS = 1500;
 
-/** Esquemas de atalhos do sistema conferidos contra os nossos. */
-const SYSTEM_KEYBINDING_SCHEMAS = [
-    'org.gnome.desktop.wm.keybindings',
-    'org.gnome.shell.keybindings',
-    'org.gnome.mutter.keybindings',
-    'org.gnome.mutter.wayland.keybindings',
-];
 
 /** Chave do GSettings → campo da configuração do controlador. */
 const CONFIG_KEYS = {

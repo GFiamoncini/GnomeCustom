@@ -136,3 +136,77 @@ export function toggleAllowed(list, id, enabled) {
         return list.includes(id) ? [...list] : [...list, id];
     return list.filter(entry => entry !== id);
 }
+
+const N_ = message => message;
+
+/**
+ * Ações de reprodução com atalho. `key` é a chave `as` no esquema de mídia (e o
+ * nome do atalho no Shell, que é global — daí o prefixo); `method` é o método
+ * de `org.mpris.MediaPlayer2.Player`.
+ *
+ * Padrões no espírito do WinDock (modificador + ← anterior, → próxima, ↑ tocar
+ * ou pausar), trocando Alt por Super. Com Super, a única família de setas livre
+ * é Ctrl+Alt+Super: Shift+Super move janelas no mosaico, Ctrl+Super←→ muda de
+ * monitor e Alt+Super é dos workspaces e da visão geral no GNOME.
+ */
+export const MEDIA_ACTIONS = Object.freeze([
+    {key: 'shortcut-play-pause', method: 'PlayPause', title: N_('Play or pause')},
+    {key: 'shortcut-next', method: 'Next', title: N_('Next track')},
+    {key: 'shortcut-previous', method: 'Previous', title: N_('Previous track')},
+]);
+
+/**
+ * Player que recebe um comando. Primeiro o que está na barra; se nenhum está
+ * (ex. o player parou), o primeiro permitido que estiver aberto — assim o atalho
+ * de tocar ainda funciona depois de um "parar".
+ *
+ * @param {object[]} players
+ * @param {string[]} allowed
+ * @returns {?object}
+ */
+export function pickControlTarget(players, allowed) {
+    const shown = pickPlayer(players, allowed);
+    if (shown)
+        return shown;
+
+    const rank = id => allowed.indexOf(id);
+    const open = players.filter(player => rank(player.id) !== -1)
+        .sort((a, b) => rank(a.id) - rank(b.id));
+    return open[0] ?? null;
+}
+
+/**
+ * Se o player aceita o método agora, pelas propriedades `Can*` do MPRIS.
+ * Propriedade ausente conta como sim: há players que não as publicam.
+ *
+ * @param {?{status: string, can?: object}} player
+ * @param {string} method 'PlayPause' | 'Next' | 'Previous'
+ * @returns {boolean}
+ */
+export function canInvoke(player, method) {
+    if (!player)
+        return false;
+    const can = player.can ?? {};
+    const allows = flag => can[flag] !== false;
+
+    if (!allows('control'))
+        return false;
+    switch (method) {
+    case 'PlayPause':
+        return player.status === 'Playing' ? allows('pause') : allows('play');
+    case 'Next':
+        return allows('next');
+    case 'Previous':
+        return allows('previous');
+    default:
+        return false;
+    }
+}
+
+/**
+ * @param {string} status PlaybackStatus
+ * @returns {string} ícone do botão de tocar/pausar
+ */
+export function playPauseIcon(status) {
+    return status === 'Playing' ? 'media-playback-pause-symbolic' : 'media-playback-start-symbolic';
+}

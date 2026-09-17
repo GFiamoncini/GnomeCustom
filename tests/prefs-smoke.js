@@ -18,6 +18,7 @@
  */
 
 import Adw from 'gi://Adw';
+import Gdk from 'gi://Gdk?version=4.0';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import Gtk from 'gi://Gtk?version=4.0';
@@ -82,6 +83,7 @@ const {applyPreset, readPresetValues} = await import(`../${UUID}/theme/presets/a
 const {PanelPage} = await import(`../${UUID}/prefs/pages/panel.js`);
 const {MenuPage} = await import(`../${UUID}/prefs/pages/menu.js`);
 const {MediaPage} = await import(`../${UUID}/prefs/pages/media.js`);
+const {captureAccel} = await import(`../${UUID}/prefs/widgets.js`);
 const {BluetoothPage} = await import(`../${UUID}/prefs/pages/bluetooth.js`);
 const {DockPage} = await import(`../${UUID}/prefs/pages/dock.js`);
 const {OverviewPage} = await import(`../${UUID}/prefs/pages/overview.js`);
@@ -379,6 +381,59 @@ step('MediaPage traz o Spotify ligado e acompanha a chave', () => {
     // Spotify + tempo decorrido + fundo da capa.
     if (switches.length < 3)
         throw new Error(`esperava ao menos 3 interruptores, achei ${switches.length}`);
+});
+
+step('MediaPage: atalhos de mídia com padrão, limpar, restaurar e aviso de colisão', () => {
+    const settings = childSettings('media');
+    const tiling = childSettings('tiling.keybindings');
+    const page = new MediaPage(settings, _, {openSettings: name => childSettings(name)});
+
+    const rows = descendants(page).filter(w => w instanceof Adw.ActionRow &&
+        descendants(w).some(c => c instanceof Gtk.ShortcutLabel));
+    if (rows.length !== 3)
+        throw new Error(`esperava 3 linhas de atalho, achei ${rows.length}`);
+
+    const row = rows.find(r => r.title === 'Play or pause');
+    const label = descendants(row).find(w => w instanceof Gtk.ShortcutLabel);
+    if (label.accelerator !== '<Control><Alt><Super>Up')
+        throw new Error(`padrão inesperado: ${label.accelerator}`);
+
+    const [reset, clear] = descendants(row).filter(w => w instanceof Gtk.Button &&
+        !(w instanceof Gtk.ShortcutLabel));
+    if (reset.sensitive)
+        throw new Error('restaurar deveria estar desligado no padrão');
+    clear.emit('clicked');
+    if (settings.get_strv('shortcut-play-pause').length !== 0 || label.accelerator !== '')
+        throw new Error('limpar deveria esvaziar a chave e a etiqueta');
+    if (!reset.sensitive)
+        throw new Error('restaurar deveria ligar depois de mudar');
+    reset.emit('clicked');
+    if (label.accelerator !== '<Control><Alt><Super>Up')
+        throw new Error('restaurar não voltou ao padrão');
+
+    // Mesmo atalho de uma ação do mosaico: a linha avisa.
+    settings.set_strv('shortcut-play-pause', tiling.get_strv('window-focus-left'));
+    if (!row.has_css_class('warning') || !row.subtitle.includes('window-focus-left'))
+        throw new Error(`colisão com o mosaico não avisada: "${row.subtitle}"`);
+    settings.reset('shortcut-play-pause');
+    if (row.has_css_class('warning'))
+        throw new Error('o aviso deveria sumir');
+});
+
+step('captura de atalho: Esc cancela, Backspace limpa, modificador espera, letra sozinha recusa', () => {
+    const {CONTROL_MASK, ALT_MASK, SUPER_MASK, SHIFT_MASK} = Gdk.ModifierType;
+    const check = (keyval, state, expected) => {
+        const result = captureAccel(keyval, 0, state);
+        if (result.action !== expected.action || (expected.accel && result.accel !== expected.accel))
+            throw new Error(`${Gdk.keyval_name(keyval)}: esperava ${JSON.stringify(expected)}, veio ${JSON.stringify(result)}`);
+    };
+    check(Gdk.KEY_Escape, 0, {action: 'cancel'});
+    check(Gdk.KEY_BackSpace, 0, {action: 'clear'});
+    check(Gdk.KEY_Super_L, SUPER_MASK, {action: 'wait'});
+    check(Gdk.KEY_p, 0, {action: 'invalid'});
+    check(Gdk.KEY_P, SHIFT_MASK, {action: 'invalid'});
+    check(Gdk.KEY_Up, CONTROL_MASK | ALT_MASK | SUPER_MASK, {action: 'set', accel: '<Control><Alt><Super>Up'});
+    check(Gdk.KEY_F9, 0, {action: 'set', accel: 'F9'});
 });
 
 step('TilingPage lista as regras padrão e remove uma pelo botão', () => {

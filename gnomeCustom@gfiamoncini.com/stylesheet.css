@@ -85,6 +85,36 @@
     icon-size: 12px;
 }
 
+.gnomecustom-media-separator {
+    width: 1px;
+    height: 14px;
+    background-color: rgba(127, 127, 127, 0.5);
+}
+
+/* Controles na barra: anterior, tocar/pausar, próxima. O realce é do botão,
+   não do botão do painel inteiro. */
+.gnomecustom-media-controls {
+    spacing: 0;
+}
+
+.gnomecustom-media-control {
+    padding: 2px 4px;
+    border-radius: 99px;
+}
+
+.gnomecustom-media-control:hover,
+.gnomecustom-media-control:focus {
+    background-color: rgba(127, 127, 127, 0.3);
+}
+
+.gnomecustom-media-control:active {
+    background-color: rgba(127, 127, 127, 0.45);
+}
+
+.gnomecustom-media-control-icon {
+    icon-size: 16px;
+}
+
 /* O card desenha o próprio fundo em degradê; a caixa do menu fica invisível.
    Só vale com "fundo da capa" ligado — desligado, o tema de Shell decide. */
 .gnomecustom-media-menu {

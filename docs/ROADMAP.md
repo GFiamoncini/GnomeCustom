@@ -103,7 +103,8 @@ Entrega: extensão que carrega, não faz nada visível, e descarrega sem deixar 
       base trocada de spotify-controls para **spotify-controller** (NarkAgni). Na barra
       superior, à direita, `[mini capa] nome da música`; o clique abre o card com capa
       redonda, título, artistas / álbum, tempo só de leitura e fundo em degradê da capa.
-      **Sem** controles de reprodução, scroll de volume, curtir, playlists ou letra.
+      **Sem** scroll de volume, curtir, playlists ou letra. (Controles de reprodução na barra e
+      atalhos foram acrescentados depois do roadmap, a pedido do usuário, em 2026-09-16.)
       Players permitidos configuráveis nas preferências (padrão: Spotify)
 - **Aceite:** bateria do teclado AULA visível no menu; número no OSD ao ajustar volume;
   Spotify Controls pode ser desabilitada.

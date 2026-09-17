@@ -7,10 +7,11 @@
  * Baseado no card do spotify-controller (© 2026 NarkAgni, GPL-3.0-or-later —
  * reuso permitido, ver LICENSE-AUDIT.md §4): capa grande e redonda, título,
  * "artistas / álbum", tempo e fundo em degradê a partir da cor da capa. Por
- * decisão do usuário ficaram de fora os controles de reprodução, curtir,
- * playlists e letra; a barra de tempo é reta e só mostra, sem arrastar.
+ * decisão do usuário ficaram de fora curtir, playlists e letra; a barra de tempo
+ * é reta e só mostra, sem arrastar.
  *
- * Na barra: mini capa e nome da música.
+ * Na barra: mini capa, nome da música e os controles (anterior, tocar/pausar,
+ * próxima). Os botões consomem o clique, então não abrem o card.
  */
 
 import Clutter from 'gi://Clutter';
@@ -22,7 +23,8 @@ import St from 'gi://St';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 
-import {estimatePosition, formatTime, progressFraction, trackSubtitle} from '../../lib/mpris.js';
+import {canInvoke, estimatePosition, formatTime, playPauseIcon, progressFraction,
+    trackSubtitle} from '../../lib/mpris.js';
 import {darkenForContrast, rgba} from '../../theme/engine/color.js';
 
 /** Intervalo de atualização do tempo, só com o card aberto e tocando. */
@@ -44,13 +46,15 @@ export class MediaIndicator extends PanelMenu.Button {
      * @param {object} options.settings Gio.Settings de `…gnomecustom.media`
      * @param {object} options.signals SignalTracker do módulo, dono do temporizador
      * @param {Function} [options.onOpen] chamado ao abrir o card
+     * @param {Function} [options.onControl] chamado com 'PlayPause', 'Next' ou 'Previous'
      */
-    constructor({settings, signals, onOpen = null}) {
+    constructor({settings, signals, onOpen = null, onControl = null}) {
         super(0.5, 'GnomeCustom Media', false);
 
         this._settings = settings;
         this._signals = signals;
         this._onOpen = onOpen;
+        this._onControl = onControl;
         this._state = null;
         this._cover = null;
         this._tickToken = undefined;
@@ -69,6 +73,19 @@ export class MediaIndicator extends PanelMenu.Button {
     }
 
     /**
+     * O `PanelMenu.Button` abre o card já no pressionar, e o `St.Button` do GNOME
+     * 49 só reconhece o clique ao soltar: sem este desvio, clicar num controle
+     * abria o card e o menu roubava o soltar. Eventos vindos dos controles não
+     * chegam ao tratamento do botão do painel.
+     */
+    vfunc_event(event) {
+        const source = global.stage.get_event_actor(event);
+        if (source && this._controls.contains(source))
+            return Clutter.EVENT_PROPAGATE;
+        return super.vfunc_event(event);
+    }
+
+    /**
      * @param {?object} player retrato do serviço `mpris`; null esconde o botão
      */
     setPlayer(player) {
@@ -83,6 +100,7 @@ export class MediaIndicator extends PanelMenu.Button {
 
         const {track} = player;
         this._panelTitle.text = track.title;
+        this._syncControls();
         this._source.text = player.identity;
         this._title.text = track.title;
         this._subtitle.text = trackSubtitle(track);
@@ -112,6 +130,8 @@ export class MediaIndicator extends PanelMenu.Button {
     /** Relê as chaves de aparência. */
     applySettings() {
         this._panelTitle.style = `max-width: ${this._settings.get_uint('panel-max-width')}px;`;
+        this._controls.visible = this._settings.get_boolean('show-controls');
+        this._controlsSeparator.visible = this._controls.visible;
         this._syncBackground();
         this._syncProgress();
         this._syncTick();
@@ -133,9 +153,54 @@ export class MediaIndicator extends PanelMenu.Button {
         this._panelTitle = new St.Label({y_align: Clutter.ActorAlign.CENTER});
         this._panelTitle.clutter_text.ellipsize = Pango.EllipsizeMode.END;
 
+        this._controls = new St.BoxLayout({
+            style_class: 'gnomecustom-media-controls',
+            y_align: Clutter.ActorAlign.CENTER,
+        });
+        this._controlButtons = new Map([
+            ['Previous', this._controlButton('media-skip-backward-symbolic', 'Previous')],
+            ['PlayPause', this._controlButton(playPauseIcon('Paused'), 'PlayPause')],
+            ['Next', this._controlButton('media-skip-forward-symbolic', 'Next')],
+        ]);
+        for (const button of this._controlButtons.values())
+            this._controls.add_child(button);
+
+        // capa | nome | controles
+        this._controlsSeparator = this._separator();
         box.add_child(this._thumb);
+        box.add_child(this._separator());
         box.add_child(this._panelTitle);
+        box.add_child(this._controlsSeparator);
+        box.add_child(this._controls);
         this.add_child(box);
+    }
+
+    _separator() {
+        return new St.Widget({
+            style_class: 'gnomecustom-media-separator',
+            y_align: Clutter.ActorAlign.CENTER,
+        });
+    }
+
+    _controlButton(iconName, method) {
+        const button = new St.Button({
+            style_class: 'gnomecustom-media-control',
+            can_focus: true,
+            y_align: Clutter.ActorAlign.CENTER,
+            child: new St.Icon({icon_name: iconName, style_class: 'gnomecustom-media-control-icon'}),
+        });
+        button.connect('clicked', () => this._onControl?.(method));
+        return button;
+    }
+
+    _syncControls() {
+        for (const [method, button] of this._controlButtons) {
+            const enabled = canInvoke(this._state, method);
+            button.reactive = enabled;
+            button.opacity = enabled ? 255 : 110;
+        }
+        this._controlButtons.get('PlayPause').child.icon_name =
+            playPauseIcon(this._state?.status);
     }
 
     _buildCard() {
@@ -264,6 +329,7 @@ export class MediaIndicator extends PanelMenu.Button {
         this._state = null;
         this._cover = null;
         this._onOpen = null;
+        this._onControl = null;
         super.destroy();
     }
 }

@@ -4,22 +4,25 @@
 /**
  * Módulo de mídia: a faixa em reprodução na barra superior, com um card.
  *
- * Na barra fica a mini capa e o nome da música; o clique abre o card com capa
- * grande, título, artistas, álbum e tempo. Sem controles de reprodução — decisão
- * do usuário ao trocar a base para o spotify-controller (ROADMAP, Fase 3).
+ * Na barra ficam a mini capa, o nome da música e os controles (anterior,
+ * tocar/pausar, próxima); o clique no nome abre o card com capa grande, título,
+ * artistas, álbum e tempo. Os mesmos controles têm atalhos de teclado, que nascem
+ * vazios para o usuário definir (`MEDIA_ACTIONS`).
  *
  * Qualquer player MPRIS pode aparecer, mas só os permitidos em
  * `allowed-players`; entre eles, o que está tocando vence (`lib/mpris.js`).
  */
 
+import Shell from 'gi://Shell';
+
 import {Module} from '../../core/module.js';
-import {pickPlayer} from '../../lib/mpris.js';
+import {MEDIA_ACTIONS, canInvoke, pickControlTarget, pickPlayer} from '../../lib/mpris.js';
 import {MediaIndicator} from '../../ui/media/indicator.js';
 
 const ROLE = 'gnomecustom-media';
 
 /** Chaves que só mudam a aparência do botão ou do card. */
-const APPEARANCE_KEYS = ['panel-max-width', 'show-progress', 'ambient-background'];
+const APPEARANCE_KEYS = ['panel-max-width', 'show-controls', 'show-progress', 'ambient-background'];
 
 export class MediaModule extends Module {
     static get id() {
@@ -31,13 +34,14 @@ export class MediaModule extends Module {
     }
 
     static get requires() {
-        return ['panel', 'mpris', 'coverArt'];
+        return ['panel', 'mpris', 'coverArt', 'keybindings'];
     }
 
     enable() {
         this._panel = this.service('panel');
         this._mpris = this.service('mpris');
         this._coverArt = this.service('coverArt');
+        this._keybindings = this.service('keybindings');
         this._settings = this.settings.child('media');
 
         this._createIndicator();
@@ -49,16 +53,26 @@ export class MediaModule extends Module {
 
         this._unsubscribe = this._mpris.onChanged(() => this._sync());
         this._sync();
+
+        // O Mutter acompanha sozinho as mudanças das chaves: registrar uma vez basta.
+        for (const {key, method} of MEDIA_ACTIONS) {
+            this._keybindings.add(key, this._settings, () => this._control(method, 'atalho'), {
+                modes: Shell.ActionMode.NORMAL | Shell.ActionMode.OVERVIEW | Shell.ActionMode.POPUP,
+            });
+        }
     }
 
     disable() {
         this._unsubscribe?.();
         this._unsubscribe = null;
+        for (const {key} of MEDIA_ACTIONS)
+            this._keybindings.remove(key);
         this._removeIndicator();
 
         this._panel = null;
         this._mpris = null;
         this._coverArt = null;
+        this._keybindings = null;
         this._settings = null;
         this._player = null;
     }
@@ -68,6 +82,7 @@ export class MediaModule extends Module {
             settings: this._settings,
             signals: this.signals,
             onOpen: () => this._refreshPosition(),
+            onControl: method => this._control(method, 'botão'),
         });
         this._indicator.applySettings();
         this._artUrl = null;
@@ -120,6 +135,20 @@ export class MediaModule extends Module {
             if (this._indicator && this._artUrl === url)
                 this._indicator.setCover(cover);
         });
+    }
+
+    /**
+     * @param {string} method 'PlayPause' | 'Next' | 'Previous'
+     * @param {string} origin só para o log
+     */
+    _control(method, origin) {
+        const target = pickControlTarget(this._mpris.players, this._settings.get_strv('allowed-players'));
+        if (!canInvoke(target, method)) {
+            this.log.debug(`${method} (${origin}) ignorado: ${target ? `${target.busName} não aceita` : 'nenhum player'}`);
+            return;
+        }
+        this.log.debug(`${method} (${origin}) → ${target.busName}`);
+        this._mpris.control(target.busName, method);
     }
 
     _refreshPosition() {

@@ -50,7 +50,7 @@ importers.js ──► gravações + notas ──► apply.js ──► gnomecus
 | Logo Menu comandos (`gnome-software`…) | `menu/*-app` (identificadores .desktop) | comando desconhecido; `gnome-terminal` padrão vira "terminal do sistema" |
 | Logo Menu `show-activities-button`, `menu-button-extensions-app` | `panel/show-activities`, `menu/extensions-app` | — |
 | **Apps Menu** `apps-menu-toggle-menu` | `panel/apps-menu-shortcut` | — |
-| **Spotify Controls** `position`, `max-width` (> 0) | `media/panel-position`, `panel-max-width` | controles de reprodução no card; largura ilimitada |
+| **Spotify Controls** `position`, `max-width` (> 0) | `media/panel-position`, `panel-max-width` | controles no card (na barra existem, ligados por padrão); largura ilimitada |
 | **Bluetooth Battery Indicator** | — | intervalo (o BlueZ avisa), lista de dispositivos, ocultar indicador |
 | **OSD Volume Number** | — | posições de ícone e número (o número sempre substitui o ícone) |
 

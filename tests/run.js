@@ -46,6 +46,7 @@ const Profiles = await import(`${EXT}/lib/profiles.js`);
 const {parseOsRelease} = await import(`${EXT}/services/system/distro.js`);
 const {VolumeModule, formatLevel} = await import(`${EXT}/modules/volume/module.js`);
 const Mpris = await import(`${EXT}/lib/mpris.js`);
+const Shortcuts = await import(`${EXT}/lib/shortcuts.js`);
 const Bt = await import(`${EXT}/lib/bluetooth.js`);
 const Dock = await import(`${EXT}/lib/dock.js`);
 const {isFirefoxPip} = await import(`${EXT}/lib/overview.js`);
@@ -2694,6 +2695,69 @@ test('mpris: lista de permitidos preserva a ordem', () => {
         'já presente:');
     assertEqual(Mpris.toggleAllowed(['spotify', 'vlc'], 'spotify', false), ['vlc'], 'removido:');
     assertEqual(Mpris.toggleAllowed([], 'vlc', false), [], 'remover ausente:');
+});
+
+/** Retrato de player como o serviço `mpris` entrega. */
+function playerSnapshot(id, status, {title = 'Faixa', can = {}} = {}) {
+    return {busName: `org.mpris.MediaPlayer2.${id}`, id, status, track: {title}, can};
+}
+
+test('mpris: comando vai ao player da barra, ou ao primeiro permitido aberto', () => {
+    const spotify = playerSnapshot('spotify', 'Stopped');
+    const vlc = playerSnapshot('vlc', 'Playing');
+    const firefox = playerSnapshot('firefox', 'Playing');
+
+    assertEqual(Mpris.pickControlTarget([spotify, vlc], ['spotify', 'vlc'])?.id, 'vlc', 'da barra:');
+    assertEqual(Mpris.pickControlTarget([spotify, firefox], ['spotify'])?.id, 'spotify',
+        'parado ainda recebe tocar:');
+    assertEqual(Mpris.pickControlTarget([firefox], ['spotify']), null, 'não permitido:');
+});
+
+test('mpris: propriedades Can* decidem o comando; ausentes permitem', () => {
+    assert(Mpris.canInvoke(playerSnapshot('a', 'Playing'), 'Next'), 'sem Can* deveria permitir');
+    assert(!Mpris.canInvoke(null, 'PlayPause'), 'sem player');
+    assert(!Mpris.canInvoke(playerSnapshot('a', 'Playing', {can: {next: false}}), 'Next'));
+    assert(Mpris.canInvoke(playerSnapshot('a', 'Playing', {can: {next: null}}), 'Next'),
+        'desconhecido permite');
+    assert(!Mpris.canInvoke(playerSnapshot('a', 'Playing', {can: {pause: false}}), 'PlayPause'),
+        'tocando sem pausa');
+    assert(Mpris.canInvoke(playerSnapshot('a', 'Paused', {can: {pause: false}}), 'PlayPause'),
+        'pausado usa CanPlay');
+    assert(!Mpris.canInvoke(playerSnapshot('a', 'Paused', {can: {control: false}}), 'Previous'),
+        'CanControl falso bloqueia tudo');
+    assert(!Mpris.canInvoke(playerSnapshot('a', 'Paused'), 'Seek'), 'método desconhecido');
+    assertEqual(Mpris.playPauseIcon('Playing'), 'media-playback-pause-symbolic');
+    assertEqual(Mpris.playPauseIcon('Paused'), 'media-playback-start-symbolic');
+});
+
+test('mpris: ações de mídia têm chave com prefixo e método MPRIS', () => {
+    assertEqual(Mpris.MEDIA_ACTIONS.map(a => a.method), ['PlayPause', 'Next', 'Previous']);
+    for (const {key} of Mpris.MEDIA_ACTIONS)
+        assert(key.startsWith('shortcut-'), key);
+});
+
+test('atalhos: captura aceita só combinações seguras', () => {
+    assert(Shortcuts.isModifierKeyName('Super_L'));
+    assert(Shortcuts.isModifierKeyName('ISO_Level3_Shift'));
+    assert(!Shortcuts.isModifierKeyName('p'));
+
+    assert(Shortcuts.acceptShortcut('Up', true), 'com modificador');
+    assert(!Shortcuts.acceptShortcut('p', false), 'letra sozinha rouba a digitação');
+    assert(Shortcuts.acceptShortcut('F9', false), 'tecla de função');
+    assert(!Shortcuts.acceptShortcut('F99', false));
+    assert(Shortcuts.acceptShortcut('XF86AudioPlay', false), 'tecla de mídia');
+    assert(!Shortcuts.acceptShortcut('Control_L', true), 'só modificador');
+    assert(!Shortcuts.acceptShortcut('', true));
+});
+
+test('atalhos: entrada vazia não colide, e os padrões de mídia não colidem com o mosaico', () => {
+    assertEqual(Shortcuts.findCollisions([{key: 'a', accels: ['']}],
+        [{schema: 's', key: 'b', accels: ['']}]), []);
+
+    const media = Mpris.MEDIA_ACTIONS.map(({key}) => ({key,
+        accels: [`<Control><Alt><Super>${{'shortcut-play-pause': 'Up', 'shortcut-next': 'Right', 'shortcut-previous': 'Left'}[key]}`]}));
+    const tiling = TILING_ACTIONS.map(spec => ({schema: 'tiling', key: spec.key, accels: spec.accels}));
+    assertEqual(Shortcuts.findCollisions(media, tiling), []);
 });
 
 test('cor: fundo escurecido até o texto branco passar do AA', () => {

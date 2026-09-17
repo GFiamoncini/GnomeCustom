@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnomeCustom 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/gfiamoncini/gnomecustom/issues\n"
-"POT-Creation-Date: 2026-09-13 15:09-0300\n"
+"POT-Creation-Date: 2026-09-16 22:19-0300\n"
 "PO-Revision-Date: 2026-09-09 23:30-0300\n"
 "Last-Translator: Gabriel Fiamoncini\n"
 "Language-Team: português do Brasil\n"
@@ -16,6 +16,37 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: gnomeCustom@gfiamoncini.com/prefs/widgets.js:297
+msgid "Disabled"
+msgstr "Desativado"
+
+#: gnomeCustom@gfiamoncini.com/prefs/widgets.js:304
+msgid "Restore default"
+msgstr "Restaurar padrão"
+
+#: gnomeCustom@gfiamoncini.com/prefs/widgets.js:310
+msgid "Disable shortcut"
+msgstr "Desativar atalho"
+
+#: gnomeCustom@gfiamoncini.com/prefs/widgets.js:328
+#, javascript-format
+msgid "Also used by “%s” (%s)"
+msgstr "Também usado por “%s” (%s)"
+
+#: gnomeCustom@gfiamoncini.com/prefs/widgets.js:345
+msgid "Press the new shortcut. Esc cancels, Backspace disables."
+msgstr "Pressione o novo atalho. Esc cancela, Backspace desativa."
+
+#: gnomeCustom@gfiamoncini.com/prefs/widgets.js:347
+#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:137
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: gnomeCustom@gfiamoncini.com/prefs/widgets.js:356
+msgid ""
+"Use Ctrl, Alt or Super with the key (function and media keys work alone)."
+msgstr "Use Ctrl, Alt ou Super com a tecla (teclas de função e de mídia valem sozinhas)."
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:23
 msgid "Silent"
@@ -71,10 +102,6 @@ msgid ""
 msgstr ""
 "%s rodariam junto com os módulos que as substituem. Desative-as antes no "
 "aplicativo Extensões, ou aplique assim mesmo e desative-as depois."
-
-#: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:137
-msgid "Cancel"
-msgstr "Cancelar"
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:138
 msgid "Apply anyway"
@@ -219,7 +246,7 @@ msgstr "Raio dos cantos da borda"
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:187
 #: gnomeCustom@gfiamoncini.com/prefs/pages/bluetooth.js:25
-#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:141
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:146
 msgid "Top bar"
 msgstr "Barra superior"
 
@@ -576,22 +603,22 @@ msgstr ""
 "cartão conecta ou desconecta."
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/bluetooth.js:29
-#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:144
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:149
 msgid "Position"
 msgstr "Posição"
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/bluetooth.js:33
-#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:148
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:153
 msgid "Left"
 msgstr "Esquerda"
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/bluetooth.js:34
-#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:149
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:154
 msgid "Centre"
 msgstr "Centro"
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/bluetooth.js:35
-#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:150
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:155
 msgid "Right"
 msgstr "Direita"
 
@@ -607,15 +634,15 @@ msgstr "Bateria baixa com até"
 msgid "In percent; the device turns red. 0 turns the warning off"
 msgstr "Em porcentagem; o dispositivo fica vermelho. 0 desliga o aviso"
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:23
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:26
 msgid "Media"
 msgstr "Mídia"
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:48
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:53
 msgid "Players"
 msgstr "Reprodutores"
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:49
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:54
 msgid ""
 "Only the applications turned on here appear in the top bar. Players open "
 "right now are listed automatically; when several play at once, the first one "
@@ -625,35 +652,51 @@ msgstr ""
 "abertos agora são listados automaticamente; quando vários tocam ao mesmo "
 "tempo, vence o primeiro ligado."
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:154
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:159
 msgid "Maximum width of the track name"
 msgstr "Largura máxima do nome da faixa"
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:155
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:160
 msgid "In pixels; longer names end with an ellipsis"
 msgstr "Em pixels; nomes mais longos terminam em reticências"
 
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:168
+msgid "Playback controls"
+msgstr "Controles de reprodução"
+
 #: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:169
+msgid "Previous, play or pause, and next beside the track name"
+msgstr "Anterior, tocar ou pausar e próxima ao lado do nome da faixa"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:180
+msgid "Shortcuts"
+msgstr "Atalhos"
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:181
+msgid ""
+"Work from any application, on the player shown in the top bar. Click a row "
+"to record a new combination."
+msgstr "Funcionam em qualquer aplicativo, no player mostrado na barra superior. Clique numa linha para gravar outra combinação."
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:200
 msgid "Card"
 msgstr "Cartão"
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:170
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:201
 msgid ""
 "Opens with a click on the track name. It shows the cover, the track and the "
-"artist, without playback controls."
-msgstr ""
-"Abre com um clique no nome da faixa. Mostra a capa, a faixa e o artista, sem "
-"controles de reprodução."
+"artist."
+msgstr "Abre com um clique no nome da faixa. Mostra a capa, a faixa e o artista."
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:174
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:205
 msgid "Show elapsed time"
 msgstr "Mostrar o tempo decorrido"
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:179
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:210
 msgid "Background from the album cover"
 msgstr "Fundo a partir da capa do álbum"
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:180
+#: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:211
 msgid "When off, the card follows the shell theme"
 msgstr "Desligado, o cartão segue o tema do Shell"
 
@@ -1385,14 +1428,40 @@ msgid "Maximum width of the track name in the top bar, in pixels"
 msgstr "Largura máxima do nome da faixa na barra superior, em pixels"
 
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.media.gschema.xml:35
+msgid "Show playback controls in the top bar"
+msgstr "Mostrar controles de reprodução na barra superior"
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.media.gschema.xml:36
+msgid "Previous, play or pause, and next buttons beside the track name."
+msgstr "Botões de anterior, tocar ou pausar e próxima ao lado do nome da faixa."
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.media.gschema.xml:41
+msgid "Shortcut to play or pause"
+msgstr "Atalho para tocar ou pausar"
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.media.gschema.xml:42
+msgid ""
+"Acts on the player shown in the top bar or, when none is shown, on the first "
+"allowed player that is open."
+msgstr "Age no player mostrado na barra superior ou, quando nenhum aparece, no primeiro player permitido que estiver aberto."
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.media.gschema.xml:47
+msgid "Shortcut to skip to the next track"
+msgstr "Atalho para passar para a próxima faixa"
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.media.gschema.xml:51
+msgid "Shortcut to go back to the previous track"
+msgstr "Atalho para voltar à faixa anterior"
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.media.gschema.xml:55
 msgid "Show the elapsed time in the card"
 msgstr "Mostrar o tempo decorrido no cartão"
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.media.gschema.xml:39
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.media.gschema.xml:59
 msgid "Colour the card from the album cover"
 msgstr "Colorir o cartão a partir da capa do álbum"
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.media.gschema.xml:40
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.media.gschema.xml:60
 msgid ""
 "A gradient from the dominant colour of the cover to black. When off, the "
 "card follows the shell theme."
@@ -1508,7 +1577,7 @@ msgid "Floating bar in Fedora blue with a light-blue accent"
 msgstr "Barra flutuante no azul do Fedora com destaque azul-claro"
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:25
-#: gnomeCustom@gfiamoncini.com/modules/tiling/module.js:335
+#: gnomeCustom@gfiamoncini.com/modules/tiling/module.js:329
 #: gnomeCustom@gfiamoncini.com/lib/modules-info.js:109
 msgid "Tiling"
 msgstr "Mosaico"
@@ -2215,7 +2284,9 @@ msgstr "Dock fixo no monitor principal"
 
 #: gnomeCustom@gfiamoncini.com/lib/modules-info.js:94
 msgid "Workspace thumbnails, hidden search and picture-in-picture windows"
-msgstr "Miniaturas das áreas de trabalho, busca escondida e janelas picture-in-picture"
+msgstr ""
+"Miniaturas das áreas de trabalho, busca escondida e janelas picture-in-"
+"picture"
 
 #: gnomeCustom@gfiamoncini.com/lib/modules-info.js:102
 msgid "Shell animation speed"
@@ -2232,3 +2303,15 @@ msgstr "Diagnóstico"
 #: gnomeCustom@gfiamoncini.com/lib/modules-info.js:118
 msgid "Warns about extensions that duplicate an active module"
 msgstr "Avisa sobre extensões que duplicam um módulo ativo"
+
+#: gnomeCustom@gfiamoncini.com/lib/mpris.js:153
+msgid "Play or pause"
+msgstr "Tocar ou pausar"
+
+#: gnomeCustom@gfiamoncini.com/lib/mpris.js:154
+msgid "Next track"
+msgstr "Próxima faixa"
+
+#: gnomeCustom@gfiamoncini.com/lib/mpris.js:155
+msgid "Previous track"
+msgstr "Faixa anterior"

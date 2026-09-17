@@ -91,42 +91,5 @@ export function findAction(key) {
     return TILING_ACTIONS.find(spec => spec.key === key) ?? null;
 }
 
-/**
- * Forma canônica de um atalho, para comparar os nossos com os do sistema:
- * modificadores em ordem fixa e sem diferença de caixa (`<Super>V` é `<super>v`).
- *
- * @param {string} accel
- * @returns {string}
- */
-export function normalizeAccel(accel) {
-    const modifiers = [...accel.matchAll(/<([^>]+)>/g)]
-        .map(m => m[1].toLowerCase().replace(/^primary$/, 'control').replace(/^ctrl$/, 'control'))
-        .sort();
-    const key = accel.replace(/<[^>]+>/g, '').toLowerCase();
-    return `${modifiers.map(m => `<${m}>`).join('')}${key}`;
-}
-
-/**
- * Atalhos do tiling que o sistema também usa.
- *
- * @param {Array<{key: string, accels: string[]}>} ours
- * @param {Array<{schema: string, key: string, accels: string[]}>} theirs
- * @returns {Array<{accel: string, ours: string, schema: string, theirs: string}>}
- */
-export function findCollisions(ours, theirs) {
-    const taken = new Map();
-    for (const binding of theirs) {
-        for (const accel of binding.accels)
-            taken.set(normalizeAccel(accel), binding);
-    }
-
-    const collisions = [];
-    for (const binding of ours) {
-        for (const accel of binding.accels) {
-            const other = taken.get(normalizeAccel(accel));
-            if (other)
-                collisions.push({accel, ours: binding.key, schema: other.schema, theirs: other.key});
-        }
-    }
-    return collisions;
-}
+// Mantidos aqui por compatibilidade; a implementação vive em `lib/shortcuts.js`.
+export {normalizeAccel, findCollisions} from '../shortcuts.js';

@@ -4,7 +4,7 @@
 import Adw from 'gi://Adw';
 import GObject from 'gi://GObject';
 
-import {spinRow, enumRow} from '../widgets.js';
+import {spinRow, enumRow, switchRow} from '../widgets.js';
 
 export class BluetoothPage extends Adw.PreferencesPage {
     static {
@@ -23,7 +23,7 @@ export class BluetoothPage extends Adw.PreferencesPage {
 
         const panel = new Adw.PreferencesGroup({
             title: _('Top bar'),
-            description: _('Each connected device appears with its battery. Clicking a device in the card connects or disconnects it.'),
+            description: _('Each connected device appears with its battery. The card lists paired devices and turns the radio on or off; clicking a device connects or disconnects it, and the ✕ hides it from the card.'),
         });
         panel.add(enumRow({
             title: _('Position'),
@@ -34,6 +34,12 @@ export class BluetoothPage extends Adw.PreferencesPage {
                 ['center', _('Centre')],
                 ['right', _('Right')],
             ],
+        }));
+        panel.add(switchRow({
+            title: _('Hide when nothing is connected'),
+            subtitle: _('When off, the Bluetooth icon stays in the top bar'),
+            settings,
+            key: 'hide-when-disconnected',
         }));
         this.add(panel);
 

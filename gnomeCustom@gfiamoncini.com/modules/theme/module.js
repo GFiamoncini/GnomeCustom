@@ -46,8 +46,8 @@ export class ThemeModule extends Module {
         for (const key of STYLE_KEYS)
             this.signals.connectSetting(this._settings, key, () => this._scheduleRebuild());
 
-        this.signals.connectSetting(this._settings, 'shell-theme',
-            () => this._applyUserTheme());
+        for (const key of ['shell-theme', 'amoled-black'])
+            this.signals.connectSetting(this._settings, key, () => this._applyUserTheme());
 
         this._unsubscribePalette = this._wallpaper.onPaletteChanged(
             palette => this._onPaletteChanged(palette));
@@ -141,7 +141,8 @@ export class ThemeModule extends Module {
 
     _applyUserTheme() {
         const name = this._settings.get_string('shell-theme');
-        this._theme?.applyUserTheme(name).catch(e =>
+        const amoled = this._settings.get_boolean('amoled-black');
+        this._theme?.applyUserTheme(name, {amoled}).catch(e =>
             this.log.error(`falha ao aplicar o tema de Shell '${name}'`, e));
     }
 

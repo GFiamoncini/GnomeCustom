@@ -42,9 +42,16 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import '../../core/gio-promises.js';
 import {SignalTracker} from '../../core/signals.js';
 import {resolveTheme} from '../../lib/shell-themes.js';
+import {amoledCss} from '../../lib/amoled.js';
 
 const RUNTIME_SUBDIR = 'gnomecustom';
 const STYLESHEET_NAME = 'generated.css';
+
+/** Folhas do tema padrão do GNOME, na ordem de preferência para a variante AMOLED. */
+const DEFAULT_THEME_URIS = [
+    'resource:///org/gnome/shell/theme/gnome-shell-dark.css',
+    'resource:///org/gnome/shell/theme/gnome-shell.css',
+];
 
 export class ShellThemeService {
     /** @param {object} options @param {object} options.logger */
@@ -115,24 +122,66 @@ export class ShellThemeService {
      * Aplica um tema de Shell pelo nome. String vazia volta ao tema padrão.
      *
      * @param {string} name
+     * @param {object} [options]
+     * @param {boolean} [options.amoled] carrega uma cópia com os cinzas escuros em preto
      * @returns {Promise<boolean>} true quando o tema pedido foi encontrado
      */
-    async applyUserTheme(name) {
-        const path = await resolveTheme(name);
+    async applyUserTheme(name, {amoled = false} = {}) {
+        let path = await resolveTheme(name);
 
         if (name && !path) {
             this._logger.warn(`tema de Shell '${name}' não encontrado`);
             return false;
         }
 
+        if (amoled) {
+            try {
+                path = await this._writeAmoledTheme(path);
+            } catch (e) {
+                this._logger.error('não foi possível gerar a variante AMOLED; usando o tema original', e);
+            }
+        }
+
         this._userThemeApplied = Boolean(path);
-        this._logger.info(path
-            ? `tema de Shell: ${name}`
-            : 'tema de Shell: padrão do GNOME');
+        this._logger.info(`tema de Shell: ${name || 'padrão do GNOME'}${amoled ? ' (preto AMOLED)' : ''}`);
 
         Main.setThemeStylesheet(path);
         Main.loadTheme();
         return true;
+    }
+
+    /**
+     * Cópia do tema com os cinzas escuros em preto (`lib/amoled.js`), num caminho
+     * estável do cache. Os `url()` apontam de volta para a pasta do tema original.
+     *
+     * @param {?string} path gnome-shell.css do tema; null = tema padrão do GNOME
+     * @returns {Promise<string>} caminho da cópia
+     */
+    async _writeAmoledTheme(path) {
+        let source = path ? Gio.File.new_for_path(path) : null;
+        if (!source) {
+            source = DEFAULT_THEME_URIS.map(uri => Gio.File.new_for_uri(uri))
+                .find(file => file.query_exists(null));
+        }
+        if (!source)
+            throw new Error('folha do tema padrão não encontrada');
+
+        const [bytes] = await source.load_contents_async(null);
+        const css = amoledCss(new TextDecoder().decode(bytes),
+            {baseUri: source.get_parent().get_uri()});
+
+        const dir = Gio.File.new_for_path(
+            GLib.build_filenamev([GLib.get_user_cache_dir(), RUNTIME_SUBDIR, 'amoled']));
+        try {
+            dir.make_directory_with_parents(null);
+        } catch (e) {
+            if (!e.matches?.(Gio.IOErrorEnum, Gio.IOErrorEnum.EXISTS))
+                throw e;
+        }
+        const target = dir.get_child('gnome-shell.css');
+        await target.replace_contents_async(new TextEncoder().encode(css), null, false,
+            Gio.FileCreateFlags.REPLACE_DESTINATION, null);
+        return target.get_path();
     }
 
     /** Devolve o tema de Shell ao padrão, se tivermos mexido nele. */

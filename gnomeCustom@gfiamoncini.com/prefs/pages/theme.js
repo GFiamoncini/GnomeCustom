@@ -2,13 +2,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import Adw from 'gi://Adw';
+import Gio from 'gi://Gio';
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk';
 
 import {listThemes} from '../../lib/shell-themes.js';
 import {PRESETS, CUSTOM_PRESET, matchPreset} from '../../theme/presets/presets.js';
 import {applyPreset, readPresetValues} from '../../theme/presets/apply.js';
-import {switchRow, spinRow, enumRow, colorRow, stringChoiceRow} from '../widgets.js';
+import {switchRow, spinRow, enumRow, colorRow, percentRow, stringChoiceRow} from '../widgets.js';
 
 export class ThemePage extends Adw.PreferencesPage {
     static {
@@ -30,6 +31,7 @@ export class ThemePage extends Adw.PreferencesPage {
 
         this._addPresetGroup();
         this._addShapeGroup();
+        this._addPanelColorGroup();
         this._addColorGroup();
         this._addSurfacesGroup();
         this._addTilingGroup();
@@ -95,8 +97,8 @@ export class ThemePage extends Adw.PreferencesPage {
     _addSurfacesGroup() {
         const _ = this._;
         const group = new Adw.PreferencesGroup({
-            title: _('Menus, OSD and dock'),
-            description: _('Extends the bar colours to other surfaces. Each one keeps the look of the shell theme until turned on.'),
+            title: _('Menus, notifications and OSD'),
+            description: _('Extends the shared colours to the pop-up menus and the volume and brightness displays. Each one keeps the look of the shell theme until turned on.'),
         });
 
         group.add(switchRow({
@@ -112,13 +114,14 @@ export class ThemePage extends Adw.PreferencesPage {
             key: 'style-osd',
         }));
         group.add(switchRow({
-            title: _('Style the dock'),
-            subtitle: _('Background colour and running indicators; opacity stays in the dock settings'),
+            title: _('Compact notifications'),
+            subtitle: _('Smaller cards in the notification list of the date menu'),
             settings: this._settings,
-            key: 'style-dock',
+            key: 'compact-notifications',
         }));
         group.add(spinRow({
-            title: _('Menu and OSD corner radius'),
+            title: _('Corner radius'),
+            subtitle: _('Menus, cards and on-screen displays'),
             settings: this._settings,
             key: 'menu-radius',
             min: 0,
@@ -126,17 +129,32 @@ export class ThemePage extends Adw.PreferencesPage {
             step: 1,
             digits: 0,
         }));
-        group.add(spinRow({
-            title: _('Menu and OSD opacity'),
+        group.add(percentRow({
+            title: _('Opacity'),
             settings: this._settings,
             key: 'menu-background-alpha',
-            min: 0.3,
-            max: 1,
-            step: 0.01,
-            digits: 2,
+        }));
+
+        this.add(group);
+        this._addDockGroup();
+    }
+
+    /** Dock: cantos e cores próprios, como a barra e o mosaico. */
+    _addDockGroup() {
+        const _ = this._;
+        const group = new Adw.PreferencesGroup({
+            title: _('Dock'),
+            description: _('Shape here; size, position and opacity are on the Dock page.'),
+        });
+
+        group.add(switchRow({
+            title: _('Style the dock'),
+            subtitle: _('Background colour and running indicators from the shared colours'),
+            settings: this._settings,
+            key: 'style-dock',
         }));
         group.add(spinRow({
-            title: _('Dock corner radius'),
+            title: _('Corner radius'),
             settings: this._settings,
             key: 'dock-radius',
             min: 0,
@@ -151,8 +169,8 @@ export class ThemePage extends Adw.PreferencesPage {
     _addTilingGroup() {
         const _ = this._;
         const group = new Adw.PreferencesGroup({
-            title: _('Tiling borders'),
-            description: _('Border of the focused window. Used by the tiling module, which is not implemented yet.'),
+            title: _('Tiling'),
+            description: _('Border drawn around the focused window by the tiling module.'),
         });
 
         group.add(colorRow({
@@ -208,6 +226,7 @@ export class ThemePage extends Adw.PreferencesPage {
         }));
         group.add(spinRow({
             title: _('Corner radius'),
+            subtitle: _('Attached to the edge, only the bottom corners are rounded'),
             settings: this._settings,
             key: 'panel-radius',
             min: 0,
@@ -216,13 +235,12 @@ export class ThemePage extends Adw.PreferencesPage {
             digits: 1,
         }));
         group.add(spinRow({
-            title: _('Border thickness'),
+            title: _('Icon size'),
+            subtitle: _('Status icons, in pixels; 16 is the GNOME size, whatever the shell theme'),
             settings: this._settings,
-            key: 'panel-border-width',
-            min: 0,
-            max: 10,
-            step: 0.5,
-            digits: 1,
+            key: 'panel-icon-size',
+            min: 10,
+            max: 32,
         }));
         group.add(spinRow({
             title: _('Space above'),
@@ -261,11 +279,71 @@ export class ThemePage extends Adw.PreferencesPage {
         this.add(group);
     }
 
+    /**
+     * Cores da barra, no espírito do Dash to Dock: um interruptor e, ligado, só o
+     * que o usuário escolher — sem paleta nem tema no meio.
+     */
+    _addPanelColorGroup() {
+        const _ = this._;
+        const group = new Adw.PreferencesGroup({
+            title: _('Top bar colours'),
+            description: _('Turn on to pick the bar colours yourself. Off, the bar follows the shared colours below (wallpaper palette or background colour).'),
+        });
+
+        const custom = new Adw.ExpanderRow({
+            title: _('Choose the bar colours'),
+            subtitle: _('Background, opacity and border, independent of the shell theme'),
+            show_enable_switch: true,
+            expanded: this._settings.get_boolean('panel-custom-colors'),
+        });
+        this._settings.bind('panel-custom-colors', custom, 'enable-expansion',
+            Gio.SettingsBindFlags.DEFAULT);
+
+        custom.add_row(colorRow({
+            title: _('Background colour'),
+            settings: this._settings,
+            key: 'panel-background-color',
+            fallback: '#1E1E1E',
+        }));
+        custom.add_row(percentRow({
+            title: _('Background opacity'),
+            settings: this._settings,
+            key: 'panel-background-alpha',
+        }));
+        custom.add_row(colorRow({
+            title: _('Border colour'),
+            subtitle: _('Clear for a shade of the background'),
+            settings: this._settings,
+            key: 'panel-border-color',
+            fallback: '#5E5C64',
+            allowEmpty: true,
+        }));
+        custom.add_row(percentRow({
+            title: _('Border opacity'),
+            settings: this._settings,
+            key: 'panel-border-alpha',
+        }));
+        group.add(custom);
+
+        group.add(spinRow({
+            title: _('Border thickness'),
+            subtitle: _('0 removes the border'),
+            settings: this._settings,
+            key: 'panel-border-width',
+            min: 0,
+            max: 10,
+            step: 0.5,
+            digits: 1,
+        }));
+
+        this.add(group);
+    }
+
     _addColorGroup() {
         const _ = this._;
         const group = new Adw.PreferencesGroup({
-            title: _('Colours'),
-            description: _('With the wallpaper palette on, the bar takes its background from the desktop background. Setting a background colour below overrides it.'),
+            title: _('Shared colours'),
+            description: _('Base for menus, OSD and dock, and for the bar when its own colours are off. With the wallpaper palette on, the colour comes from the desktop background; a background colour overrides it.'),
         });
 
         group.add(switchRow({
@@ -280,24 +358,6 @@ export class ThemePage extends Adw.PreferencesPage {
             key: 'palette-slot',
             min: 0,
             max: 11,
-        }));
-        group.add(spinRow({
-            title: _('Background opacity'),
-            settings: this._settings,
-            key: 'panel-background-alpha',
-            min: 0,
-            max: 1,
-            step: 0.05,
-            digits: 2,
-        }));
-        group.add(spinRow({
-            title: _('Border opacity'),
-            settings: this._settings,
-            key: 'panel-border-alpha',
-            min: 0,
-            max: 1,
-            step: 0.05,
-            digits: 2,
         }));
         group.add(colorRow({
             title: _('Accent colour'),
@@ -323,10 +383,13 @@ export class ThemePage extends Adw.PreferencesPage {
             allowEmpty: true,
         }));
 
-        this._paletteGroup = new Adw.PreferencesGroup({
+        // Recolhida: é informação, não algo que se edita (pedido do usuário, 2026-09-16).
+        this._paletteGroup = new Adw.ExpanderRow({
             title: _('Current wallpaper palette'),
-            description: _('Extracted automatically, most frequent colour first.'),
+            subtitle: _('Extracted automatically, most frequent colour first'),
+            expanded: false,
         });
+        group.add(this._paletteGroup);
         this._syncPalette();
         this._paletteHandler = this._settings.connect('changed::palette',
             () => this._syncPalette());
@@ -338,7 +401,6 @@ export class ThemePage extends Adw.PreferencesPage {
         });
 
         this.add(group);
-        this.add(this._paletteGroup);
     }
 
     _syncPalette() {
@@ -353,7 +415,7 @@ export class ThemePage extends Adw.PreferencesPage {
                 title: _('No palette yet'),
                 subtitle: _('It is extracted when the Theme module is enabled'),
             });
-            this._paletteGroup.add(row);
+            this._paletteGroup.add_row(row);
             this._paletteRows.push(row);
             return;
         }
@@ -363,7 +425,7 @@ export class ThemePage extends Adw.PreferencesPage {
                 title: color,
                 subtitle: index === 0 ? _('most frequent') : '',
             });
-            this._paletteGroup.add(row);
+            this._paletteGroup.add_row(row);
             this._paletteRows.push(row);
         });
     }
@@ -389,6 +451,12 @@ export class ThemePage extends Adw.PreferencesPage {
                     settings: this._settings,
                     key: 'shell-theme',
                     options,
+                }));
+                group.add(switchRow({
+                    title: _('AMOLED black'),
+                    subtitle: _('Dark greys of the theme become pure black, for OLED screens; text and accent stay'),
+                    settings: this._settings,
+                    key: 'amoled-black',
                 }));
             })
             .catch(() => {

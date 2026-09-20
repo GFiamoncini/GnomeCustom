@@ -17,8 +17,8 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 
 import {
-    BATTERY_IFACE, DEVICE_IFACE, addInterfaces, changeProperties, devicesFromState,
-    removeInterfaces,
+    ADAPTER_IFACE, BATTERY_IFACE, DEVICE_IFACE, adapterOf, addInterfaces, changeProperties,
+    devicesFromState, removeInterfaces,
 } from '../../lib/bluetooth.js';
 
 const BLUEZ = 'org.bluez';
@@ -51,7 +51,7 @@ export class BluetoothService {
                 this._notify();
             }),
             // Um filtro por interface: o BlueZ emite muitas outras mudanças (áudio, GATT).
-            ...[DEVICE_IFACE, BATTERY_IFACE].map(iface =>
+            ...[DEVICE_IFACE, BATTERY_IFACE, ADAPTER_IFACE].map(iface =>
                 this._subscribe(PROPERTIES, 'PropertiesChanged', iface,
                     (path, [name, changed, invalidated]) => {
                         if (changeProperties(this._state, path, name, changed, invalidated))
@@ -76,6 +76,62 @@ export class BluetoothService {
     /** @returns {object[]} dispositivos conhecidos, normalizados */
     get devices() {
         return devicesFromState(this._state);
+    }
+
+    /** @returns {?{path: string, powered: boolean}} o rádio; null sem adaptador */
+    get adapter() {
+        return adapterOf(this._state);
+    }
+
+    /**
+     * Liga ou desliga o rádio (`Adapter1.Powered`), como o botão rápido do GNOME.
+     * Com o bloqueio de rádio do sistema ativo (modo avião do Bluetooth), o BlueZ
+     * recusa ligar; aí o bloqueio é tirado pelo gnome-settings-daemon e tenta-se
+     * de novo.
+     *
+     * @param {boolean} powered
+     * @returns {Promise<void>}
+     */
+    async setPowered(powered) {
+        const adapter = this.adapter;
+        if (!adapter)
+            throw new Error('nenhum adaptador Bluetooth');
+
+        try {
+            await this._setAdapterPowered(adapter.path, powered);
+        } catch (e) {
+            if (!powered || !/Blocked|NotReady/.test(e.message))
+                throw e;
+            this._logger.info('rádio bloqueado; tirando o modo avião do Bluetooth');
+            await this._setRfkillBlocked(false);
+            await this._setAdapterPowered(adapter.path, true);
+        }
+    }
+
+    _setAdapterPowered(path, powered) {
+        return this._call(this._bus, BLUEZ, path, PROPERTIES, 'Set',
+            new GLib.Variant('(ssv)', [ADAPTER_IFACE, 'Powered', new GLib.Variant('b', powered)]));
+    }
+
+    _setRfkillBlocked(blocked) {
+        return this._call(Gio.DBus.session, 'org.gnome.SettingsDaemon.Rfkill',
+            '/org/gnome/SettingsDaemon/Rfkill', PROPERTIES, 'Set',
+            new GLib.Variant('(ssv)', ['org.gnome.SettingsDaemon.Rfkill',
+                'BluetoothAirplaneMode', new GLib.Variant('b', blocked)]));
+    }
+
+    _call(bus, name, path, iface, method, params) {
+        return new Promise((resolve, reject) => {
+            bus.call(name, path, iface, method, params, null, Gio.DBusCallFlags.NONE, -1,
+                this._cancellable, (connection, result) => {
+                    try {
+                        connection.call_finish(result);
+                        resolve();
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
+        });
     }
 
     /**

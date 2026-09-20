@@ -116,6 +116,7 @@ class DockIcon extends Dash.DashIcon {
             shift: (state & Clutter.ModifierType.SHIFT_MASK) !== 0,
             ctrl: (state & Clutter.ModifierType.CONTROL_MASK) !== 0,
             running: windows.length > 0,
+            windows: windows.length,
             focused: Shell.WindowTracker.get_default().focus_app === this.app,
             inOverview: Main.overview.visible,
         });

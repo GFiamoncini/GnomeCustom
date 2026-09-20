@@ -4,7 +4,7 @@
 import Adw from 'gi://Adw';
 import GObject from 'gi://GObject';
 
-import {switchRow, spinRow, infoRow, escapeMarkup} from '../widgets.js';
+import {switchRow, spinRow, enumRow, infoRow, escapeMarkup} from '../widgets.js';
 
 export class PanelPage extends Adw.PreferencesPage {
     static {
@@ -25,9 +25,18 @@ export class PanelPage extends Adw.PreferencesPage {
 
         group.add(switchRow({
             title: _('Show the applications menu'),
-            subtitle: _('Categories on the left, applications on the right'),
+            subtitle: _('Applications by category, from the button in the top bar'),
             settings,
             key: 'apps-menu',
+        }));
+        group.add(enumRow({
+            title: _('Layout'),
+            settings,
+            key: 'apps-menu-layout',
+            options: [
+                ['accordion', _('One column, collapsed categories')],
+                ['columns', _('Categories on the left, applications on the right')],
+            ],
         }));
         group.add(spinRow({
             title: _('Icon size'),

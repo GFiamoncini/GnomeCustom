@@ -134,6 +134,16 @@ export class AppsService {
      * @returns {boolean}
      */
     launchAboutSystem() {
+        return this.launchSettingsPanel('about');
+    }
+
+    /**
+     * Abre um painel das configurações do sistema (ex. 'about', 'bluetooth').
+     *
+     * @param {string} panel
+     * @returns {boolean}
+     */
+    launchSettingsPanel(panel) {
         const app = this.lookup('org.gnome.Settings.desktop');
         if (!app)
             return false;
@@ -142,7 +152,7 @@ export class AppsService {
             // O painel é escolhido por argumento de linha de comando; usar a
             // action padrão abriria a última página aberta pelo usuário.
             const appInfo = Gio.AppInfo.create_from_commandline(
-                'gnome-control-center about', 'About', Gio.AppInfoCreateFlags.NONE);
+                `gnome-control-center ${panel}`, panel, Gio.AppInfoCreateFlags.NONE);
             appInfo.launch([], global.create_app_launch_context(0, -1));
             return true;
         } catch (e) {

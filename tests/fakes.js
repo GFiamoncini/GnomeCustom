@@ -303,6 +303,10 @@ export class FakeWindowSystem {
         this.focused = id;
     }
 
+    isAbove(id) {
+        return this.above.has(id);
+    }
+
     setAbove(id, above) {
         if (above)
             this.above.add(id);

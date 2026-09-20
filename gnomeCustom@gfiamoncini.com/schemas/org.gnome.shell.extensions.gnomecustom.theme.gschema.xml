@@ -25,6 +25,13 @@
       <range min="16" max="96"/>
       <summary>Top bar height in pixels</summary>
     </key>
+    <key name="panel-icon-size" type="u">
+      <default>16</default>
+      <range min="10" max="32"/>
+      <summary>Size of the status icons in the top bar, in pixels</summary>
+      <description>Applies whatever the shell theme says. 16 is the GNOME size; a
+      low bar with a compact font looks balanced with 12 to 14.</description>
+    </key>
     <key name="panel-margin-top" type="d">
       <default>1.5</default>
       <range min="0" max="40"/>
@@ -61,6 +68,29 @@
       <default>0.9</default>
       <range min="0" max="1"/>
       <summary>Background opacity of the top bar</summary>
+    </key>
+    <key name="panel-custom-colors" type="b">
+      <default>false</default>
+      <summary>Choose the top bar colours yourself</summary>
+      <description>When on, the bar uses the background and border colours below
+      and ignores the wallpaper palette and the shared background colour, which
+      keep colouring menus, OSD and dock.</description>
+    </key>
+    <key name="panel-background-color" type="s">
+      <default>'#1E1E1E'</default>
+      <summary>Top bar background colour when choosing colours yourself</summary>
+      <description>Hexadecimal, “#RRGGBB”. The opacity is the background opacity key.</description>
+    </key>
+    <key name="panel-border-color" type="s">
+      <default>''</default>
+      <summary>Top bar border colour when choosing colours yourself</summary>
+      <description>Empty means a shade derived from the background colour.</description>
+    </key>
+    <key name="compact-notifications" type="b">
+      <default>false</default>
+      <summary>Compact notification cards</summary>
+      <description>Smaller icons, tighter spacing and a narrower list in the
+      notification area of the date menu.</description>
     </key>
     <key name="accent-color" type="s">
       <default>'#1C71D8'</default>
@@ -159,6 +189,12 @@
       <summary>Corner radius of the focused window border</summary>
     </key>
 
+    <key name="amoled-black" type="b">
+      <default>false</default>
+      <summary>AMOLED black</summary>
+      <description>Loads a copy of the shell theme with its dark greys turned into
+      pure black, for OLED screens. Light text and accent colours stay as they are.</description>
+    </key>
     <key name="shell-theme" type="s">
       <default>''</default>
       <summary>Shell theme name</summary>

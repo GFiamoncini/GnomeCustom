@@ -181,6 +181,11 @@ export class WindowsService {
         this._readyWindow(id)?.activate(global.get_current_time());
     }
 
+    /** @param {number} id @returns {boolean} */
+    isAbove(id) {
+        return Boolean(this._tracked.get(id)?.window.is_above());
+    }
+
     setAbove(id, above) {
         const window = this._tracked.get(id)?.window;
         if (!window)

@@ -28,6 +28,7 @@
 import {toHex} from '../../theme/engine/color.js';
 import {parseRules, serializeRules} from '../tiling/rules.js';
 import {TILING_ACTIONS} from '../tiling/actions.js';
+import {logoFromLogoMenu} from '../logos.js';
 
 /** Versão do formato de migração, gravada em `migration-version`. */
 export const MIGRATION_FORMAT = 1;
@@ -281,12 +282,17 @@ export const SOURCES = Object.freeze([
             r.set('theme', 'palette-from-wallpaper', fromWallpaper, 'bg-change');
             if (fromWallpaper) {
                 r.set('theme', 'background-color', '', 'bg-change', 'cor vem do papel de parede');
+                r.set('theme', 'panel-custom-colors', false, 'bg-change');
             } else {
                 const bg = openBarColorToHex(read('bgcolor'));
-                if (bg)
+                if (bg) {
                     r.set('theme', 'background-color', bg, 'bgcolor');
-                else
+                    // Cor fixa no Open Bar = cor escolhida da barra, independente da paleta.
+                    r.set('theme', 'panel-custom-colors', true, 'bgcolor');
+                    r.set('theme', 'panel-background-color', bg, 'bgcolor');
+                } else {
                     r.note('bgcolor', 'cor de fundo ilegível');
+                }
             }
 
             const accent = openBarColorToHex(read('hcolor'));
@@ -371,12 +377,18 @@ export const SOURCES = Object.freeze([
             if (read('use-custom-icon') === true && path) {
                 r.set('menu', 'icon-source', 'custom', 'use-custom-icon');
                 r.set('menu', 'custom-icon-path', path, 'custom-icon-path');
-            } else if (read('symbolic-icon') === true) {
-                r.set('menu', 'icon-source', 'symbolic', 'symbolic-icon');
             } else {
-                r.set('menu', 'icon-source', 'distro', 'symbolic-icon');
-                if (read('menu-button-icon-image') !== 0)
-                    r.note('menu-button-icon-image', 'o logotipo vem da distribuição; a galeria do Logo Menu não é embarcada');
+                // A galeria do Logo Menu é a mesma de `assets/logos/`: índice → logotipo.
+                const symbolic = read('symbolic-icon') === true;
+                const logo = logoFromLogoMenu(read('menu-button-icon-image'), symbolic);
+                if (logo) {
+                    r.set('menu', 'icon-source', 'gallery', 'menu-button-icon-image');
+                    r.set('menu', 'gallery-logo', logo, 'menu-button-icon-image');
+                    r.set('menu', 'gallery-monochrome', symbolic, 'symbolic-icon');
+                } else {
+                    // Índice 0 da galeria simbólica: o ícone do tema.
+                    r.set('menu', 'icon-source', symbolic ? 'symbolic' : 'distro', 'symbolic-icon');
+                }
             }
 
             r.set('menu', 'icon-size', read('menu-button-icon-size'), 'menu-button-icon-size');

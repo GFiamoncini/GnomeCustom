@@ -12,6 +12,11 @@
  *   cor explícita na configuração  →  cor da paleta do papel de parede  →  nada
  *   (e, quando não há nada, o tema de Shell do usuário permanece no controle)
  *
+ * A barra tem uma saída própria: com `panel-custom-colors`, fundo e borda são
+ * exatamente os escolhidos pelo usuário, como no Dash to Dock, e não seguem
+ * paleta nem cor base (pedido do usuário, 2026-09-16 — a precedência compartilhada
+ * confundia).
+ *
  * Todas as superfícies (barra, menus, OSD, dock) partem da **mesma** cor base.
  * Menus e OSD ficam um passo mais afastados dela, para ganhar profundidade sobre
  * a barra, mas nunca inventam uma segunda cor — é isso que faz um preset parecer
@@ -44,6 +49,7 @@ const SURFACE_SHIFT = 0.08;
 export const SETTINGS_KEYS = Object.freeze({
     'panel-style': 'panelStyle',
     'panel-height': 'panelHeight',
+    'panel-icon-size': 'panelIconSize',
     'panel-margin-top': 'marginTop',
     'panel-margin-bottom': 'marginBottom',
     'panel-margin-sides': 'marginSides',
@@ -51,6 +57,9 @@ export const SETTINGS_KEYS = Object.freeze({
     'panel-border-width': 'borderWidth',
     'panel-border-alpha': 'borderAlpha',
     'panel-background-alpha': 'backgroundAlpha',
+    'panel-custom-colors': 'panelCustomColors',
+    'panel-background-color': 'panelBackgroundColor',
+    'panel-border-color': 'panelBorderColor',
     'accent-color': 'accentColor',
     'background-color': 'backgroundColor',
     'foreground-color': 'foregroundColor',
@@ -61,6 +70,8 @@ export const SETTINGS_KEYS = Object.freeze({
     'style-menus': 'styleMenus',
     'style-osd': 'styleOsd',
     'style-dock': 'styleDock',
+    'compact-notifications': 'compactNotifications',
+    'amoled-black': 'amoledBlack',
     'menu-radius': 'menuRadius',
     'menu-background-alpha': 'menuBackgroundAlpha',
     'dock-radius': 'dockRadius',
@@ -73,6 +84,7 @@ export const SETTINGS_KEYS = Object.freeze({
 export const DEFAULT_CONFIG = Object.freeze({
     panelStyle: 'floating',
     panelHeight: 29,
+    panelIconSize: 16,
     marginTop: 1.5,
     marginBottom: 2.1,
     marginSides: 4.5,
@@ -80,6 +92,9 @@ export const DEFAULT_CONFIG = Object.freeze({
     borderWidth: 2,
     borderAlpha: 0.5,
     backgroundAlpha: 0.9,
+    panelCustomColors: false,
+    panelBackgroundColor: '#1E1E1E',
+    panelBorderColor: '',
     accentColor: '#1C71D8',
     backgroundColor: '',
     foregroundColor: '',
@@ -90,6 +105,8 @@ export const DEFAULT_CONFIG = Object.freeze({
     styleMenus: false,
     styleOsd: false,
     styleDock: false,
+    compactNotifications: false,
+    amoledBlack: false,
     menuRadius: 12,
     menuBackgroundAlpha: 0.95,
     dockRadius: 12,
@@ -107,18 +124,25 @@ export function buildTokens(config = {}) {
 
     const accent = parseHex(cfg.accentColor) ?? parseHex(DEFAULT_CONFIG.accentColor);
     const background = resolveBackground(cfg);
-    const foreground = resolveForeground(cfg, background);
+    const panelBackground = resolvePanelBackground(cfg, background);
+    const foreground = resolveForeground(cfg, panelBackground);
 
     const panelEnabled = cfg.panelStyle !== 'none';
     const floating = cfg.panelStyle === 'floating';
 
-    const menu = buildMenuTokens(cfg, background, accent);
-    const osd = buildOsdTokens(cfg, background, accent);
-    const dock = buildDockTokens(cfg, background, accent);
+    // Preto AMOLED: menus, OSD e dock estilizados partem do preto puro, como a
+    // variante do tema de Shell carregada junto (lib/amoled.js). A barra não muda:
+    // ela tem as próprias cores.
+    const surfaceBase = cfg.amoledBlack ? [0, 0, 0] : background;
+    const menu = buildMenuTokens(cfg, surfaceBase, accent);
+    const osd = buildOsdTokens(cfg, surfaceBase, accent);
+    const dock = buildDockTokens(cfg, surfaceBase, accent);
 
     return {
         /** Há alguma superfície a estilizar; falso significa CSS vazio. */
-        enabled: panelEnabled || menu.enabled || osd.enabled || dock.enabled,
+        enabled: panelEnabled || menu.enabled || osd.enabled || dock.enabled ||
+            Boolean(cfg.compactNotifications),
+        notifications: {compact: Boolean(cfg.compactNotifications)},
         accent: {
             rgb: accent,
             hex: toHex(accent),
@@ -130,6 +154,7 @@ export function buildTokens(config = {}) {
             style: cfg.panelStyle,
             floating,
             height: Math.round(cfg.panelHeight),
+            iconSize: Math.min(32, Math.max(10, Math.round(cfg.panelIconSize))),
             margin: floating
                 ? {
                     top: round(cfg.marginTop),
@@ -137,21 +162,26 @@ export function buildTokens(config = {}) {
                     sides: round(cfg.marginSides),
                 }
                 : {top: 0, bottom: 0, sides: 0},
-            radius: floating ? round(cfg.radius) : 0,
+            radius: round(cfg.radius),
             borderWidth: round(cfg.borderWidth),
             /** null quando nenhuma cor foi resolvida: o tema do usuário decide. */
-            background: background ? rgba(background, cfg.backgroundAlpha) : null,
-            backgroundHex: background ? toHex(background) : null,
-            border: background
-                ? rgba(shiftAwayFromBackground(background, 0.35), cfg.borderAlpha)
+            background: panelBackground ? rgba(panelBackground, cfg.backgroundAlpha) : null,
+            backgroundHex: panelBackground ? toHex(panelBackground) : null,
+            border: panelBackground
+                ? rgba(resolvePanelBorder(cfg, panelBackground), cfg.borderAlpha)
                 : null,
+            customColors: Boolean(cfg.panelCustomColors),
             foreground: foreground ? toHex(foreground) : null,
             /** Fundo dos botões sob o ponteiro. */
             buttonHover: foreground ? rgba(foreground, 0.12) : null,
-            /** Fundo dos botões de menu aberto. */
-            buttonActive: rgba(accent, 0.85),
-            buttonActiveForeground: toHex(bestForeground(accent)),
-            isDark: background ? isDark(background) : null,
+            /**
+             * Fundo dos botões de menu aberto: véu translúcido do texto, como o
+             * WinDock (12% no hover, 20% aberto). A cor de destaque sólida pesava
+             * demais — pedido do usuário, 2026-09-16.
+             */
+            buttonActive: foreground ? rgba(foreground, 0.2) : rgba(accent, 0.5),
+            buttonActiveForeground: foreground ? toHex(foreground) : toHex(bestForeground(accent)),
+            isDark: panelBackground ? isDark(panelBackground) : null,
             fitts: Boolean(cfg.fittsWidgets),
         },
         menu,
@@ -167,6 +197,8 @@ export function buildTokens(config = {}) {
  * @returns {?number[]}
  */
 function surfaceColor(background) {
+    if (background && background.every(channel => channel === 0))
+        return [0, 0, 0];   // AMOLED: o preto fica preto
     return background ? shiftAwayFromBackground(background, SURFACE_SHIFT) : null;
 }
 
@@ -278,6 +310,24 @@ function resolveBackground(cfg) {
 
     const slot = Math.min(Math.max(0, cfg.paletteSlot | 0), palette.length - 1);
     return parseHex(palette[slot]);
+}
+
+/**
+ * Fundo da barra: as cores escolhidas pelo usuário, quando ligadas; senão a base
+ * compartilhada.
+ *
+ * @returns {?number[]}
+ */
+function resolvePanelBackground(cfg, background) {
+    if (!cfg.panelCustomColors)
+        return background;
+    return parseHex(cfg.panelBackgroundColor) ?? parseHex(DEFAULT_CONFIG.panelBackgroundColor);
+}
+
+/** Borda da barra: a cor escolhida, senão um tom derivado do fundo. */
+function resolvePanelBorder(cfg, panelBackground) {
+    const explicit = cfg.panelCustomColors ? parseHex(cfg.panelBorderColor) : null;
+    return explicit ?? shiftAwayFromBackground(panelBackground, 0.35);
 }
 
 /**

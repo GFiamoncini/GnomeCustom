@@ -94,6 +94,7 @@ const Migration = await import(`../${UUID}/lib/migration/importers.js`);
 const MigrationApply = await import(`../${UUID}/lib/migration/apply.js`);
 const {TILING_ACTIONS} = await import(`../${UUID}/lib/tiling/actions.js`);
 const {AdvancedPage} = await import(`../${UUID}/prefs/pages/advanced.js`);
+const {buildSidebarWindow} = await import(`../${UUID}/prefs/layout.js`);
 const {MODULES_INFO} = await import(`../${UUID}/lib/modules-info.js`);
 
 /** Abre qualquer esquema nosso, '' = base, no backend em memória. */
@@ -174,6 +175,33 @@ step('ThemePage é construída e liga as linhas ao GSettings', () => {
     if (height.value !== 40)
         throw new Error(`a linha não acompanhou a chave: ${height.value}`);
     settings.reset('panel-height');
+});
+
+step('ThemePage: cores próprias da barra num grupo com interruptor e opacidade em %', () => {
+    const settings = childSettings('theme');
+    const page = new ThemePage(settings, _);
+
+    const expander = descendants(page).find(w => w instanceof Adw.ExpanderRow &&
+        w.title === 'Choose the bar colours');
+    if (!expander)
+        throw new Error('grupo "Choose the bar colours" ausente');
+    if (expander.enable_expansion)
+        throw new Error('deveria nascer desligado');
+
+    expander.enable_expansion = true;
+    if (!settings.get_boolean('panel-custom-colors'))
+        throw new Error('o interruptor não gravou panel-custom-colors');
+
+    const opacity = descendants(expander).find(w => w instanceof Adw.SpinRow &&
+        w.title === 'Background opacity');
+    if (!opacity || opacity.value !== 90)
+        throw new Error(`opacidade deveria aparecer como 90 %, veio ${opacity?.value}`);
+    opacity.value = 65;
+    if (Math.abs(settings.get_double('panel-background-alpha') - 0.65) > 1e-9)
+        throw new Error(`65 % deveria gravar 0.65, gravou ${settings.get_double('panel-background-alpha')}`);
+
+    settings.reset('panel-custom-colors');
+    settings.reset('panel-background-alpha');
 });
 
 step('ThemePage lista a paleta em cache', () => {
@@ -281,11 +309,39 @@ step('PanelPage é construída', () => {
         throw new Error(`esperava 2 interruptores, achei ${switches.length}`);
 });
 
-step('MenuPage lista um interruptor por item de menu', () => {
+step('MenuPage lista um interruptor por item de menu, mais o monocromático da galeria', () => {
     const page = new MenuPage(childSettings('menu'), _);
     const switches = descendants(page).filter(w => w instanceof Adw.SwitchRow);
-    if (switches.length !== 11)
-        throw new Error(`esperava 11 itens de menu, achei ${switches.length}`);
+    if (switches.length !== 12)
+        throw new Error(`esperava 11 itens de menu + monocromático, achei ${switches.length}`);
+});
+
+step('MenuPage: galeria de logotipos escolhe o logo e troca para monocromático', () => {
+    const settings = childSettings('menu');
+    settings.set_string('icon-source', 'distro');
+    const page = new MenuPage(settings, _);
+
+    const gallery = descendants(page).find(w => w instanceof Gtk.FlowBox);
+    const count = () => { let n = 0; while (gallery.get_child_at_index(n)) n++; return n; };
+    if (count() !== 40)
+        throw new Error(`esperava 39 logotipos + "da distribuição", achei ${count()}`);
+    if (gallery.get_selected_children()[0]?.get_index() !== 0)
+        throw new Error('o padrão vazio deveria selecionar "da distribuição"');
+
+    const archIndex = 1 + 1;   // "da distribuição", AlmaLinux, Arch Linux
+    gallery.emit('child-activated', gallery.get_child_at_index(archIndex));
+    if (settings.get_string('gallery-logo') !== 'arch' || settings.get_string('icon-source') !== 'gallery')
+        throw new Error(`escolher gravou ${settings.get_string('gallery-logo')} / ${settings.get_string('icon-source')}`);
+
+    settings.set_boolean('gallery-monochrome', true);
+    const image = descendants(gallery.get_child_at_index(archIndex)).find(w => w instanceof Gtk.Image);
+    if (!image.gicon.get_file().get_basename().endsWith('arch-logo-symbolic.svg'))
+        throw new Error(`monocromático deveria usar a simbólica, usou ${image.gicon.get_file().get_basename()}`);
+    if (gallery.get_selected_children()[0]?.get_index() !== archIndex)
+        throw new Error('a seleção deveria sobreviver ao redesenho');
+
+    for (const key of ['icon-source', 'gallery-logo', 'gallery-monochrome'])
+        settings.reset(key);
 });
 
 step('AnimationPage mostra o fator e o aviso de animações desligadas', () => {
@@ -434,6 +490,29 @@ step('captura de atalho: Esc cancela, Backspace limpa, modificador espera, letra
     check(Gdk.KEY_P, SHIFT_MASK, {action: 'invalid'});
     check(Gdk.KEY_Up, CONTROL_MASK | ALT_MASK | SUPER_MASK, {action: 'set', accel: '<Control><Alt><Super>Up'});
     check(Gdk.KEY_F9, 0, {action: 'set', accel: 'F9'});
+});
+
+step('TilingPage: atalhos editáveis, com colisão avisada', () => {
+    const bindings = childSettings('tiling.keybindings');
+    const page = new TilingPage(childSettings('tiling'), bindings, _);
+
+    const rows = descendants(page).filter(w => w instanceof Adw.ActionRow &&
+        descendants(w).some(c => c instanceof Gtk.ShortcutLabel));
+    if (rows.length !== 45)
+        throw new Error(`esperava 45 linhas de atalho, achei ${rows.length}`);
+
+    const grow = rows.find(r => r.title === 'Grow towards the right');
+    const label = descendants(grow).find(w => w instanceof Gtk.ShortcutLabel);
+    if (label.accelerator !== '<Shift><Control><Super>Right')
+        throw new Error(`padrão inesperado: ${label.accelerator}`);
+
+    // Mesma combinação de "mover para a direita": a linha avisa.
+    bindings.set_strv('window-grow-right', bindings.get_strv('window-move-right'));
+    if (!grow.has_css_class('warning') || !grow.subtitle.includes('window-move-right'))
+        throw new Error(`colisão não avisada: "${grow.subtitle}"`);
+    bindings.reset('window-grow-right');
+    if (grow.has_css_class('warning'))
+        throw new Error('o aviso deveria sumir');
 });
 
 step('TilingPage lista as regras padrão e remove uma pelo botão', () => {
@@ -660,6 +739,43 @@ step('as páginas podem entrar em uma janela de preferências', () => {
     window.add(new AnimationPage(childSettings('animation'), _));
     window.add(advanced);
     // Sem present(): nada é exibido.
+    window.destroy();
+});
+
+step('menu lateral: uma linha por página, escolher mostra a página, busca filtra pelo conteúdo', () => {
+    const window = new Adw.PreferencesWindow();
+    const pages = [
+        new ThemePage(childSettings('theme'), _),
+        new BluetoothPage(childSettings('bluetooth'), _),
+        new MediaPage(childSettings('media'), _),
+    ];
+    const {split, list, stack, search, select} = buildSidebarWindow(window, pages, _);
+
+    if (window.get_content() !== split)
+        throw new Error('a janela deveria exibir o menu lateral');
+    const rows = [];
+    for (let row = list.get_row_at_index(0), i = 0; row; row = list.get_row_at_index(++i))
+        rows.push(row);
+    if (rows.length !== 3)
+        throw new Error(`esperava 3 linhas, achei ${rows.length}`);
+    if (stack.visible_child !== pages[0])
+        throw new Error('a primeira página deveria abrir sozinha');
+
+    select(rows[2]);
+    if (stack.visible_child !== pages[2] || split.content.title !== 'Media')
+        throw new Error('escolher a linha deveria mostrar a página de mídia');
+
+    // "Hide when nothing is connected" só existe na página do Bluetooth.
+    search.text = 'nothing is connected';
+    list.invalidate_filter();
+    const visible = rows.filter(row => row.get_child_visible());
+    if (visible.length !== 1 || visible[0] !== rows[1])
+        throw new Error(`a busca deveria deixar só o Bluetooth, deixou ${visible.length}`);
+
+    search.text = '';
+    list.invalidate_filter();
+    if (rows.some(row => !row.get_child_visible()))
+        throw new Error('busca vazia deveria mostrar todas');
     window.destroy();
 });
 

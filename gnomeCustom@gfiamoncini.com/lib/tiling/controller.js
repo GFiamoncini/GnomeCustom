@@ -223,7 +223,7 @@ export class TilingController {
         if (!this._running)
             return;
 
-        const membershipChanged = ['tilingMode', 'rules', 'skipWorkspaces']
+        const membershipChanged = ['tilingMode', 'rules', 'skipWorkspaces', 'floatOnTop']
             .some(key => key in partial && JSON.stringify(partial[key]) !== JSON.stringify(before[key]));
 
         if (membershipChanged) {
@@ -380,6 +380,8 @@ export class TilingController {
             return this._toggleFloat(id);
         case 'float-class-toggle':
             return this._toggleClassFloat(id);
+        case 'above-toggle':
+            return this._toggleAbove(id);
         case 'resize':
             return this._resizeKeyboard(id, action.edge, action.sign);
         case 'snap':
@@ -463,8 +465,16 @@ export class TilingController {
 
         if (!this._wantsTree(desc)) {
             this._tree.remove(id);
+            // Como no Forge, "flutuantes sempre no topo" vale também para quem flutua
+            // sozinho (diálogos, janelas das regras) — não só para o Super+C. Sem isso,
+            // clicar noutra janela escondia as preferências atrás dela (2026-09-17).
+            if (this._floating.has(id) || this._floatsOnItsOwn(desc))
+                this._setRaised(id, this._config.floatOnTop);
             return;
         }
+
+        // Voltou para o tiling (ex. a regra saiu): desfaz o "no topo" que ligamos.
+        this._setRaised(id, false);
 
         const key = keyFor(desc);
         if (this._tree.has(id)) {
@@ -524,6 +534,13 @@ export class TilingController {
         return `flutuando: ${reasons.join(', ')}`;
     }
 
+    /** @returns {boolean} a janela flutua por tipo ou regra, com o tiling valendo para ela */
+    _floatsOnItsOwn(desc) {
+        return this._config.tilingMode && !desc.skipTaskbar &&
+            !(desc.workspace >= 0 && this._isSkipped(desc.workspace)) &&
+            shouldFloat(desc, this._config.rules);
+    }
+
     /** @returns {boolean} a janela deveria estar na árvore */
     _wantsTree(desc) {
         if (!this._config.tilingMode)
@@ -576,7 +593,11 @@ export class TilingController {
         let target = null;
 
         if (this._tree.has(id)) {
-            target = this._tree.neighbor(id, direction, {recent: this._recent});
+            // Minimizada ou em tela cheia não recebe foco: ativá-la a restauraria.
+            target = this._tree.neighbor(id, direction, {
+                recent: this._recent,
+                usable: other => this._occupiesSpace(other),
+            });
             if (target === null)
                 target = this._neighborMonitorWindow(id, direction);
         } else {
@@ -649,7 +670,11 @@ export class TilingController {
     _swapDirection(id, direction) {
         if (!this._tree.has(id))
             return false;
-        const target = this._tree.neighbor(id, direction, {recent: this._recent});
+        const // Minimizada ou em tela cheia não recebe foco: ativá-la a restauraria.
+            target = this._tree.neighbor(id, direction, {
+                recent: this._recent,
+                usable: other => this._occupiesSpace(other),
+            });
         if (target === null)
             return false;
         this._tree.swap(id, target);
@@ -691,6 +716,12 @@ export class TilingController {
         this._win.moveResize(id, floatRect(this._win.workArea(desc.monitor, this._workspaceOf(desc))));
         this._setRaised(id, this._config.floatOnTop);
         this._requestRender();
+        return true;
+    }
+
+    /** Prende (ou solta) a janela acima das outras, como o Alt+T do WinDock. */
+    _toggleAbove(id) {
+        this._setRaised(id, !this._win.isAbove(id));
         return true;
     }
 
@@ -829,11 +860,16 @@ export class TilingController {
         return desc.workspace >= 0 ? desc.workspace : this._win.activeWorkspace();
     }
 
+    /**
+     * `_raised` guarda só o que nós ligamos, para desfazer no `stop()`; soltar
+     * uma janela que já estava acima por fora também é pedido explícito do
+     * usuário (Super+T), então a chamada passa direto.
+     */
     _setRaised(id, above) {
         if (above) {
             this._win.setAbove(id, true);
             this._raised.add(id);
-        } else if (this._raised.has(id)) {
+        } else {
             this._win.setAbove(id, false);
             this._raised.delete(id);
         }

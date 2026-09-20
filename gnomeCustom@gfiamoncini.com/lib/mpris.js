@@ -210,3 +210,30 @@ export function canInvoke(player, method) {
 export function playPauseIcon(status) {
     return status === 'Playing' ? 'media-playback-pause-symbolic' : 'media-playback-start-symbolic';
 }
+
+/**
+ * Posição pedida por um clique na barra de tempo.
+ *
+ * @param {number} fraction 0 a 1, onde o clique caiu no trilho
+ * @param {number} length duração da faixa, em microssegundos
+ * @returns {?number} microssegundos; null quando a faixa não tem duração
+ */
+export function seekPosition(fraction, length) {
+    if (!(length > 0) || !Number.isFinite(fraction))
+        return null;
+    return Math.round(Math.min(1, Math.max(0, fraction)) * length);
+}
+
+/**
+ * Se a barra de tempo aceita clique: o player precisa aceitar `SetPosition`
+ * (`CanSeek`, ausente conta como sim), a faixa ter duração e um `trackid` válido.
+ *
+ * @param {?object} player retrato do serviço
+ * @returns {boolean}
+ */
+export function canSeek(player) {
+    if (!player || player.can?.seek === false || player.can?.control === false)
+        return false;
+    return player.track.length > 0 && /^\/[A-Za-z0-9_/]*$/.test(player.track.trackId) &&
+        player.track.trackId !== '/org/mpris/MediaPlayer2/TrackList/NoTrack';
+}

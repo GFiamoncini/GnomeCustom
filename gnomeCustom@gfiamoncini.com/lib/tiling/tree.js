@@ -254,23 +254,30 @@ export class TilingTree {
      * @param {string} direction
      * @param {object} [options]
      * @param {number[]} [options.recent] ids em ordem de uso recente
+     * @param {Function} [options.usable] id → se a janela pode receber o foco; as
+     *     outras (minimizadas, por exemplo) são puladas como se não existissem
      * @returns {?number} id do vizinho, ou null na borda
      */
-    neighbor(id, direction, {recent = []} = {}) {
+    neighbor(id, direction, {recent = [], usable = () => true} = {}) {
         const leaf = this._leaves.get(id);
         if (!leaf)
             return null;
 
         const axis = axisOf(direction);
         const forward = isForward(direction);
+        const step = forward ? 1 : -1;
 
         let cur = leaf;
         while (cur.parent) {
             const parent = cur.parent;
             if (parent.layout === axis) {
-                const index = parent.children.indexOf(cur) + (forward ? 1 : -1);
-                if (index >= 0 && index < parent.children.length)
-                    return this._descend(parent.children[index], axis, forward, recent);
+                // Irmão sem janela utilizável (ex. todas minimizadas): segue adiante.
+                for (let index = parent.children.indexOf(cur) + step;
+                    index >= 0 && index < parent.children.length; index += step) {
+                    const found = this._descend(parent.children[index], axis, forward, recent, usable);
+                    if (found !== null)
+                        return found;
+                }
             }
             cur = parent;
         }
@@ -483,28 +490,31 @@ export class TilingTree {
     }
 
     /**
-     * Desce até uma folha dentro de um nó.
+     * Desce até uma folha utilizável dentro de um nó.
      *
-     * @returns {number}
+     * @returns {?number} null quando nenhuma folha do nó serve
      */
-    _descend(node, axis, forward, recent) {
+    _descend(node, axis, forward, recent, usable = () => true) {
         if (node.kind === 'leaf')
-            return node.id;
+            return usable(node.id) ? node.id : null;
 
         const inside = leavesOf(node);
         for (const id of recent) {
-            if (inside.some(leaf => leaf.id === id))
+            if (usable(id) && inside.some(leaf => leaf.id === id))
                 return id;
         }
 
-        let cur = node;
-        while (cur.kind === 'split') {
-            // Vindo pela esquerda, entra-se pela ponta esquerda do vizinho;
-            // num contêiner perpendicular, a primeira janela.
-            const pickLast = cur.layout === axis && !forward;
-            cur = pickLast ? cur.children.at(-1) : cur.children[0];
+        // Vindo pela esquerda, entra-se pela ponta esquerda do vizinho; num
+        // contêiner perpendicular, a primeira janela.
+        const children = node.layout === axis && !forward
+            ? [...node.children].reverse()
+            : node.children;
+        for (const child of children) {
+            const found = this._descend(child, axis, forward, [], usable);
+            if (found !== null)
+                return found;
         }
-        return cur.id;
+        return null;
     }
 
     /**

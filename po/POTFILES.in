@@ -33,3 +33,5 @@ gnomeCustom@gfiamoncini.com/lib/migration/importers.js
 gnomeCustom@gfiamoncini.com/lib/profiles.js
 gnomeCustom@gfiamoncini.com/lib/modules-info.js
 gnomeCustom@gfiamoncini.com/lib/mpris.js
+gnomeCustom@gfiamoncini.com/ui/media/indicator.js
+gnomeCustom@gfiamoncini.com/prefs/layout.js

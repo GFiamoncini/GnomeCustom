@@ -2,13 +2,21 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 /**
- * Botão de Bluetooth da barra superior e o card com os dispositivos conectados.
+ * Botão de Bluetooth da barra superior e o card com os dispositivos.
  *
- * Mesmo formato do card de mídia (`ui/media/indicator.js`). Na barra, o ícone de
- * cada dispositivo conectado com a bateria ao lado; no card, uma linha por
- * dispositivo com nome, porcentagem e barra. Clicar na linha conecta ou
- * desconecta — quem é desconectado pelo card continua na lista, esmaecido, até o
- * card fechar, para dar para desfazer.
+ * Card no desenho do WinDock (app do próprio usuário, pedido de 2026-09-16):
+ * cabeçalho com o interruptor do rádio; uma linha por dispositivo pareado, com
+ * ponto verde (conectado) ou vazado (pareado), nome, bateria e o estado escrito;
+ * ✕ ao passar o mouse esconde o dispositivo do card, sem despareá-lo; no rodapé,
+ * as configurações de Bluetooth e, havendo escondidos, o link que os devolve.
+ * As cores são as do tema do Shell, como o OSD e o menu rápido (pedido do
+ * usuário, 2026-09-17).
+ *
+ * Na barra, o ícone de cada dispositivo conectado com a bateria; sem nenhum,
+ * o ícone do Bluetooth.
+ *
+ * O ✕ é irmão do botão da linha, e não filho: um clique nele nunca pode chegar ao
+ * botão que conecta e desconecta.
  *
  * Reimplementação independente (LICENSE-AUDIT.md §4).
  */
@@ -21,7 +29,7 @@ import St from 'gi://St';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 
-import {isLowBattery} from '../../lib/bluetooth.js';
+import {deviceStatus, isLowBattery} from '../../lib/bluetooth.js';
 
 const FALLBACK_ICON = 'bluetooth-active-symbolic';
 
@@ -34,46 +42,70 @@ export class BluetoothIndicator extends PanelMenu.Button {
      * @param {object} options
      * @param {Function} options.gettext
      * @param {Function} options.onToggle (path, connect) => void
-     * @param {Function} options.onClosed chamado quando o card fecha
+     * @param {Function} options.onPower (powered) => void
+     * @param {Function} options.onHide (address) => void
+     * @param {Function} options.onShowHidden () => void
+     * @param {Function} options.onSettings () => void
      */
-    constructor({gettext, onToggle, onClosed}) {
+    constructor({gettext, onToggle, onPower, onHide, onShowHidden, onSettings}) {
         super(0.5, 'GnomeCustom Bluetooth', false);
 
         this._ = gettext;
-        this._onToggle = onToggle;
-        this._onClosed = onClosed;
+        this._callbacks = {onToggle, onPower, onHide, onShowHidden, onSettings};
 
         this._panelBox = new St.BoxLayout({style_class: 'gnomecustom-bt-panel'});
         this.add_child(this._panelBox);
         this._buildCard();
-
-        this.menu.connect('open-state-changed', (_menu, open) => {
-            if (!open)
-                this._onClosed?.();
-        });
     }
 
     /**
      * @param {object} state
-     * @param {object[]} state.devices lista já filtrada e ordenada
+     * @param {object[]} state.devices pareados visíveis, já ordenados
+     * @param {?boolean} state.powered rádio ligado; null sem adaptador
+     * @param {boolean} [state.powerBusy] o rádio está mudando de estado
+     * @param {number} [state.hiddenCount] dispositivos escondidos
      * @param {number} state.threshold limite de bateria baixa; 0 desliga
      * @param {Set<string>} state.pending caminhos com conexão em andamento
      */
-    update({devices, threshold, pending}) {
-        this._panelBox.destroy_all_children();
-        this._list.destroy_all_children();
+    update({devices, powered, powerBusy = false, hiddenCount = 0, threshold, pending}) {
+        const _ = this._;
 
-        for (const device of devices) {
-            const low = device.connected && isLowBattery(device.battery, threshold);
-            if (device.connected)
-                this._panelBox.add_child(this._panelItem(device, low));
-            this._list.add_child(this._row(device, low, pending.has(device.path)));
+        this._panelBox.destroy_all_children();
+        const connected = devices.filter(device => device.connected);
+        for (const device of connected)
+            this._panelBox.add_child(this._panelItem(device, isLowBattery(device.battery, threshold)));
+        if (connected.length === 0) {
+            this._panelBox.add_child(new St.Icon({
+                icon_name: powered ? 'bluetooth-active-symbolic' : 'bluetooth-disabled-symbolic',
+                style_class: 'system-status-icon',
+                y_align: Clutter.ActorAlign.CENTER,
+            }));
         }
+
+        this._switch.state = Boolean(powered);
+        this._switchButton.reactive = powered !== null && !powerBusy;
+        this._switchButton.opacity = this._switchButton.reactive ? 255 : 100;
+
+        this._list.destroy_all_children();
+        if (!powered) {
+            this._list.add_child(this._message(powered === null
+                ? _('No Bluetooth adapter')
+                : _('Bluetooth is off')));
+        } else if (devices.length === 0) {
+            this._list.add_child(this._message(_('No paired devices')));
+        } else {
+            for (const device of devices) {
+                this._list.add_child(this._row(device,
+                    isLowBattery(device.battery, threshold), pending.has(device.path)));
+            }
+        }
+
+        this._showHidden.visible = hiddenCount > 0;
+        this._showHidden.label = _('Show hidden devices (%d)').replace('%d', String(hiddenCount));
     }
 
     _buildCard() {
-        this.menu.box.add_style_class_name('gnomecustom-bt-menu');
-
+        const _ = this._;
         const item = new PopupMenu.PopupBaseMenuItem({
             reactive: false,
             can_focus: false,
@@ -85,17 +117,62 @@ export class BluetoothIndicator extends PanelMenu.Button {
             x_expand: true,
             style_class: 'gnomecustom-bt-card',
         });
-        card.add_child(new St.Label({
-            text: 'Bluetooth',
-            style_class: 'gnomecustom-bt-header',
-            x_expand: true,
+
+        // Cabeçalho: o que é, e o rádio à direita.
+        const header = new St.BoxLayout({style_class: 'gnomecustom-bt-header'});
+        header.add_child(new St.Icon({
+            icon_name: 'bluetooth-active-symbolic',
+            style_class: 'gnomecustom-bt-header-icon',
+            y_align: Clutter.ActorAlign.CENTER,
         }));
+        header.add_child(new St.Label({
+            text: 'Bluetooth',
+            style_class: 'gnomecustom-bt-heading',
+            x_expand: true,
+            y_align: Clutter.ActorAlign.CENTER,
+        }));
+        this._switch = new PopupMenu.Switch(false);
+        this._switchButton = new St.Button({
+            style_class: 'gnomecustom-bt-switch',
+            can_focus: true,
+            y_align: Clutter.ActorAlign.CENTER,
+            accessible_name: _('Turn Bluetooth on or off'),
+            child: this._switch,
+        });
+        this._switchButton.connect('clicked', () =>
+            this._callbacks.onPower?.(!this._switch.state));
+        header.add_child(this._switchButton);
 
         this._list = new St.BoxLayout({vertical: true, style_class: 'gnomecustom-bt-list'});
-        card.add_child(this._list);
 
+        const footer = new St.BoxLayout({vertical: true, style_class: 'gnomecustom-bt-footer'});
+        this._showHidden = this._link('', () => this._callbacks.onShowHidden?.());
+        footer.add_child(this._showHidden);
+        footer.add_child(this._link(_('Bluetooth settings'), () => {
+            this.menu.close();
+            this._callbacks.onSettings?.();
+        }));
+
+        card.add_child(header);
+        card.add_child(this._list);
+        card.add_child(footer);
         item.add_child(card);
         this.menu.addMenuItem(item);
+    }
+
+    _link(text, onClick) {
+        const button = new St.Button({
+            label: text,
+            style_class: 'gnomecustom-bt-link',
+            can_focus: true,
+            x_align: Clutter.ActorAlign.CENTER,
+        });
+        button.connect('clicked', onClick);
+        return button;
+    }
+
+    _message(text) {
+        return new St.Label({text, style_class: 'gnomecustom-bt-message'});
     }
 
     _panelItem(device, low) {
@@ -120,30 +197,29 @@ export class BluetoothIndicator extends PanelMenu.Button {
     }
 
     _row(device, low, busy) {
-        const row = new St.Button({
+        const _ = this._;
+        const row = new St.BoxLayout({
             style_class: 'gnomecustom-bt-row',
+            reactive: true,
+            track_hover: true,
+            x_expand: true,
+        });
+
+        const main = new St.Button({
+            style_class: 'gnomecustom-bt-row-button',
             can_focus: true,
             x_expand: true,
             reactive: !busy,
         });
-        if (low)
-            row.add_style_class_name('low');
-        if (!device.connected)
-            row.add_style_class_name('disconnected');
+        const box = new St.BoxLayout({style_class: 'gnomecustom-bt-row-box', x_expand: true});
 
-        const box = new St.BoxLayout({
-            vertical: true,
-            x_expand: true,
-            style_class: 'gnomecustom-bt-row-box',
-        });
-
-        const top = new St.BoxLayout({style_class: 'gnomecustom-bt-row-top'});
-        top.add_child(new St.Icon({
-            icon_name: device.icon,
-            fallback_icon_name: FALLBACK_ICON,
-            style_class: 'gnomecustom-bt-icon',
+        const dot = new St.Widget({
+            style_class: 'gnomecustom-bt-dot',
             y_align: Clutter.ActorAlign.CENTER,
-        }));
+        });
+        if (device.connected)
+            dot.add_style_class_name('connected');
+        box.add_child(dot);
 
         const name = new St.Label({
             text: device.name,
@@ -152,54 +228,57 @@ export class BluetoothIndicator extends PanelMenu.Button {
             y_align: Clutter.ActorAlign.CENTER,
         });
         name.clutter_text.ellipsize = Pango.EllipsizeMode.END;
-        top.add_child(name);
+        box.add_child(name);
 
         if (device.connected && device.battery !== null) {
-            top.add_child(new St.Label({
+            const battery = new St.Label({
                 text: `${device.battery}%`,
-                style_class: 'gnomecustom-bt-value',
+                style_class: 'gnomecustom-bt-battery',
                 y_align: Clutter.ActorAlign.CENTER,
-            }));
+            });
+            if (low)
+                battery.add_style_class_name('low');
+            box.add_child(battery);
         }
-        box.add_child(top);
 
-        const note = this._note(device, busy);
-        if (note)
-            box.add_child(new St.Label({text: note, style_class: 'gnomecustom-bt-note'}));
-        else
-            box.add_child(this._batteryBar(device.battery));
+        const status = deviceStatus(device, busy);
+        box.add_child(new St.Label({
+            text: {
+                connected: _('connected'),
+                paired: _('paired'),
+                connecting: _('connecting…'),
+                disconnecting: _('disconnecting…'),
+            }[status],
+            style_class: `gnomecustom-bt-status ${status}`,
+            y_align: Clutter.ActorAlign.CENTER,
+        }));
 
-        row.set_child(box);
-        row.connect('clicked', () => this._onToggle?.(device.path, !device.connected));
+        main.set_child(box);
+        main.connect('clicked', () => this._callbacks.onToggle?.(device.path, !device.connected));
+
+        const hide = new St.Button({
+            style_class: 'gnomecustom-bt-hide',
+            can_focus: true,
+            y_align: Clutter.ActorAlign.CENTER,
+            opacity: 0,
+            accessible_name: _('Hide this device from the card'),
+            child: new St.Icon({icon_name: 'window-close-symbolic', icon_size: 12}),
+        });
+        hide.connect('clicked', () => this._callbacks.onHide?.(device.address));
+        const syncHide = () => {
+            hide.opacity = row.hover || hide.has_key_focus() ? 255 : 0;
+        };
+        row.connect('notify::hover', syncHide);
+        hide.connect('key-focus-in', syncHide);
+        hide.connect('key-focus-out', syncHide);
+
+        row.add_child(main);
+        row.add_child(hide);
         return row;
     }
 
-    _note(device, busy) {
-        const _ = this._;
-        if (busy)
-            return device.connected ? _('Disconnecting…') : _('Connecting…');
-        if (!device.connected)
-            return _('Disconnected — click to connect');
-        if (device.battery === null)
-            return _('No battery information');
-        return null;
-    }
-
-    _batteryBar(percentage) {
-        // Caixa horizontal, como na barra de mídia: o BinLayout centralizaria o
-        // preenchimento de largura fixa.
-        const track = new St.BoxLayout({style_class: 'gnomecustom-bt-track', x_expand: true});
-        const fill = new St.Widget({style_class: 'gnomecustom-bt-fill', y_expand: true});
-        track.add_child(fill);
-        track.connect('notify::width', () => {
-            fill.width = Math.round(track.width * percentage / 100);
-        });
-        return track;
-    }
-
     destroy() {
-        this._onToggle = null;
-        this._onClosed = null;
+        this._callbacks = {};
         super.destroy();
     }
 }

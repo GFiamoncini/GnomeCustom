@@ -47,6 +47,7 @@ const PlayerProxy = Gio.DBusProxy.makeProxyWrapper(`
     <property name="CanPause" type="b" access="read"/>
     <property name="CanGoNext" type="b" access="read"/>
     <property name="CanGoPrevious" type="b" access="read"/>
+    <property name="CanSeek" type="b" access="read"/>
     <signal name="Seeked">
       <arg name="Position" type="x"/>
     </signal>
@@ -157,6 +158,32 @@ export class MprisService {
         } catch (e) {
             if (!isCancelled(e))
                 this._logger.warn(`${method} falhou em ${busName}: ${e.message}`);
+            return false;
+        }
+    }
+
+    /**
+     * Pula para um ponto da faixa (`SetPosition`). O player ignora o pedido se a
+     * faixa já tiver mudado, por isso o `trackId` vai junto.
+     *
+     * @param {string} busName
+     * @param {string} trackId caminho de objeto da faixa atual
+     * @param {number} position microssegundos
+     * @returns {Promise<boolean>}
+     */
+    async seek(busName, trackId, position) {
+        if (!this._players.has(busName))
+            return false;
+
+        try {
+            await callAsync(this._bus, busName, MPRIS_PATH, PLAYER_IFACE, 'SetPosition',
+                new GLib.Variant('(ox)', [trackId, Math.round(position)]), '()', this._cancellable);
+            // Nem todo player emite `Seeked`; a âncora é refeita pela leitura real.
+            this.refreshPosition(busName);
+            return true;
+        } catch (e) {
+            if (!isCancelled(e))
+                this._logger.warn(`SetPosition falhou em ${busName}: ${e.message}`);
             return false;
         }
     }
@@ -276,6 +303,7 @@ export class MprisService {
                 pause: entry.player.CanPause ?? null,
                 next: entry.player.CanGoNext ?? null,
                 previous: entry.player.CanGoPrevious ?? null,
+                seek: entry.player.CanSeek ?? null,
             },
         };
     }

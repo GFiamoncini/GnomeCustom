@@ -50,3 +50,9 @@ gnomeCustom@gfiamoncini.com/lib/tiling/actions.js
     no GNOME 49, estudados no Forge. Código próprio.
     Copyright (C) Forge contributors — GPL-3.0-or-later.
     https://github.com/forge-ext/forge
+
+assets/logos/*.svg
+    Logotipos de distribuições do Logo Menu (https://github.com/Aryan20/Logomenu),
+    © Aryan Kaushik e colaboradores, pasta Resources/, commit cf988c0 (24.8).
+    Sem modificação. Licença de origem: GPL-2.0 (assets/logos/LICENSE-GPL-2.0),
+    distribuídos junto como obra separada. Cada logotipo é marca de seu projeto.

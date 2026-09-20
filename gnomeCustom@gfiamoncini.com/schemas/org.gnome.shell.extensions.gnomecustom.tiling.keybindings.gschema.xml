@@ -111,6 +111,30 @@
       <default>['&lt;Shift&gt;&lt;Control&gt;&lt;Super&gt;y']</default>
       <summary>Shrink the right edge</summary>
     </key>
+    <key name="window-grow-left" type="as">
+      <default>['&lt;Shift&gt;&lt;Control&gt;&lt;Super&gt;Left']</default>
+      <summary>Grow towards the left</summary>
+    </key>
+    <key name="window-grow-right" type="as">
+      <default>['&lt;Shift&gt;&lt;Control&gt;&lt;Super&gt;Right']</default>
+      <summary>Grow towards the right</summary>
+    </key>
+    <key name="window-grow-up" type="as">
+      <default>['&lt;Shift&gt;&lt;Control&gt;&lt;Super&gt;Up']</default>
+      <summary>Grow upwards</summary>
+    </key>
+    <key name="window-grow-down" type="as">
+      <default>['&lt;Shift&gt;&lt;Control&gt;&lt;Super&gt;Down']</default>
+      <summary>Grow downwards</summary>
+    </key>
+    <key name="window-toggle-above" type="as">
+      <default>['&lt;Super&gt;t']</default>
+      <summary>Keep the window above the others</summary>
+    </key>
+    <key name="prefs-open" type="as">
+      <default>['&lt;Control&gt;&lt;Super&gt;s']</default>
+      <summary>Open the GnomeCustom settings</summary>
+    </key>
     <key name="window-snap-center" type="as">
       <default>['&lt;Control&gt;&lt;Alt&gt;c']</default>
       <summary>Center the window</summary>

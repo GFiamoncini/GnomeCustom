@@ -91,3 +91,43 @@ nas mesmas regiões de alto risco — é o primeiro lugar a comparar quando o 50
    ligados e `strict-cleanup-check`: ciclos de ativação sem CRITICAL e com "nada pendente".
 3. Conferir um a um os pontos de risco alto da tabela, com uma janela real e as capturas.
 4. Só então acrescentar `"50"` a `shell-version` e registrar o resultado aqui.
+
+## 7. Fedora 44 / GNOME 50: auditoria por inspeção (2026-09-20)
+
+Pedido do usuário: dá para atualizar o Fedora 43 → 44? O Fedora 44 traz **GNOME Shell 50.5,
+Mutter 50.5, GJS 1.88, GTK 4.22 e libadwaita 1.9** (consultado com `dnf --releasever=44
+repoquery`). Sem GNOME 50 nesta máquina, a conferência foi feita **lendo o código do 50**: os
+pacotes `gnome-shell` e `mutter-devel` do Fedora 44 foram baixados e o JavaScript do Shell
+extraído da seção ELF `.gresource.shell_js_resources` de `libshell-18.so` (152 arquivos), mais
+o `Meta-18.gir` do Mutter.
+
+Resultado, ponto a ponto dos 41 usos de API interna declarados no código:
+
+| Área | Situação no GNOME 50 |
+|---|---|
+| Dock (`Dash._box`, `_showAppsIcon`, `_background`, `_separator`, `_maxWidth`) | **inalterados** |
+| Dock (`DashIcon`) | segue herdando de `AppDisplay.AppIcon`; `_iconContainer`, `_dot`, `_updateRunningStyle()` e `animateLaunch()` continuam lá |
+| OSD (`OsdWindow._hbox/_icon/_vbox/_level`, `prototype.show`) | **inalterados**; `BarLevel` mantém `value`/`maximum-value` |
+| Visão geral (`controls._thumbnailsBox`, `ThumbnailsBox._updateShouldShow`, `_shouldShow`, sinal `should-show`, `WorkspaceThumbnail._init`, `_isOverviewWindow`, `_contents`, `monitorIndex`, `Workspace._isOverviewWindow`) | **inalterados** |
+| Painel (`addToStatusArea`, `statusArea`, `menuManager`, `sessionMode.panel.*`, `addExternalIndicator`) | **inalterados** (o `addExternalIndicator` mora em `ui/panel.js`) |
+| `Main.*` (`activateWindow`, `setThemeStylesheet`, `loadTheme`, `pushModal`/`popModal`, `extensionManager`), `wm.addKeybinding`/`removeKeybinding` | **inalterados** |
+| Mutter (`unmaximize()` sem argumento, `set_unmaximize_flags`, `move_resize_frame`, `get_frame_rect`, `make_above`/`unmake_above`/`is_above`, propriedades `resizeable`, `minimized`, `fullscreen`, `skip-taskbar`, `wm-class`, `title`) | **inalterados** no `Meta-18.gir` |
+| Preferências (`ExtensionPreferences.fillPreferencesWindow` recebendo `Adw.PreferencesWindow`) | **inalterado**; o menu lateral de `prefs/layout.js` continua válido |
+| Classes de CSS usadas (`#panel`, `.panel-button`, `.popup-menu-content`, `.osd-window`, `.quick-settings`, `.message*`) | todas presentes no tema padrão do 50 |
+
+### O que **muda** no GNOME 50
+
+**`PanelMenu.Button` deixou de abrir o menu em `vfunc_event`**: agora usa um
+`Clutter.ClickGesture` com `recognize_on_press`. Isso quebraria o desvio que impede o clique
+nos controles de mídia de abrir o card (`ui/media/indicator.js`). **Já tratado em 2026-09-20**:
+o indicador mantém o `vfunc_event` (49) e, quando existe `_clickGesture` (50), desliga o gesto
+enquanto o ponteiro está sobre os controles. Não dá para exercitar o caminho do 50 aqui; é o
+primeiro ponto a conferir depois da atualização.
+
+### Conclusão
+
+Nada encontrado que impeça a atualização. Como o GNOME 50 **não foi executado**, `metadata.json`
+continua em `"shell-version": ["49"]` (regra do §1) — depois de atualizar, basta rodar o roteiro
+do §6 e acrescentar `"50"`. Enquanto a versão não estiver declarada, o Shell recusa carregar a
+extensão, então o passo 4 do roteiro é obrigatório antes de usar.
+

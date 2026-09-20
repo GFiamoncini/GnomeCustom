@@ -15,16 +15,18 @@
  *
  * Ficam de fora, de propósito:
  *  - `shell-theme`: o tema de Shell instalado é escolha independente da paleta;
- *  - `palette`: é cache regenerado a partir do papel de parede, não preferência.
+ *  - `palette`: é cache regenerado a partir do papel de parede, não preferência;
+ *  - `compact-notifications`: densidade, não aparência.
  *
  * Sem dependências: usado pelo processo do Shell, pelas preferências e pelos testes.
  */
 
 /** Chaves que um preset define por completo, na ordem em que são gravadas. */
 export const PRESET_KEYS = Object.freeze([
-    'panel-style', 'panel-height', 'panel-margin-top', 'panel-margin-bottom',
+    'panel-style', 'panel-height', 'panel-icon-size', 'panel-margin-top', 'panel-margin-bottom',
     'panel-margin-sides', 'panel-radius', 'panel-border-width',
-    'panel-border-alpha', 'panel-background-alpha', 'accent-color',
+    'panel-border-alpha', 'panel-background-alpha', 'panel-custom-colors',
+    'panel-background-color', 'panel-border-color', 'accent-color',
     'background-color', 'foreground-color', 'palette-from-wallpaper',
     'palette-slot', 'fitts-widgets', 'style-menus', 'style-osd', 'style-dock',
     'menu-radius', 'menu-background-alpha', 'dock-radius',
@@ -65,6 +67,7 @@ export const PRESETS = Object.freeze([
         values: {
             'panel-style': 'floating',
             'panel-height': 29,
+            'panel-icon-size': 16,
             'panel-margin-top': 1.5,
             'panel-margin-bottom': 2.1,
             'panel-margin-sides': 4.5,
@@ -72,6 +75,9 @@ export const PRESETS = Object.freeze([
             'panel-border-width': 2,
             'panel-border-alpha': 0.5,
             'panel-background-alpha': 0.9,
+            'panel-custom-colors': false,
+            'panel-background-color': '#1E1E1E',
+            'panel-border-color': '',
             'accent-color': '#1C71D8',
             'background-color': '',
             'foreground-color': '',
@@ -97,6 +103,7 @@ export const PRESETS = Object.freeze([
         values: {
             'panel-style': 'none',
             'panel-height': 29,
+            'panel-icon-size': 16,
             'panel-margin-top': 0,
             'panel-margin-bottom': 0,
             'panel-margin-sides': 0,
@@ -104,6 +111,9 @@ export const PRESETS = Object.freeze([
             'panel-border-width': 0,
             'panel-border-alpha': 0.5,
             'panel-background-alpha': 1,
+            'panel-custom-colors': false,
+            'panel-background-color': '#1E1E1E',
+            'panel-border-color': '',
             'accent-color': '#3584E4',
             'background-color': '',
             'foreground-color': '',
@@ -128,6 +138,7 @@ export const PRESETS = Object.freeze([
         values: {
             'panel-style': 'attached',
             'panel-height': 30,
+            'panel-icon-size': 16,
             'panel-margin-top': 0,
             'panel-margin-bottom': 0,
             'panel-margin-sides': 0,
@@ -135,6 +146,9 @@ export const PRESETS = Object.freeze([
             'panel-border-width': 0,
             'panel-border-alpha': 0.5,
             'panel-background-alpha': 1,
+            'panel-custom-colors': false,
+            'panel-background-color': '#1E1E1E',
+            'panel-border-color': '',
             'accent-color': '#3584E4',
             'background-color': '#1E1E1E',
             'foreground-color': '',
@@ -159,6 +173,7 @@ export const PRESETS = Object.freeze([
         values: {
             'panel-style': 'attached',
             'panel-height': 26,
+            'panel-icon-size': 16,
             'panel-margin-top': 0,
             'panel-margin-bottom': 0,
             'panel-margin-sides': 0,
@@ -166,6 +181,9 @@ export const PRESETS = Object.freeze([
             'panel-border-width': 0,
             'panel-border-alpha': 0,
             'panel-background-alpha': 0.6,
+            'panel-custom-colors': false,
+            'panel-background-color': '#1E1E1E',
+            'panel-border-color': '',
             'accent-color': '#9A9996',
             'background-color': '#000000',
             'foreground-color': '',
@@ -190,6 +208,7 @@ export const PRESETS = Object.freeze([
         values: {
             'panel-style': 'floating',
             'panel-height': 30,
+            'panel-icon-size': 16,
             'panel-margin-top': 3,
             'panel-margin-bottom': 3,
             'panel-margin-sides': 9,
@@ -197,6 +216,9 @@ export const PRESETS = Object.freeze([
             'panel-border-width': 1,
             'panel-border-alpha': 0.4,
             'panel-background-alpha': 0.95,
+            'panel-custom-colors': false,
+            'panel-background-color': '#1E1E1E',
+            'panel-border-color': '',
             'accent-color': '#51A2DA',
             'background-color': '#294172',
             'foreground-color': '',

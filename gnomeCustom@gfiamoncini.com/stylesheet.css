@@ -27,6 +27,28 @@
     spacing: 2px;
 }
 
+/* Acordeão: uma coluna, categorias recolhidas. */
+.gnomecustom-apps-accordion {
+    padding: 4px;
+    spacing: 2px;
+}
+
+.gnomecustom-apps-sublist {
+    padding-left: 16px;
+    spacing: 1px;
+}
+
+.gnomecustom-apps-count {
+    font-size: 0.85em;
+    opacity: 0.55;
+    padding-right: 6px;
+}
+
+.gnomecustom-apps-arrow {
+    icon-size: 14px;
+    opacity: 0.7;
+}
+
 .gnomecustom-apps-category,
 .gnomecustom-apps-item {
     padding: 6px 10px;
@@ -128,54 +150,84 @@
     padding: 0;
 }
 
+/* Desenho do WinDock: 280 px, cabeçalho, capa pequena à esquerda, trilho fino.
+   Sem "fundo da capa" o card não pinta nada e herda o menu (que segue a barra). */
 .gnomecustom-media-card {
     width: 280px;
-    padding: 14px 20px 18px 20px;
-    spacing: 8px;
-    border-radius: 16px;
+    padding: 8px 10px 6px 10px;
+    spacing: 12px;
 }
 
 .gnomecustom-media-ambient {
+    padding: 14px 16px 12px 16px;
+    border-radius: 10px;
     color: #ffffff;
 }
 
-.gnomecustom-media-source {
+.gnomecustom-media-header {
+    spacing: 10px;
+}
+
+.gnomecustom-media-header-icon {
+    icon-size: 16px;
+}
+
+.gnomecustom-media-heading {
     font-weight: bold;
-    text-align: center;
+    font-size: 1.1em;
+}
+
+.gnomecustom-media-source {
+    text-align: right;
+    font-size: 0.85em;
+    opacity: 0.6;
+}
+
+.gnomecustom-media-body {
+    spacing: 12px;
 }
 
 .gnomecustom-media-cover {
-    width: 240px;
-    height: 240px;
-    margin: 6px 0;
-    border-radius: 120px;
+    width: 56px;
+    height: 56px;
+    border-radius: 6px;
     background-color: rgba(127, 127, 127, 0.2);
 }
 
 .gnomecustom-media-cover-icon {
-    icon-size: 96px;
+    icon-size: 28px;
+}
+
+.gnomecustom-media-info {
+    spacing: 3px;
 }
 
 .gnomecustom-media-title {
-    font-size: 1.3em;
     font-weight: bold;
-    text-align: center;
 }
 
-.gnomecustom-media-subtitle {
-    text-align: center;
-    opacity: 0.8;
+.gnomecustom-media-album {
+    font-size: 0.9em;
+    opacity: 0.6;
 }
 
 .gnomecustom-media-progress {
-    spacing: 6px;
-    margin-top: 8px;
+    spacing: 2px;
+}
+
+/* A área de clique é mais alta que o trilho. */
+.gnomecustom-media-seek {
+    padding: 5px 0;
 }
 
 .gnomecustom-media-track {
     height: 4px;
     border-radius: 2px;
     background-color: rgba(127, 127, 127, 0.35);
+}
+
+.gnomecustom-media-seek:hover .gnomecustom-media-track {
+    background-color: rgba(127, 127, 127, 0.5);
 }
 
 .gnomecustom-media-fill {
@@ -194,9 +246,8 @@
 
 .gnomecustom-media-time {
     font-size: 0.85em;
-    font-weight: bold;
     font-feature-settings: "tnum";
-    opacity: 0.8;
+    opacity: 0.6;
 }
 
 /* -------------------------------------------------------- bluetooth */
@@ -218,105 +269,121 @@
     color: #ff6b6b;
 }
 
-/* Mesmo formato do card de mídia: a caixa do menu some e o card desenha o fundo. */
-.gnomecustom-bt-menu {
-    background-color: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-}
-
+/* Desenho do WinDock. O card não pinta fundo: segue o tema do Shell, como o OSD e
+   o menu rápido. */
 .gnomecustom-bt-item {
     padding: 0;
 }
 
 .gnomecustom-bt-card {
     width: 300px;
-    padding: 14px 12px 14px 12px;
-    spacing: 8px;
-    border-radius: 16px;
-    color: #ffffff;
-    background-gradient-direction: vertical;
-    background-gradient-start: rgba(46, 52, 64, 0.96);
-    background-gradient-end: rgba(0, 0, 0, 0.96);
-}
-
-.gnomecustom-bt-header {
-    font-weight: bold;
-    text-align: center;
-    padding-bottom: 4px;
-}
-
-.gnomecustom-bt-list {
-    spacing: 4px;
-}
-
-.gnomecustom-bt-row {
-    padding: 8px 10px;
-    border-radius: 10px;
-    transition-duration: 100ms;
-}
-
-.gnomecustom-bt-row:hover,
-.gnomecustom-bt-row:focus {
-    background-color: rgba(255, 255, 255, 0.08);
-}
-
-.gnomecustom-bt-row:active {
-    background-color: rgba(255, 255, 255, 0.15);
-}
-
-.gnomecustom-bt-row.disconnected {
-    opacity: 0.55;
-}
-
-.gnomecustom-bt-row-box {
-    spacing: 6px;
-}
-
-.gnomecustom-bt-row-top {
+    padding: 8px 8px 4px 8px;
     spacing: 10px;
 }
 
-.gnomecustom-bt-icon {
-    icon-size: 20px;
+.gnomecustom-bt-header {
+    spacing: 10px;
+    padding: 0 4px 0 6px;
 }
 
-.gnomecustom-bt-name {
-    font-weight: bold;
+.gnomecustom-bt-header-icon {
+    icon-size: 16px;
 }
 
-.gnomecustom-bt-value {
+.gnomecustom-bt-heading {
     font-weight: bold;
+    font-size: 1.1em;
+}
+
+.gnomecustom-bt-list {
+    spacing: 2px;
+}
+
+.gnomecustom-bt-row {
+    border-radius: 6px;
+    spacing: 2px;
+}
+
+.gnomecustom-bt-row:hover {
+    background-color: rgba(127, 127, 127, 0.14);
+}
+
+.gnomecustom-bt-row-button {
+    padding: 7px 4px 7px 8px;
+    border-radius: 6px;
+}
+
+.gnomecustom-bt-row-button:active {
+    background-color: rgba(127, 127, 127, 0.2);
+}
+
+.gnomecustom-bt-row-box {
+    spacing: 8px;
+}
+
+/* Ponto de 7 px: cheio verde conectado, só contorno pareado. */
+.gnomecustom-bt-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 4px;
+    border: 1px solid rgba(127, 127, 127, 0.8);
+}
+
+.gnomecustom-bt-dot.connected {
+    background-color: #6ccb5f;
+    border-color: #6ccb5f;
+}
+
+.gnomecustom-bt-battery {
+    font-size: 0.9em;
     font-feature-settings: "tnum";
+    opacity: 0.7;
 }
 
-.gnomecustom-bt-note {
-    font-size: 0.85em;
-    opacity: 0.75;
-    margin-left: 30px;
-}
-
-.gnomecustom-bt-track {
-    height: 4px;
-    margin-left: 30px;
-    border-radius: 2px;
-    background-color: rgba(255, 255, 255, 0.2);
-}
-
-.gnomecustom-bt-fill {
-    height: 4px;
-    border-radius: 2px;
-    background-color: rgba(255, 255, 255, 0.9);
-}
-
-.gnomecustom-bt-row.low .gnomecustom-bt-value,
-.gnomecustom-bt-row.low .gnomecustom-bt-icon {
+.gnomecustom-bt-battery.low {
     color: #ff6b6b;
 }
 
-.gnomecustom-bt-row.low .gnomecustom-bt-fill {
-    background-color: #ff6b6b;
+.gnomecustom-bt-status {
+    font-size: 0.9em;
+    color: rgba(157, 157, 157, 1);
+}
+
+.gnomecustom-bt-status.connected {
+    color: #6ccb5f;
+}
+
+.gnomecustom-bt-hide {
+    padding: 4px 6px;
+    margin-right: 2px;
+    border-radius: 6px;
+}
+
+.gnomecustom-bt-hide:hover,
+.gnomecustom-bt-hide:focus {
+    background-color: rgba(127, 127, 127, 0.25);
+}
+
+.gnomecustom-bt-message {
+    padding: 6px 10px;
+    opacity: 0.7;
+}
+
+.gnomecustom-bt-footer {
+    spacing: 2px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(127, 127, 127, 0.25);
+}
+
+.gnomecustom-bt-link {
+    padding: 5px 10px;
+    border-radius: 6px;
+    color: -st-accent-color;
+}
+
+.gnomecustom-bt-link:hover,
+.gnomecustom-bt-link:focus {
+    background-color: rgba(127, 127, 127, 0.14);
 }
 
 /* ------------------------------------------------------------- dock */

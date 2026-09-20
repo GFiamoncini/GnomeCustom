@@ -20,6 +20,8 @@ import St from 'gi://St';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 
+import {logosDirectory, resolveLogo} from '../../lib/logos.js';
+
 export class LogoMenuButton extends PanelMenu.Button {
     static {
         GObject.registerClass(this);
@@ -78,6 +80,14 @@ export class LogoMenuButton extends PanelMenu.Button {
             }
             this._logger.warn(`ícone personalizado não encontrado: '${path}'`);
             break;
+        }
+        case 'gallery': {
+            const {file, monochrome} = resolveLogo(this._settings.get_string('gallery-logo'),
+                this._settings.get_boolean('gallery-monochrome'), this._distro.id);
+            this._icon.gicon = new Gio.FileIcon({file: Gio.File.new_for_path(`${logosDirectory()}${file}`)});
+            // Monocromático: `-symbolic.svg` + esta classe = pintado com a cor do texto da barra.
+            this._icon.style_class = monochrome ? 'system-status-icon' : '';
+            return;
         }
         case 'symbolic':
             this._icon.icon_name = this._distro.symbolicIconName;

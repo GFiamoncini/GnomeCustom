@@ -131,15 +131,23 @@ Lição para as próximas fases: **verificar o cabeçalho de cada arquivo**, nã
 
 ## 6. Artefatos não-código
 
-- Ícones/logos de distribuições no Logo Menu: **não reutilizar** os assets do
-  repositório. Usar os ícones do tema instalado do sistema, ou assets próprios.
+- Ícones/logos de distribuições no Logo Menu: ~~não reutilizar~~ **revisto em 2026-09-16, a
+  pedido do usuário:** os 64 SVGs de `Resources/` (commit `cf988c0`, versão 24.8) são
+  distribuídos **sem modificação** em `assets/logos/`, com o texto da GPL-2.0 ao lado
+  (`LICENSE-GPL-2.0`) e um `README.md` de origem. Fundamento: são imagens carregadas como
+  dados em tempo de execução, não código ligado ao GnomeCustom — obra separada distribuída
+  junto (*aggregate*, GPL-2 §2 / GPL-3 §5), que mantém a licença de origem. Nenhum código do
+  Logo Menu foi copiado; `lib/logos.js` só lista nomes de arquivo e a ordem das galerias
+  (dados de configuração, para importar a escolha do usuário). Logotipos são marcas dos
+  respectivos projetos.
 - `CC-BY-SA-4.0` em gnome-shell-extensions e osd-volume-number cobre documentação
   e capturas de tela; irrelevante para o código, não copiar docs.
 
 ## 7. Pendências
 
-- [x] Confirmar autoria/licença dos assets do `Resources/` do Logo Menu — resolvido por
-      não usar imagem alguma: o logotipo vem do campo `LOGO` do `/etc/os-release`.
+- [x] Confirmar autoria/licença dos assets do `Resources/` do Logo Menu — primeiro resolvido
+      por não usar imagem alguma; em 2026-09-16 os SVGs passaram a ser distribuídos como obra
+      separada GPL-2.0 (ver §6).
 - [x] Criar `NOTICE` com atribuição por arquivo derivado — criado em 2026-09-10 (apps-menu e
       spotify-controller); acrescentar uma entrada a cada nova derivação.
 - [ ] Adicionar `LICENSE` (GPL-3.0-or-later) e cabeçalhos SPDX na Fase 1.

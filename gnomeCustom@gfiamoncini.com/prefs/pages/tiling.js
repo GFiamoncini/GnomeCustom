@@ -8,7 +8,7 @@ import Gtk from 'gi://Gtk';
 
 import {TILING_ACTIONS} from '../../lib/tiling/actions.js';
 import {parseRules, serializeRules} from '../../lib/tiling/rules.js';
-import {switchRow, spinRow, escapeMarkup} from '../widgets.js';
+import {switchRow, spinRow, escapeMarkup, shortcutRow, readKeybindings} from '../widgets.js';
 
 export class TilingPage extends Adw.PreferencesPage {
     static {
@@ -203,21 +203,31 @@ export class TilingPage extends Adw.PreferencesPage {
         const _ = this._;
         const group = new Adw.PreferencesGroup({
             title: _('Keyboard shortcuts'),
-            description: _('The same keys as the Forge extension. Stacked and tabbed layouts are not available, so their shortcuts stay free.'),
+            description: _('Click a row to record a new combination; the arrows restore the default and clear it. A row warns when the combination is already used elsewhere. Stacked and tabbed layouts are not available, so their shortcuts stay free.'),
         });
 
+        // Lido a cada mudança: o aviso precisa enxergar os atalhos atuais.
+        const others = () => readKeybindings([{settings: this._bindings}, {settings: this._settings}]);
+
         for (const spec of TILING_ACTIONS) {
-            const accels = this._bindings.get_strv(spec.key);
-            const row = new Adw.ActionRow({
+            if (spec.action.type === 'unsupported') {
+                const row = new Adw.ActionRow({title: _(spec.title), sensitive: false});
+                row.add_suffix(new Gtk.ShortcutLabel({
+                    accelerator: this._bindings.get_strv(spec.key)[0] ?? '',
+                    disabled_text: _('none'),
+                    valign: Gtk.Align.CENTER,
+                }));
+                group.add(row);
+                continue;
+            }
+
+            group.add(shortcutRow({
                 title: _(spec.title),
-                sensitive: spec.action.type !== 'unsupported',
-            });
-            row.add_suffix(new Gtk.ShortcutLabel({
-                accelerator: accels[0] ?? '',
-                disabled_text: _('none'),
-                valign: Gtk.Align.CENTER,
+                settings: this._bindings,
+                key: spec.key,
+                _,
+                others,
             }));
-            group.add(row);
         }
 
         this.add(group);

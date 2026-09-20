@@ -278,7 +278,10 @@ export class TilingModule extends Module {
                 continue;
             const ok = this._keybindings.add(spec.key, this._bindingSettings, () => {
                 try {
-                    this._controller.run(spec.action);
+                    if (spec.action.type === 'open-prefs')
+                        this.ctx.extension.openPreferences();
+                    else
+                        this._controller.run(spec.action);
                 } catch (e) {
                     this.log.error(`atalho '${spec.key}' falhou`, e);
                 }

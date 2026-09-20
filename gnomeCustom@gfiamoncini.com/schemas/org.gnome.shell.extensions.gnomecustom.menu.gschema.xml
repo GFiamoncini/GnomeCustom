@@ -9,17 +9,31 @@
     <value value="0" nick="distro"/>
     <value value="1" nick="symbolic"/>
     <value value="2" nick="custom"/>
+    <value value="3" nick="gallery"/>
   </enum>
 
   <schema id="org.gnome.shell.extensions.gnomecustom.menu"
           path="/org/gnome/shell/extensions/gnomecustom/menu/">
 
     <key name="icon-source" enum="org.gnome.shell.extensions.gnomecustom.LogoSource">
-      <default>'distro'</default>
+      <default>'gallery'</default>
       <summary>Which logo to show</summary>
       <description>“Distro” uses the logo declared by the running distribution,
-      “symbolic” uses a monochrome icon that follows the panel colour, and
-      “custom” uses the file below.</description>
+      “symbolic” uses a monochrome icon that follows the panel colour,
+      “gallery” uses one of the bundled distribution logos, and “custom” uses the
+      file below.</description>
+    </key>
+    <key name="gallery-logo" type="s">
+      <default>''</default>
+      <summary>Logo from the gallery</summary>
+      <description>Identifier such as “fedora” or “arch”. Empty picks the logo of the
+      running distribution.</description>
+    </key>
+    <key name="gallery-monochrome" type="b">
+      <default>false</default>
+      <summary>Monochrome gallery logo</summary>
+      <description>Uses the single-colour version, which follows the text colour of the
+      top bar.</description>
     </key>
     <key name="custom-icon-path" type="s">
       <default>''</default>

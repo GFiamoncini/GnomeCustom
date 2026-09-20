@@ -9,6 +9,11 @@
  * (`baseline/dconf-ext-forge.ini`), com uma exceção registrada: "sempre
  * flutuar" nasce sem atalho, porque o usuário o desligou em 2026-09-10.
  *
+ * Além das do Forge, quatro atalhos de seta para redimensionar e dois do WinDock
+ * (manter acima, abrir as preferências), acrescentados em 2026-09-20 a pedido do
+ * usuário. "Esquecer tamanho" do WinDock não entrou: aqui a janela flutuante não
+ * guarda tamanho por aplicativo, então não haveria o que esquecer.
+ *
  * Três ações do Forge ficam sem efeito — pilha, abas e decoração de abas —
  * porque esses modos estão desligados no baseline e não fazem parte da fase 8.
  * Continuam no catálogo para que os atalhos migrados não se percam.
@@ -65,6 +70,16 @@ export const TILING_ACTIONS = Object.freeze([
     {key: 'window-resize-left-decrease', accels: ['<Shift><Control><Super>o'], action: {type: 'resize', edge: 'left', sign: -1}, title: N_('Shrink the left edge')},
     {key: 'window-resize-right-increase', accels: ['<Control><Super>o'], action: {type: 'resize', edge: 'right', sign: 1}, title: N_('Grow the right edge')},
     {key: 'window-resize-right-decrease', accels: ['<Shift><Control><Super>y'], action: {type: 'resize', edge: 'right', sign: -1}, title: N_('Shrink the right edge')},
+
+    // redimensionar pelas setas (WinDock: modificador + setas; aqui com Super)
+    {key: 'window-grow-left', accels: ['<Shift><Control><Super>Left'], action: {type: 'resize', edge: 'left', sign: 1}, title: N_('Grow towards the left')},
+    {key: 'window-grow-right', accels: ['<Shift><Control><Super>Right'], action: {type: 'resize', edge: 'right', sign: 1}, title: N_('Grow towards the right')},
+    {key: 'window-grow-up', accels: ['<Shift><Control><Super>Up'], action: {type: 'resize', edge: 'up', sign: 1}, title: N_('Grow upwards')},
+    {key: 'window-grow-down', accels: ['<Shift><Control><Super>Down'], action: {type: 'resize', edge: 'down', sign: 1}, title: N_('Grow downwards')},
+
+    // acima das outras, e as preferências (WinDock: Alt+T e Ctrl+Alt+S)
+    {key: 'window-toggle-above', accels: ['<Super>t'], action: {type: 'above-toggle'}, title: N_('Keep the window above the others')},
+    {key: 'prefs-open', accels: ['<Control><Super>s'], action: {type: 'open-prefs'}, title: N_('Open the GnomeCustom settings')},
 
     // snap
     {key: 'window-snap-center', accels: ['<Control><Alt>c'], action: {type: 'snap', side: 'center'}, title: N_('Center the window')},

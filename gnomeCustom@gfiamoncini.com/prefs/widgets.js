@@ -77,6 +77,44 @@ export function spinRow({title, subtitle = '', settings, key, min, max, step = 1
 }
 
 /**
+ * Opacidade de 0 a 100 %, gravada como fração (chave `d` de 0 a 1), como a
+ * opacidade do Dash to Dock.
+ *
+ * @param {object} args
+ * @param {string} args.title
+ * @param {string} [args.subtitle]
+ * @param {object} args.settings
+ * @param {string} args.key chave `d` de 0 a 1
+ * @returns {object} Adw.SpinRow
+ */
+export function percentRow({title, subtitle = '', settings, key}) {
+    const row = new Adw.SpinRow({
+        title,
+        subtitle,
+        adjustment: new Gtk.Adjustment({lower: 0, upper: 100, step_increment: 5, page_increment: 10}),
+        digits: 0,
+    });
+
+    const toPercent = () => Math.round(settings.get_double(key) * 100);
+    let updating = false;
+    row.value = toPercent();
+    row.connect('notify::value', () => {
+        if (updating)
+            return;
+        const fraction = Math.round(row.value) / 100;
+        if (Math.abs(fraction - settings.get_double(key)) > 1e-9)
+            settings.set_double(key, fraction);
+    });
+    const handler = settings.connect(`changed::${key}`, () => {
+        updating = true;
+        row.value = toPercent();
+        updating = false;
+    });
+    row.connect('destroy', () => settings.disconnect(handler));
+    return row;
+}
+
+/**
  * Linha de escolha para chaves enum, mostrando rótulos traduzidos.
  *
  * @param {object} args

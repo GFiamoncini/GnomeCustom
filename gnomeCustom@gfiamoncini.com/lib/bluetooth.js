@@ -16,8 +16,9 @@
 
 export const DEVICE_IFACE = 'org.bluez.Device1';
 export const BATTERY_IFACE = 'org.bluez.Battery1';
+export const ADAPTER_IFACE = 'org.bluez.Adapter1';
 
-const TRACKED = [DEVICE_IFACE, BATTERY_IFACE];
+const TRACKED = [DEVICE_IFACE, BATTERY_IFACE, ADAPTER_IFACE];
 
 /** Nomes que o BlueZ usa e cujo equivalente simbólico tem outro nome. */
 const ICON_ALIASES = {'audio-card': 'audio-speakers'};
@@ -68,7 +69,7 @@ export function removeInterfaces(state, path, names) {
 
     for (const name of names)
         delete entry[name];
-    if (!entry[DEVICE_IFACE] && !entry[BATTERY_IFACE])
+    if (!TRACKED.some(iface => entry[iface]))
         state.delete(path);
     return state;
 }
@@ -121,18 +122,57 @@ export function devicesFromState(state) {
 }
 
 /**
- * Dispositivos do card e da barra: pareados e conectados, mais os que o usuário
- * acabou de desconectar pelo card (`kept`). Conectados primeiro, depois por nome.
+ * Dispositivos do card, como no WinDock: todos os pareados, conectados primeiro
+ * e depois por nome, menos os que o usuário escondeu pelo ✕.
  *
  * @param {object[]} devices
- * @param {Set<string>} [kept] caminhos mantidos mesmo desconectados
+ * @param {string[]} [hidden] endereços escondidos
  * @returns {object[]}
  */
-export function visibleDevices(devices, kept = new Set()) {
+export function visibleDevices(devices, hidden = []) {
     return devices
-        .filter(device => device.paired && (device.connected || kept.has(device.path)))
+        .filter(device => device.paired && !hidden.includes(device.address))
         .sort((a, b) =>
             Number(b.connected) - Number(a.connected) || a.name.localeCompare(b.name));
+}
+
+/**
+ * Estado do rádio: o primeiro adaptador do BlueZ.
+ *
+ * @param {Map<string, object>} state
+ * @returns {?{path: string, powered: boolean}} null sem adaptador
+ */
+export function adapterOf(state) {
+    const paths = [...state.keys()].filter(path => state.get(path)[ADAPTER_IFACE]).sort();
+    if (paths.length === 0)
+        return null;
+    return {path: paths[0], powered: Boolean(state.get(paths[0])[ADAPTER_IFACE].Powered)};
+}
+
+/**
+ * Texto de estado de uma linha.
+ *
+ * @param {{connected: boolean}} device
+ * @param {boolean} busy conexão em andamento
+ * @returns {string} 'connecting' | 'disconnecting' | 'connected' | 'paired'
+ */
+export function deviceStatus(device, busy) {
+    if (busy)
+        return device.connected ? 'disconnecting' : 'connecting';
+    return device.connected ? 'connected' : 'paired';
+}
+
+/**
+ * Esconde ou mostra um endereço, sem repetir.
+ *
+ * @param {string[]} list
+ * @param {string} address
+ * @param {boolean} hide
+ * @returns {string[]} lista nova
+ */
+export function toggleHidden(list, address, hide) {
+    const without = list.filter(entry => entry !== address);
+    return hide && address ? [...without, address] : without;
 }
 
 /**

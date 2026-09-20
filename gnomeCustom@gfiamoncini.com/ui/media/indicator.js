@@ -4,11 +4,13 @@
 /**
  * Botão de mídia da barra superior e o card que ele abre.
  *
- * Baseado no card do spotify-controller (© 2026 NarkAgni, GPL-3.0-or-later —
- * reuso permitido, ver LICENSE-AUDIT.md §4): capa grande e redonda, título,
- * "artistas / álbum", tempo e fundo em degradê a partir da cor da capa. Por
- * decisão do usuário ficaram de fora curtir, playlists e letra; a barra de tempo
- * é reta e só mostra, sem arrastar.
+ * Card no desenho do WinDock (app do próprio usuário, pedido de 2026-09-16):
+ * cabeçalho "Tocando agora", capa pequena à esquerda com título, artista e álbum
+ * à direita, trilho de tempo que aceita clique para pular, decorrido e duração.
+ * Sem controles no card, como no WinDock: eles já estão na barra. O fundo em
+ * degradê pela cor da capa vem do spotify-controller (© 2026 NarkAgni,
+ * GPL-3.0-or-later — reuso permitido, LICENSE-AUDIT.md §4) e é opcional; sem
+ * ele o card fica com as cores do tema do Shell.
  *
  * Na barra: mini capa, nome da música e os controles (anterior, tocar/pausar,
  * próxima). Os botões consomem o clique, então não abrem o card.
@@ -23,8 +25,8 @@ import St from 'gi://St';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 
-import {canInvoke, estimatePosition, formatTime, playPauseIcon, progressFraction,
-    trackSubtitle} from '../../lib/mpris.js';
+import {canInvoke, canSeek, estimatePosition, formatTime, playPauseIcon, progressFraction,
+    seekPosition} from '../../lib/mpris.js';
 import {darkenForContrast, rgba} from '../../theme/engine/color.js';
 
 /** Intervalo de atualização do tempo, só com o card aberto e tocando. */
@@ -47,20 +49,26 @@ export class MediaIndicator extends PanelMenu.Button {
      * @param {object} options.signals SignalTracker do módulo, dono do temporizador
      * @param {Function} [options.onOpen] chamado ao abrir o card
      * @param {Function} [options.onControl] chamado com 'PlayPause', 'Next' ou 'Previous'
+     * @param {Function} [options.onSeek] chamado com a posição pedida, em microssegundos
+     * @param {Function} [options.gettext] tradução
      */
-    constructor({settings, signals, onOpen = null, onControl = null}) {
+    constructor({settings, signals, onOpen = null, onControl = null, onSeek = null,
+        gettext = message => message}) {
         super(0.5, 'GnomeCustom Media', false);
 
         this._settings = settings;
         this._signals = signals;
         this._onOpen = onOpen;
         this._onControl = onControl;
+        this._onSeek = onSeek;
+        this._ = gettext;
         this._state = null;
         this._cover = null;
         this._tickToken = undefined;
 
         this._buildPanel();
         this._buildCard();
+        this._guardControlsFromMenu();
 
         this.menu.connect('open-state-changed', (_menu, open) => {
             if (open) {
@@ -73,11 +81,31 @@ export class MediaIndicator extends PanelMenu.Button {
     }
 
     /**
-     * O `PanelMenu.Button` abre o card já no pressionar, e o `St.Button` do GNOME
-     * 49 só reconhece o clique ao soltar: sem este desvio, clicar num controle
-     * abria o card e o menu roubava o soltar. Eventos vindos dos controles não
-     * chegam ao tratamento do botão do painel.
+     * O botão do painel abre o card já no pressionar, e o `St.Button` só
+     * reconhece o clique ao soltar: sem desvio, clicar num controle abria o card
+     * e o menu roubava o soltar.
+     *
+     * São duas versões do mesmo desvio, porque a forma de abrir o menu mudou:
+     *  - GNOME 49: o `PanelMenu.Button` trata o evento em `vfunc_event`, então
+     *    basta não repassar o que nasce nos controles;
+     *  - GNOME 50: ele usa um `Clutter.ClickGesture`, que ignora `vfunc_event`;
+     *    aí o gesto é desligado enquanto o ponteiro está sobre os controles.
      */
+    _guardControlsFromMenu() {
+        const gesture = this._clickGesture;
+        if (!gesture)
+            return;   // GNOME 49: o desvio é o vfunc_event abaixo
+
+        this._controls.connect('enter-event', () => {
+            gesture.set_enabled(false);
+            return Clutter.EVENT_PROPAGATE;
+        });
+        this._controls.connect('leave-event', () => {
+            gesture.set_enabled(true);
+            return Clutter.EVENT_PROPAGATE;
+        });
+    }
+
     vfunc_event(event) {
         const source = global.stage.get_event_actor(event);
         if (source && this._controls.contains(source))
@@ -103,9 +131,12 @@ export class MediaIndicator extends PanelMenu.Button {
         this._syncControls();
         this._source.text = player.identity;
         this._title.text = track.title;
-        this._subtitle.text = trackSubtitle(track);
-        this._subtitle.visible = this._subtitle.text !== '';
+        this._artist.text = track.artists.join(', ');
+        this._artist.visible = this._artist.text !== '';
+        this._album.text = track.album;
+        this._album.visible = track.album !== '';
         this._total.text = formatTime(track.length);
+        this._seekArea.reactive = canSeek(player);
 
         this._syncProgress();
         this._syncTick();
@@ -216,11 +247,27 @@ export class MediaIndicator extends PanelMenu.Button {
             style_class: 'gnomecustom-media-card',
         });
 
+        // Cabeçalho: o que é, e de qual player vem.
+        const header = new St.BoxLayout({style_class: 'gnomecustom-media-header'});
+        header.add_child(new St.Icon({
+            icon_name: 'audio-x-generic-symbolic',
+            style_class: 'gnomecustom-media-header-icon',
+            y_align: Clutter.ActorAlign.CENTER,
+        }));
+        header.add_child(new St.Label({
+            text: this._('Now playing'),
+            style_class: 'gnomecustom-media-heading',
+            y_align: Clutter.ActorAlign.CENTER,
+        }));
         this._source = this._cardLabel('gnomecustom-media-source');
+        this._source.y_align = Clutter.ActorAlign.CENTER;
+        header.add_child(this._source);
 
+        // Capa à esquerda; o quadro fica mesmo sem capa, para o card não mudar de forma.
+        const body = new St.BoxLayout({style_class: 'gnomecustom-media-body'});
         this._coverArt = new St.Bin({
             style_class: 'gnomecustom-media-cover',
-            x_align: Clutter.ActorAlign.CENTER,
+            y_align: Clutter.ActorAlign.START,
         });
         this._coverIcon = new St.Icon({
             icon_name: 'audio-x-generic-symbolic',
@@ -228,12 +275,31 @@ export class MediaIndicator extends PanelMenu.Button {
         });
         this._coverArt.set_child(this._coverIcon);
 
+        const info = new St.BoxLayout({
+            vertical: true,
+            x_expand: true,
+            y_align: Clutter.ActorAlign.CENTER,
+            style_class: 'gnomecustom-media-info',
+        });
         this._title = this._cardLabel('gnomecustom-media-title');
-        this._subtitle = this._cardLabel('gnomecustom-media-subtitle');
+        this._artist = this._cardLabel('gnomecustom-media-artist');
+        this._album = this._cardLabel('gnomecustom-media-album');
+        info.add_child(this._title);
+        info.add_child(this._artist);
+        info.add_child(this._album);
+        body.add_child(this._coverArt);
+        body.add_child(info);
 
         this._progress = new St.BoxLayout({
             vertical: true,
             style_class: 'gnomecustom-media-progress',
+        });
+        // Área de clique mais alta que o trilho de 4 px, para não exigir mira.
+        this._seekArea = new St.BoxLayout({
+            vertical: true,
+            reactive: true,
+            track_hover: true,
+            style_class: 'gnomecustom-media-seek',
         });
         // Caixa horizontal, e não BinLayout: o BinLayout centraliza o preenchimento
         // de largura fixa mesmo com `x_align: START`, e a barra crescia do meio.
@@ -247,6 +313,8 @@ export class MediaIndicator extends PanelMenu.Button {
         });
         this._track.add_child(this._fill);
         this._track.connect('notify::width', () => this._syncProgress());
+        this._seekArea.add_child(this._track);
+        this._seekArea.connect('button-release-event', (_actor, event) => this._onSeekClick(event));
 
         const times = new St.BoxLayout({style_class: 'gnomecustom-media-times'});
         this._elapsed = new St.Label({style_class: 'gnomecustom-media-time', x_expand: true});
@@ -254,14 +322,32 @@ export class MediaIndicator extends PanelMenu.Button {
         times.add_child(this._elapsed);
         times.add_child(this._total);
 
-        this._progress.add_child(this._track);
+        this._progress.add_child(this._seekArea);
         this._progress.add_child(times);
 
-        for (const child of [this._source, this._coverArt, this._title, this._subtitle, this._progress])
+        for (const child of [header, body, this._progress])
             this._card.add_child(child);
 
         item.add_child(this._card);
         this.menu.addMenuItem(item);
+    }
+
+    _onSeekClick(event) {
+        const length = this._state?.track.length ?? 0;
+        const [stageX, stageY] = event.get_coords();
+        const [ok, x] = this._track.transform_stage_point(stageX, stageY);
+        const position = ok && this._track.width > 0
+            ? seekPosition(x / this._track.width, length)
+            : null;
+
+        if (position === null || !canSeek(this._state))
+            return Clutter.EVENT_PROPAGATE;
+
+        this._onSeek?.(position);
+        // Resposta imediata; a posição real chega pelo serviço logo depois.
+        this._fill.width = Math.round(this._track.width * progressFraction(position, length));
+        this._elapsed.text = formatTime(position);
+        return Clutter.EVENT_STOP;
     }
 
     _cardLabel(styleClass) {
@@ -330,6 +416,7 @@ export class MediaIndicator extends PanelMenu.Button {
         this._cover = null;
         this._onOpen = null;
         this._onControl = null;
+        this._onSeek = null;
         super.destroy();
     }
 }

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnomeCustom 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/gfiamoncini/gnomecustom/issues\n"
-"POT-Creation-Date: 2026-09-16 22:19-0300\n"
+"POT-Creation-Date: 2026-09-20 14:55-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,33 +17,33 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: gnomeCustom@gfiamoncini.com/prefs/widgets.js:297
+#: gnomeCustom@gfiamoncini.com/prefs/widgets.js:335
 msgid "Disabled"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/widgets.js:304
+#: gnomeCustom@gfiamoncini.com/prefs/widgets.js:342
 msgid "Restore default"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/widgets.js:310
+#: gnomeCustom@gfiamoncini.com/prefs/widgets.js:348
 msgid "Disable shortcut"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/widgets.js:328
+#: gnomeCustom@gfiamoncini.com/prefs/widgets.js:366
 #, javascript-format
 msgid "Also used by “%s” (%s)"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/widgets.js:345
+#: gnomeCustom@gfiamoncini.com/prefs/widgets.js:383
 msgid "Press the new shortcut. Esc cancels, Backspace disables."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/widgets.js:347
+#: gnomeCustom@gfiamoncini.com/prefs/widgets.js:385
 #: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:137
 msgid "Cancel"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/widgets.js:356
+#: gnomeCustom@gfiamoncini.com/prefs/widgets.js:394
 msgid ""
 "Use Ctrl, Alt or Super with the key (function and media keys work alone)."
 msgstr ""
@@ -82,7 +82,7 @@ msgid "Turns modules on or off and picks a theme in one step."
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/general.js:83
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:55
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:57
 msgid "Custom"
 msgstr ""
 
@@ -132,260 +132,330 @@ msgstr ""
 msgid "Detail level"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:24
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:388
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:25
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:450
 #: gnomeCustom@gfiamoncini.com/lib/modules-info.js:37
 msgid "Theme"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:47
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:49
 msgid "Preset"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:48
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:50
 msgid ""
 "A starting point for every surface at once. Changing any option below turns "
 "it into a custom look."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:58
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:60
 msgid "Look"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:69
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:71
 msgid "Your own combination of the options below"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:98
-msgid "Menus, OSD and dock"
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:100
+msgid "Menus, notifications and OSD"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:99
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:101
 msgid ""
-"Extends the bar colours to other surfaces. Each one keeps the look of the "
-"shell theme until turned on."
+"Extends the shared colours to the pop-up menus and the volume and brightness "
+"displays. Each one keeps the look of the shell theme until turned on."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:103
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:105
 msgid "Style popup menus"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:104
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:106
 msgid "Panel menus, the logo menu, the applications menu and the cards"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:109
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:111
 msgid "Style on-screen displays"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:110
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:112
 msgid "Volume and brightness pop-ups; the level bar takes the accent"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:115
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:117
+msgid "Compact notifications"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:118
+msgid "Smaller cards in the notification list of the date menu"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:123
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:157
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:228
+msgid "Corner radius"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:124
+msgid "Menus, cards and on-screen displays"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:133
+msgid "Opacity"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:146
+#: gnomeCustom@gfiamoncini.com/prefs/pages/dock.js:20
+#: gnomeCustom@gfiamoncini.com/prefs/pages/dock.js:25
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:85
+msgid "Dock"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:147
+msgid "Shape here; size, position and opacity are on the Dock page."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:151
 msgid "Style the dock"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:116
-msgid ""
-"Background colour and running indicators; opacity stays in the dock settings"
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:152
+msgid "Background colour and running indicators from the shared colours"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:121
-msgid "Menu and OSD corner radius"
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:172
+#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:25
+#: gnomeCustom@gfiamoncini.com/modules/tiling/module.js:332
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:109
+msgid "Tiling"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:130
-msgid "Menu and OSD opacity"
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:173
+msgid "Border drawn around the focused window by the tiling module."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:139
-msgid "Dock corner radius"
-msgstr ""
-
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:154
-msgid "Tiling borders"
-msgstr ""
-
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:155
-msgid ""
-"Border of the focused window. Used by the tiling module, which is not "
-"implemented yet."
-msgstr ""
-
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:159
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:177
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:314
 msgid "Border colour"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:160
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:178
 msgid "Clear to follow the accent colour"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:167
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:219
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:185
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:329
 msgid "Border thickness"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:174
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:192
 msgid "Border corner radius"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:187
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:205
 #: gnomeCustom@gfiamoncini.com/prefs/pages/bluetooth.js:25
 #: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:146
 msgid "Top bar"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:188
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:206
 msgid ""
 "Shape and position of the top bar. “None” leaves the shell theme in charge."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:192
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:210
 msgid "Style"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:196
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:214
 msgid "None"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:197
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:215
 msgid "Attached to the edge"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:198
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:216
 msgid "Floating"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:202
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:220
 msgid "Height"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:203
-#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:51
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:221
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:53
 msgid "In pixels"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:210
-msgid "Corner radius"
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:229
+msgid "Attached to the edge, only the bottom corners are rounded"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:228
-msgid "Space above"
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:238
+#: gnomeCustom@gfiamoncini.com/prefs/pages/panel.js:42
+msgid "Icon size"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:237
-msgid "Space below"
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:239
+msgid "Status icons, in pixels; 16 is the GNOME size, whatever the shell theme"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:246
-msgid "Space at the sides"
+msgid "Space above"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:255
+msgid "Space below"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:264
+msgid "Space at the sides"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:273
 msgid "Full-height panel buttons"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:256
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:274
 msgid "Removes the padding above and below buttons so they fill the bar"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:267
-msgid "Colours"
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:289
+msgid "Top bar colours"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:268
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:290
 msgid ""
-"With the wallpaper palette on, the bar takes its background from the desktop "
-"background. Setting a background colour below overrides it."
+"Turn on to pick the bar colours yourself. Off, the bar follows the shared "
+"colours below (wallpaper palette or background colour)."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:272
-msgid "Take colours from the wallpaper"
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:294
+msgid "Choose the bar colours"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:277
-msgid "Palette colour to use"
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:295
+msgid "Background, opacity and border, independent of the shell theme"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:278
-msgid "0 is the most frequent colour of the wallpaper"
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:303
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:370
+msgid "Background colour"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:285
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:309
 #: gnomeCustom@gfiamoncini.com/prefs/pages/dock.js:48
 msgid "Background opacity"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:294
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:58
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:315
+msgid "Clear for a shade of the background"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:322
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:65
 msgid "Border opacity"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:303
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:67
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:330
+msgid "0 removes the border"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:345
+msgid "Shared colours"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:346
+msgid ""
+"Base for menus, OSD and dock, and for the bar when its own colours are off. "
+"With the wallpaper palette on, the colour comes from the desktop background; "
+"a background colour overrides it."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:350
+msgid "Take colours from the wallpaper"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:355
+msgid "Palette colour to use"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:356
+msgid "0 is the most frequent colour of the wallpaper"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:363
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:97
 msgid "Accent colour"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:304
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:364
 msgid "Highlights and open menus"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:310
-msgid "Background colour"
-msgstr ""
-
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:311
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:371
 msgid "Clear to go back to the wallpaper palette"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:318
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:378
 msgid "Text colour"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:319
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:379
 msgid "Clear to pick automatically for contrast"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:327
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:388
 msgid "Current wallpaper palette"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:328
-msgid "Extracted automatically, most frequent colour first."
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:389
+msgid "Extracted automatically, most frequent colour first"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:353
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:415
 msgid "No palette yet"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:354
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:416
 msgid "It is extracted when the Theme module is enabled"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:364
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:426
 msgid "most frequent"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:374
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:436
 msgid "Shell theme"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:375
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:437
 msgid ""
 "Loads a theme from ~/.themes, the job the User Themes extension does. The "
 "generated bar style is applied on top of it."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:381
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:443
 msgid "Default GNOME theme"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:385
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:447
 msgid "(not installed)"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:396
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:456
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:194
+msgid "AMOLED black"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:457
+msgid ""
+"Dark greys of the theme become pure black, for OLED screens; text and accent "
+"stay"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:464
 msgid "Could not list installed themes"
 msgstr ""
 
@@ -399,169 +469,191 @@ msgid "Applications menu"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/panel.js:27
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.panel.gschema.xml:16
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.panel.gschema.xml:21
 msgid "Show the applications menu"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/panel.js:28
-msgid "Categories on the left, applications on the right"
+msgid "Applications by category, from the button in the top bar"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/panel.js:33
-msgid "Icon size"
+msgid "Layout"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/panel.js:40
+#: gnomeCustom@gfiamoncini.com/prefs/pages/panel.js:37
+msgid "One column, collapsed categories"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/panel.js:38
+msgid "Categories on the left, applications on the right"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/panel.js:49
 msgid "Keyboard shortcut"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/panel.js:42
+#: gnomeCustom@gfiamoncini.com/prefs/pages/panel.js:51
 #: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:217
 msgid "none"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/panel.js:47
-#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:125
-#: gnomeCustom@gfiamoncini.com/ui/menu/logo-menu.js:115
+#: gnomeCustom@gfiamoncini.com/prefs/pages/panel.js:56
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:221
+#: gnomeCustom@gfiamoncini.com/ui/menu/logo-menu.js:125
 msgid "Activities"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/panel.js:49
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.panel.gschema.xml:12
+#: gnomeCustom@gfiamoncini.com/prefs/pages/panel.js:58
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.panel.gschema.xml:17
 msgid "Show the Activities button"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/panel.js:50
+#: gnomeCustom@gfiamoncini.com/prefs/pages/panel.js:59
 msgid "The logo menu can open the overview instead"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:22
-#: gnomeCustom@gfiamoncini.com/lib/migration/importers.js:356
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:24
+#: gnomeCustom@gfiamoncini.com/lib/migration/importers.js:362
 #: gnomeCustom@gfiamoncini.com/lib/modules-info.js:53
 msgid "Logo Menu"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:36
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:38
 msgid "Appearance"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:39
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:41
 msgid "Logo"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:40
-msgid ""
-"The distribution logo comes from the system itself, so no images are bundled"
-msgstr ""
-
-#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:44
-msgid "Distribution logo"
-msgstr ""
-
 #: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:45
-msgid "Monochrome icon"
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:72
+msgid "Logo gallery"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:46
+msgid "Icon of the system theme"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:47
+msgid "Generic monochrome icon"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:48
 msgid "Custom image"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:50
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:52
 #: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:77
 msgid "Size"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:65
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:73
+msgid ""
+"The same logos as the Logo Menu extension. Monochrome follows the text "
+"colour of the top bar."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:77
+msgid "Monochrome"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:122
+msgid "From the distribution"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:161
 msgid "Custom image path"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:92
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:188
 msgid "Images"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:96
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:192
 msgid "Choose a logo image"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:118
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:214
 msgid "Menu items"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:119
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:215
 msgid "Turn off what you do not use; separators adjust on their own."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:123
-#: gnomeCustom@gfiamoncini.com/ui/menu/logo-menu.js:105
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:219
+#: gnomeCustom@gfiamoncini.com/ui/menu/logo-menu.js:115
 msgid "About This System"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:124
-#: gnomeCustom@gfiamoncini.com/ui/menu/logo-menu.js:111
-#: gnomeCustom@gfiamoncini.com/ui/panel/apps-menu.js:61
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:220
+#: gnomeCustom@gfiamoncini.com/ui/menu/logo-menu.js:121
+#: gnomeCustom@gfiamoncini.com/ui/panel/apps-menu.js:69
 msgid "Applications"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:126
-#: gnomeCustom@gfiamoncini.com/ui/menu/logo-menu.js:123
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:222
+#: gnomeCustom@gfiamoncini.com/ui/menu/logo-menu.js:133
 msgid "Software"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:127
-#: gnomeCustom@gfiamoncini.com/ui/menu/logo-menu.js:129
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:223
+#: gnomeCustom@gfiamoncini.com/ui/menu/logo-menu.js:139
 msgid "System Monitor"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:128
-#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:152
-#: gnomeCustom@gfiamoncini.com/ui/menu/logo-menu.js:135
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:224
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:248
+#: gnomeCustom@gfiamoncini.com/ui/menu/logo-menu.js:145
 msgid "Terminal"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:129
-#: gnomeCustom@gfiamoncini.com/ui/menu/logo-menu.js:140
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:225
+#: gnomeCustom@gfiamoncini.com/ui/menu/logo-menu.js:150
 msgid "Extensions"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:130
-#: gnomeCustom@gfiamoncini.com/ui/menu/logo-menu.js:145
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:226
+#: gnomeCustom@gfiamoncini.com/ui/menu/logo-menu.js:155
 msgid "Settings"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:131
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:227
 msgid "Force Quit a Window"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:132
-#: gnomeCustom@gfiamoncini.com/ui/menu/logo-menu.js:158
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:228
+#: gnomeCustom@gfiamoncini.com/ui/menu/logo-menu.js:168
 msgid "Lock Screen"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:133
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:229
 msgid "Suspend, Restart and Power Off"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:145
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:241
 msgid "Applications opened by the menu"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:146
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:242
 msgid "Desktop file identifiers. Leave empty to use the system default."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:150
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:246
 msgid "Software centre"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:151
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:247
 msgid "System monitor"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:153
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:249
 msgid "Extensions manager"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:183
+#: gnomeCustom@gfiamoncini.com/prefs/pages/menu.js:279
 msgid "This application is not installed"
 msgstr ""
 
@@ -571,8 +663,9 @@ msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/bluetooth.js:26
 msgid ""
-"Each connected device appears with its battery. Clicking a device in the "
-"card connects or disconnects it."
+"Each connected device appears with its battery. The card lists paired "
+"devices and turns the radio on or off; clicking a device connects or "
+"disconnects it, and the ✕ hides it from the card."
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/bluetooth.js:29
@@ -595,15 +688,23 @@ msgstr ""
 msgid "Right"
 msgstr ""
 
+#: gnomeCustom@gfiamoncini.com/prefs/pages/bluetooth.js:39
+msgid "Hide when nothing is connected"
+msgstr ""
+
 #: gnomeCustom@gfiamoncini.com/prefs/pages/bluetooth.js:40
+msgid "When off, the Bluetooth icon stays in the top bar"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/bluetooth.js:46
 msgid "Battery"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/bluetooth.js:42
+#: gnomeCustom@gfiamoncini.com/prefs/pages/bluetooth.js:48
 msgid "Low battery at or below"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/prefs/pages/bluetooth.js:43
+#: gnomeCustom@gfiamoncini.com/prefs/pages/bluetooth.js:49
 msgid "In percent; the device turns red. 0 turns the warning off"
 msgstr ""
 
@@ -668,12 +769,6 @@ msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:211
 msgid "When off, the card follows the shell theme"
-msgstr ""
-
-#: gnomeCustom@gfiamoncini.com/prefs/pages/dock.js:20
-#: gnomeCustom@gfiamoncini.com/prefs/pages/dock.js:25
-#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:85
-msgid "Dock"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/dock.js:26
@@ -865,44 +960,73 @@ msgstr ""
 msgid "License"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/ui/menu/logo-menu.js:153
+#: gnomeCustom@gfiamoncini.com/ui/menu/logo-menu.js:163
 msgid "Force Quit a Window…"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/ui/menu/logo-menu.js:161
+#: gnomeCustom@gfiamoncini.com/ui/menu/logo-menu.js:171
 msgid "Suspend"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/ui/menu/logo-menu.js:162
+#: gnomeCustom@gfiamoncini.com/ui/menu/logo-menu.js:172
 msgid "Restart…"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/ui/menu/logo-menu.js:163
+#: gnomeCustom@gfiamoncini.com/ui/menu/logo-menu.js:173
 msgid "Power Off…"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/ui/panel/apps-menu.js:152
+#: gnomeCustom@gfiamoncini.com/ui/panel/apps-menu.js:189
 msgid "Could not read the application menu"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/ui/panel/apps-menu.js:176
+#: gnomeCustom@gfiamoncini.com/ui/panel/apps-menu.js:213
 msgid "No applications found"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/ui/bluetooth/indicator.js:180
-msgid "Disconnecting…"
+#: gnomeCustom@gfiamoncini.com/ui/bluetooth/indicator.js:92
+msgid "No Bluetooth adapter"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/ui/bluetooth/indicator.js:180
-msgid "Connecting…"
+#: gnomeCustom@gfiamoncini.com/ui/bluetooth/indicator.js:93
+msgid "Bluetooth is off"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/ui/bluetooth/indicator.js:182
-msgid "Disconnected — click to connect"
+#: gnomeCustom@gfiamoncini.com/ui/bluetooth/indicator.js:95
+msgid "No paired devices"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/ui/bluetooth/indicator.js:184
-msgid "No battery information"
+#: gnomeCustom@gfiamoncini.com/ui/bluetooth/indicator.js:104
+#, javascript-format
+msgid "Show hidden devices (%d)"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/bluetooth/indicator.js:139
+msgid "Turn Bluetooth on or off"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/bluetooth/indicator.js:151
+msgid "Bluetooth settings"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/bluetooth/indicator.js:247
+msgid "connected"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/bluetooth/indicator.js:248
+msgid "paired"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/bluetooth/indicator.js:249
+msgid "connecting…"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/bluetooth/indicator.js:250
+msgid "disconnecting…"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/bluetooth/indicator.js:264
+msgid "Hide this device from the card"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:23
@@ -1044,268 +1168,351 @@ msgid "Top bar height in pixels"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:31
+msgid "Size of the status icons in the top bar, in pixels"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:32
+msgid ""
+"Applies whatever the shell theme says. 16 is the GNOME size; a low bar with "
+"a compact font looks balanced with 12 to 14."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:38
 msgid "Space above the top bar"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:36
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:43
 msgid "Space below the top bar"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:41
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:48
 msgid "Space at the sides of the top bar"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:42
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:49
 msgid ""
 "The default is three times the top margin, which is the proportion the "
 "floating bar was designed around."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:48
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:55
 msgid "Corner radius of the top bar"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:53
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:60
 msgid "Border thickness of the top bar"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:63
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:70
 msgid "Background opacity of the top bar"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:68
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:74
+msgid "Choose the top bar colours yourself"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:75
+msgid ""
+"When on, the bar uses the background and border colours below and ignores "
+"the wallpaper palette and the shared background colour, which keep colouring "
+"menus, OSD and dock."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:81
+msgid "Top bar background colour when choosing colours yourself"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:82
+msgid "Hexadecimal, “#RRGGBB”. The opacity is the background opacity key."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:86
+msgid "Top bar border colour when choosing colours yourself"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:87
+msgid "Empty means a shade derived from the background colour."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:91
+msgid "Compact notification cards"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:92
+msgid ""
+"Smaller icons, tighter spacing and a narrower list in the notification area "
+"of the date menu."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:98
 msgid "Used for highlights and the active indicator. Hexadecimal, “#RRGGBB”."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:72
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:102
 msgid "Top bar background colour"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:73
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:103
 msgid ""
 "Empty means the colour comes from the wallpaper palette when that is "
 "enabled, and from the shell theme otherwise."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:78
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:108
 msgid "Top bar text colour"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:79
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:109
 msgid ""
 "Empty means it is chosen automatically for contrast against the background."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:84
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:114
 msgid "Derive the palette from the wallpaper"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:85
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:115
 msgid ""
 "Extracts the dominant colours of the desktop background and uses them for "
 "the bar."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:90
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:120
 msgid "Cached wallpaper palette"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:91
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:121
 msgid ""
 "Colours extracted from the current wallpaper, most frequent first. "
 "Regenerated automatically; not meant to be edited."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:97
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:127
 msgid "Which palette colour the bar uses"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:101
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:131
 msgid "Make panel buttons reach the screen edge"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:102
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:132
 msgid ""
 "Removes the dead zone above panel buttons so they can be clicked by slamming "
 "the pointer into the edge."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:111
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:141
 msgid "Apply the theme colours to popup menus"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:112
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:142
 msgid ""
 "Panel menus, the logo menu, the applications menu and the cards use the bar "
 "background and accent colour."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:117
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:147
 msgid "Apply the theme colours to on-screen displays"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:118
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:148
 msgid ""
 "The volume and brightness pop-ups use the bar background, and the level bar "
 "uses the accent colour."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:123
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:153
 msgid "Apply the theme colours to the dock"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:124
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:154
 msgid ""
 "The dock background takes the bar colour (its opacity is still set in the "
 "dock settings), and the running indicators take the accent."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:130
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:160
 msgid "Corner radius of popup menus and on-screen displays"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:135
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:165
 msgid "Background opacity of popup menus and on-screen displays"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:136
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:166
 msgid "Kept above 0.3 so menu text stays readable over any window."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:141
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:171
 msgid "Corner radius of the dock background"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:148
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:178
 msgid "Colour of the focused window border in tiling mode"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:149
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:179
 msgid "Hexadecimal, “#RRGGBB”. Empty follows the accent colour."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:154
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:184
 msgid "Thickness of the focused window border"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:159
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:189
 msgid "Corner radius of the focused window border"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:164
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:195
+msgid ""
+"Loads a copy of the shell theme with its dark greys turned into pure black, "
+"for OLED screens. Light text and accent colours stay as they are."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:200
 msgid "Shell theme name"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:165
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:201
 msgid ""
 "Theme from ~/.themes or /usr/share/themes. Empty uses the default GNOME "
 "Shell theme."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.panel.gschema.xml:17
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.panel.gschema.xml:22
 msgid "A category-based menu of installed applications."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.panel.gschema.xml:21
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.panel.gschema.xml:26
 msgid "Keybinding to open the applications menu"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.panel.gschema.xml:26
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.panel.gschema.xml:30
+msgid "Applications menu layout"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.panel.gschema.xml:31
+msgid ""
+"“Accordion” is a single column whose categories start collapsed and open one "
+"at a time; “columns” keeps categories on the left and applications on the "
+"right, like the official Applications Menu."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.panel.gschema.xml:38
 msgid "Icon size in the applications menu"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:19
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:20
 msgid "Which logo to show"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:20
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:21
 msgid ""
 "“Distro” uses the logo declared by the running distribution, “symbolic” uses "
-"a monochrome icon that follows the panel colour, and “custom” uses the file "
-"below."
+"a monochrome icon that follows the panel colour, “gallery” uses one of the "
+"bundled distribution logos, and “custom” uses the file below."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:26
-msgid "Path to a custom logo image"
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:28
+msgid "Logo from the gallery"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:31
-msgid "Logo size in pixels"
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:29
+msgid ""
+"Identifier such as “fedora” or “arch”. Empty picks the logo of the running "
+"distribution."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:36
-msgid "Show the “About this system” item"
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:34
+msgid "Monochrome gallery logo"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:35
+msgid ""
+"Uses the single-colour version, which follows the text colour of the top bar."
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:40
+msgid "Path to a custom logo image"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:45
+msgid "Logo size in pixels"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:50
+msgid "Show the “About this system” item"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:54
 msgid "Show the “Applications” item"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:44
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:58
 msgid "Show the “Activities” item"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:48
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:62
 msgid "Show the software centre item"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:52
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:66
 msgid "Show the system monitor item"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:56
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:70
 msgid "Show the terminal item"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:60
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:74
 msgid "Show the extensions item"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:64
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:78
 msgid "Show the settings item"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:68
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:82
 msgid "Show the “Force quit” item"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:69
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:83
 msgid "Lets the pointer pick a window to terminate. Works on Wayland and X11."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:74
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:88
 msgid "Show the “Lock screen” item"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:78
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:92
 msgid "Show the power items"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:79
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:93
 msgid "Suspend, restart and power off."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:84
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:98
 msgid "Software centre application"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:88
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:102
 msgid "System monitor application"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:92
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:106
 msgid "Terminal application"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:93
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:107
 msgid "Empty follows the system default terminal."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:97
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:111
 msgid "Extensions manager application"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:98
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml:112
 msgid ""
 "Falls back to the GNOME Extensions app when the chosen one is not installed."
 msgstr ""
@@ -1314,11 +1521,29 @@ msgstr ""
 msgid "Top bar section for the Bluetooth button"
 msgstr ""
 
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.bluetooth.gschema.xml:24
+msgid "Hide the button when nothing is connected"
+msgstr ""
+
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.bluetooth.gschema.xml:25
+msgid ""
+"When off, the button stays in the top bar with the Bluetooth icon, so the "
+"card can turn the radio on and connect paired devices."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.bluetooth.gschema.xml:30
+msgid "Devices left out of the card"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.bluetooth.gschema.xml:31
+msgid "Bluetooth addresses. They stay paired in the system."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.bluetooth.gschema.xml:36
 msgid "Low battery percentage"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.bluetooth.gschema.xml:26
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.bluetooth.gschema.xml:37
 msgid ""
 "At or below this battery level a device is shown in red. 0 turns the warning "
 "off."
@@ -1439,53 +1664,47 @@ msgid ""
 "are turned off in the system."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/theme/presets/presets.js:63
+#: gnomeCustom@gfiamoncini.com/theme/presets/presets.js:65
 msgid "Wallpaper"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/theme/presets/presets.js:64
+#: gnomeCustom@gfiamoncini.com/theme/presets/presets.js:66
 msgid ""
 "Floating bar coloured from the wallpaper; menus, OSD and dock left to the "
 "shell theme"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/theme/presets/presets.js:95
+#: gnomeCustom@gfiamoncini.com/theme/presets/presets.js:101
 msgid "Adwaita"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/theme/presets/presets.js:96
+#: gnomeCustom@gfiamoncini.com/theme/presets/presets.js:102
 msgid "Hands every surface back to the shell theme"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/theme/presets/presets.js:126
+#: gnomeCustom@gfiamoncini.com/theme/presets/presets.js:136
 msgid "Dark"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/theme/presets/presets.js:127
+#: gnomeCustom@gfiamoncini.com/theme/presets/presets.js:137
 msgid "Solid dark bar attached to the edge, with menus, OSD and dock to match"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/theme/presets/presets.js:157
+#: gnomeCustom@gfiamoncini.com/theme/presets/presets.js:171
 #: gnomeCustom@gfiamoncini.com/lib/profiles.js:89
 msgid "Minimal"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/theme/presets/presets.js:158
+#: gnomeCustom@gfiamoncini.com/theme/presets/presets.js:172
 msgid "Thin translucent bar, square corners, no borders"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/theme/presets/presets.js:188
+#: gnomeCustom@gfiamoncini.com/theme/presets/presets.js:206
 msgid "Fedora"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/theme/presets/presets.js:189
+#: gnomeCustom@gfiamoncini.com/theme/presets/presets.js:207
 msgid "Floating bar in Fedora blue with a light-blue accent"
-msgstr ""
-
-#: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:25
-#: gnomeCustom@gfiamoncini.com/modules/tiling/module.js:329
-#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:109
-msgid "Tiling"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:43
@@ -1631,202 +1850,233 @@ msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:206
 msgid ""
-"The same keys as the Forge extension. Stacked and tabbed layouts are not "
-"available, so their shortcuts stay free."
+"Click a row to record a new combination; the arrows restore the default and "
+"clear it. A row warns when the combination is already used elsewhere. "
+"Stacked and tabbed layouts are not available, so their shortcuts stay free."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:32
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:37
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:12
 msgid "Focus the window on the left"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:33
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:38
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:16
 msgid "Focus the window on the right"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:34
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:39
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:20
 msgid "Focus the window above"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:35
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:40
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:24
 msgid "Focus the window below"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:38
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:43
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:28
 msgid "Move the window left"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:39
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:44
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:32
 msgid "Move the window right"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:40
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:45
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:36
 msgid "Move the window up"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:41
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:46
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:40
 msgid "Move the window down"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:44
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:49
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:44
 msgid "Swap with the window on the left"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:45
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:50
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:48
 msgid "Swap with the window below"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:46
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:51
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:52
 msgid "Swap with the window above"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:47
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:52
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:56
 msgid "Swap with the window on the right"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:48
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:53
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:60
 msgid "Swap with the previously focused window"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:51
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:56
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:64
 msgid "Split side by side"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:52
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:57
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:68
 msgid "Split one above the other"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:53
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:58
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:72
 msgid "Toggle the split direction"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:56
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:61
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:76
 msgid "Float or tile this window"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:57
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:62
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:80
 msgid "Always float windows of this application"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:60
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:65
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:84
 msgid "Grow the top edge"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:61
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:66
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:88
 msgid "Shrink the top edge"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:62
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:67
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:92
 msgid "Grow the bottom edge"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:63
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:68
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:96
 msgid "Shrink the bottom edge"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:64
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:69
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:100
 msgid "Grow the left edge"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:65
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:70
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:104
 msgid "Shrink the left edge"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:66
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:71
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:108
 msgid "Grow the right edge"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:67
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:72
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:112
 msgid "Shrink the right edge"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:70
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:75
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:116
-msgid "Center the window"
+msgid "Grow towards the left"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:71
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:76
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:120
-msgid "Snap to the left third"
-msgstr ""
-
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:72
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:124
-msgid "Snap to the right third"
-msgstr ""
-
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:73
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:128
-msgid "Snap to the left two thirds"
-msgstr ""
-
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:74
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:132
-msgid "Snap to the right two thirds"
+msgid "Grow towards the right"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:77
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:136
-msgid "Increase the gaps"
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:124
+msgid "Grow upwards"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:78
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:140
-msgid "Decrease the gaps"
-msgstr ""
-
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:79
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:144
-msgid "Show or hide the focus border"
-msgstr ""
-
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:80
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:148
-msgid "Turn tiling on or off"
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:128
+msgid "Grow downwards"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:81
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:152
-msgid "Turn tiling on or off for this workspace"
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:132
+msgid "Keep the window above the others"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:84
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:156
-msgid "Stacked layout (not available)"
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:82
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:136
+msgid "Open the GnomeCustom settings"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:85
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:160
-msgid "Tabbed layout (not available)"
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:140
+msgid "Center the window"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:86
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:144
+msgid "Snap to the left third"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:87
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:148
+msgid "Snap to the right third"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:88
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:152
+msgid "Snap to the left two thirds"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:89
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:156
+msgid "Snap to the right two thirds"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:92
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:160
+msgid "Increase the gaps"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:93
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:164
+msgid "Decrease the gaps"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:94
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:168
+msgid "Show or hide the focus border"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:95
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:172
+msgid "Turn tiling on or off"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:96
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:176
+msgid "Turn tiling on or off for this workspace"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:99
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:180
+msgid "Stacked layout (not available)"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:100
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:184
+msgid "Tabbed layout (not available)"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/tiling/actions.js:101
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml:188
 msgid "Tab decorations (not available)"
 msgstr ""
 
@@ -2031,43 +2281,43 @@ msgstr ""
 msgid "Import finished"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/migration/importers.js:129
+#: gnomeCustom@gfiamoncini.com/lib/migration/importers.js:130
 msgid "Dash to Dock"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/migration/importers.js:169
+#: gnomeCustom@gfiamoncini.com/lib/migration/importers.js:170
 msgid "Forge"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/migration/importers.js:245
+#: gnomeCustom@gfiamoncini.com/lib/migration/importers.js:246
 msgid "Open Bar"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/migration/importers.js:312
+#: gnomeCustom@gfiamoncini.com/lib/migration/importers.js:318
 msgid "User Themes"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/migration/importers.js:324
+#: gnomeCustom@gfiamoncini.com/lib/migration/importers.js:330
 msgid "Impatience"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/migration/importers.js:336
+#: gnomeCustom@gfiamoncini.com/lib/migration/importers.js:342
 msgid "GNOME UI Tune"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/migration/importers.js:417
+#: gnomeCustom@gfiamoncini.com/lib/migration/importers.js:429
 msgid "Apps Menu"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/migration/importers.js:429
+#: gnomeCustom@gfiamoncini.com/lib/migration/importers.js:441
 msgid "Bluetooth Battery Indicator"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/migration/importers.js:443
+#: gnomeCustom@gfiamoncini.com/lib/migration/importers.js:455
 msgid "OSD Volume Number"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/migration/importers.js:458
+#: gnomeCustom@gfiamoncini.com/lib/migration/importers.js:470
 msgid "Spotify Controls"
 msgstr ""
 
@@ -2187,4 +2437,12 @@ msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/lib/mpris.js:155
 msgid "Previous track"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/media/indicator.js:237
+msgid "Now playing"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/layout.js:81
+msgid "Search settings"
 msgstr ""

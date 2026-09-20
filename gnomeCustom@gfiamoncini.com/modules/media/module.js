@@ -5,8 +5,8 @@
  * Módulo de mídia: a faixa em reprodução na barra superior, com um card.
  *
  * Na barra ficam a mini capa, o nome da música e os controles (anterior,
- * tocar/pausar, próxima); o clique no nome abre o card com capa grande, título,
- * artistas, álbum e tempo. Os mesmos controles têm atalhos de teclado, que nascem
+ * tocar/pausar, próxima); o clique no nome abre o card (desenho do WinDock) com
+ * capa, título, artistas, álbum e a barra de tempo, que aceita clique para pular. Os mesmos controles têm atalhos de teclado, que nascem
  * vazios para o usuário definir (`MEDIA_ACTIONS`).
  *
  * Qualquer player MPRIS pode aparecer, mas só os permitidos em
@@ -83,6 +83,8 @@ export class MediaModule extends Module {
             signals: this.signals,
             onOpen: () => this._refreshPosition(),
             onControl: method => this._control(method, 'botão'),
+            onSeek: position => this._seek(position),
+            gettext: this.ctx.gettext,
         });
         this._indicator.applySettings();
         this._artUrl = null;
@@ -149,6 +151,14 @@ export class MediaModule extends Module {
         }
         this.log.debug(`${method} (${origin}) → ${target.busName}`);
         this._mpris.control(target.busName, method);
+    }
+
+    _seek(position) {
+        const player = this._player;
+        if (!player)
+            return;
+        this.log.debug(`SetPosition ${Math.round(position / 1e6)} s → ${player.busName}`);
+        this._mpris.seek(player.busName, player.track.trackId, position);
     }
 
     _refreshPosition() {

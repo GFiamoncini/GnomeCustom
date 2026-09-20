@@ -4,6 +4,11 @@
   SPDX-License-Identifier: GPL-3.0-or-later
 -->
 <schemalist gettext-domain="gnomecustom">
+
+  <enum id="org.gnome.shell.extensions.gnomecustom.AppsMenuLayout">
+    <value value="0" nick="accordion"/>
+    <value value="1" nick="columns"/>
+  </enum>
   <schema id="org.gnome.shell.extensions.gnomecustom.panel"
           path="/org/gnome/shell/extensions/gnomecustom/panel/">
 
@@ -19,6 +24,13 @@
     <key name="apps-menu-shortcut" type="as">
       <default>['&lt;Alt&gt;F1']</default>
       <summary>Keybinding to open the applications menu</summary>
+    </key>
+    <key name="apps-menu-layout" enum="org.gnome.shell.extensions.gnomecustom.AppsMenuLayout">
+      <default>'accordion'</default>
+      <summary>Applications menu layout</summary>
+      <description>“Accordion” is a single column whose categories start collapsed
+      and open one at a time; “columns” keeps categories on the left and
+      applications on the right, like the official Applications Menu.</description>
     </key>
     <key name="apps-menu-icon-size" type="u">
       <default>32</default>

@@ -16,7 +16,7 @@ const ROLE = 'gnomecustom-logo-menu';
 
 /** Chaves que só exigem reconstruir o botão. */
 const REFRESH_KEYS = [
-    'icon-source', 'custom-icon-path', 'icon-size',
+    'icon-source', 'custom-icon-path', 'icon-size', 'gallery-logo', 'gallery-monochrome',
     'show-system-details', 'show-app-grid', 'show-activities-item',
     'show-software', 'show-monitor', 'show-terminal', 'show-extensions',
     'show-settings', 'show-force-quit', 'show-lock', 'show-power',

@@ -110,6 +110,13 @@ export class MediaIndicator extends PanelMenu.Button {
         const source = global.stage.get_event_actor(event);
         if (source && this._controls.contains(source))
             return Clutter.EVENT_PROPAGATE;
+
+        // GNOME 50: quem abre o menu é o gesto de clique, e a classe de base não
+        // implementa mais `event` — chamar `super` aqui lança
+        // "Class StWidget doesn't implement event".
+        if (this._clickGesture)
+            return Clutter.EVENT_PROPAGATE;
+
         return super.vfunc_event(event);
     }
 
@@ -187,6 +194,10 @@ export class MediaIndicator extends PanelMenu.Button {
         this._controls = new St.BoxLayout({
             style_class: 'gnomecustom-media-controls',
             y_align: Clutter.ActorAlign.CENTER,
+            // Reativa de propósito: sem isso não há `enter-event`, e o desvio do
+            // GNOME 50 (desligar o gesto do menu) nunca seria acionado.
+            reactive: true,
+            track_hover: true,
         });
         this._controlButtons = new Map([
             ['Previous', this._controlButton('media-skip-backward-symbolic', 'Previous')],

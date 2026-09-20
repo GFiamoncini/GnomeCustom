@@ -126,8 +126,39 @@ primeiro ponto a conferir depois da atualização.
 
 ### Conclusão
 
-Nada encontrado que impeça a atualização. Como o GNOME 50 **não foi executado**, `metadata.json`
-continua em `"shell-version": ["49"]` (regra do §1) — depois de atualizar, basta rodar o roteiro
-do §6 e acrescentar `"50"`. Enquanto a versão não estiver declarada, o Shell recusa carregar a
-extensão, então o passo 4 do roteiro é obrigatório antes de usar.
+Nada encontrado que impeça a atualização.
+
+**`"50"` declarado em 2026-09-20, antes de executar** — exceção à regra do §1, a pedido
+explícito do usuário, para a extensão subir já no primeiro login do Fedora 44. A auditoria
+acima é por leitura de código, não por execução: os passos 1 a 3 do roteiro do §6 continuam
+pendentes e devem ser rodados na primeira sessão do GNOME 50. Se algo falhar lá, o caminho de
+volta é desligar a extensão (`gnome-extensions disable gnomeCustom@gfiamoncini.com`) ou tirar o
+`"50"` do `metadata.json`.
+
+### Execução no GNOME 50.5 (Fedora 44, 2026-09-20)
+
+Rodado de verdade, depois da atualização. `metadata.json` declara `["49","50"]` e
+`TESTED_MAJORS` passou a `[49, 50]`.
+
+- `make check` no sistema novo (GJS 1.88, GTK 4.22, Adw 1.9): 201 testes do núcleo e as
+  páginas de preferências, sem falha.
+- Sessão real: extensão `ACTIVE`, **zero JS ERROR**; os únicos avisos são a colisão conhecida
+  do `<Super>v` e (antes desta mudança) o "versão não testada".
+- Sessão isolada headless com os **11 módulos** ligados e `strict-cleanup-check`: ciclo
+  desativar/reativar terminou com "verificação de limpeza: nada pendente"; nenhuma asserção
+  durante o uso (as duas vistas acontecem no *desligamento* do Shell de teste, com um
+  `StLabel.dash-label` fora do palco).
+- Exercitado com entrada real: OSD de volume com número (42), mosaico (layout, foco por seta e
+  `Ctrl+Shift+Super+→` crescendo 15 px), dock (1º clique minimiza, 2º restaura), mídia
+  (tocar/pausar e próxima pelo botão, card abrindo só pelo nome da faixa).
+
+**Dois defeitos do GNOME 50 achados e corrigidos aqui** (ambos em `ui/media/indicator.js`):
+
+1. `super.vfunc_event()` lança `Class StWidget doesn't implement event` — a classe de base
+   deixou de implementar o vfunc. O desvio agora sai antes quando existe `_clickGesture`.
+2. A caixa dos controles não era reativa, então `enter-event` nunca disparava e o gesto do menu
+   continuava ligado, engolindo o clique nos botões. Agora ela é `reactive` e `track_hover`.
+
+Ainda não exercitado no 50: visão geral (os 4 recursos), Bluetooth (rádio e conectar) e o
+PiP do Firefox.
 

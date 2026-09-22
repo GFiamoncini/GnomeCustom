@@ -1,0 +1,27 @@
+{
+    "window.titleBarStyle": "native",
+    "workbench.colorCustomizations": {
+        "editor.background": "#000000",
+        "editorGutter.background": "#000000",
+        "sideBar.background": "#000000",
+        "sideBarSectionHeader.background": "#000000",
+        "panel.background": "#000000",
+        "terminal.background": "#000000",
+        "titleBar.activeBackground": "#000000",
+        "titleBar.inactiveBackground": "#000000",
+        "tab.activeBackground": "#000000",
+        "tab.inactiveBackground": "#0a0a0a",
+        "editorGroupHeader.tabsBackground": "#0a0a0a",
+        "activityBar.background": "#000000",
+        "statusBar.background": "#000000",
+        "input.background": "#141414",
+        "dropdown.background": "#141414",
+        "editorWidget.background": "#0d0d0d",
+        "quickInput.background": "#0d0d0d",
+        "menu.background": "#0d0d0d",
+        "focusBorder": "#f8f8f2",
+        "list.activeSelectionBackground": "#262626",
+        "list.inactiveSelectionBackground": "#1a1a1a",
+        "list.hoverBackground": "#141414"
+    }
+}

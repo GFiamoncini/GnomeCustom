@@ -35,3 +35,7 @@ gnomeCustom@gfiamoncini.com/lib/modules-info.js
 gnomeCustom@gfiamoncini.com/lib/mpris.js
 gnomeCustom@gfiamoncini.com/ui/media/indicator.js
 gnomeCustom@gfiamoncini.com/prefs/layout.js
+gnomeCustom@gfiamoncini.com/lib/weather.js
+gnomeCustom@gfiamoncini.com/ui/weather/indicator.js
+gnomeCustom@gfiamoncini.com/prefs/pages/weather.js
+gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.weather.gschema.xml

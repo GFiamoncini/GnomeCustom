@@ -42,7 +42,7 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import '../../core/gio-promises.js';
 import {SignalTracker} from '../../core/signals.js';
 import {resolveTheme} from '../../lib/shell-themes.js';
-import {amoledCss} from '../../lib/amoled.js';
+import {amoledCss, isAmoledReady} from '../../lib/amoled.js';
 
 const RUNTIME_SUBDIR = 'gnomecustom';
 const STYLESHEET_NAME = 'generated.css';
@@ -155,7 +155,8 @@ export class ShellThemeService {
      * estável do cache. Os `url()` apontam de volta para a pasta do tema original.
      *
      * @param {?string} path gnome-shell.css do tema; null = tema padrão do GNOME
-     * @returns {Promise<string>} caminho da cópia
+     * @returns {Promise<string>} caminho da cópia, ou o do próprio tema quando ele já é
+     *   preto AMOLED (`isAmoledReady`)
      */
     async _writeAmoledTheme(path) {
         let source = path ? Gio.File.new_for_path(path) : null;
@@ -167,8 +168,10 @@ export class ShellThemeService {
             throw new Error('folha do tema padrão não encontrada');
 
         const [bytes] = await source.load_contents_async(null);
-        const css = amoledCss(new TextDecoder().decode(bytes),
-            {baseUri: source.get_parent().get_uri()});
+        const text = new TextDecoder().decode(bytes);
+        if (isAmoledReady(text))
+            return source.get_path();
+        const css = amoledCss(text, {baseUri: source.get_parent().get_uri()});
 
         const dir = Gio.File.new_for_path(
             GLib.build_filenamev([GLib.get_user_cache_dir(), RUNTIME_SUBDIR, 'amoled']));

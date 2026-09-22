@@ -52,6 +52,21 @@ function darkenGray(r, g, b) {
     return [r, g, b].map(channel => Math.max(0, channel - shift));
 }
 
+/**
+ * Marca que um tema põe no próprio CSS quando já foi desenhado para o preto (ex. o
+ * Dracula-AMOLED de `themes/`): escurecer de novo apagaria os cinzas que ele usa
+ * de propósito para separar botões e hovers do fundo.
+ */
+export const AMOLED_READY_MARK = 'gnomecustom: amoled-ready';
+
+/**
+ * @param {string} css
+ * @returns {boolean} o tema já é preto AMOLED e não deve ser convertido
+ */
+export function isAmoledReady(css) {
+    return css.includes(AMOLED_READY_MARK);
+}
+
 const hex2 = value => value.toString(16).padStart(2, '0');
 
 /**

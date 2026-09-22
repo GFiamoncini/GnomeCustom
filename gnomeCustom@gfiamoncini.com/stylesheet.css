@@ -386,6 +386,144 @@
     background-color: rgba(127, 127, 127, 0.14);
 }
 
+/* ---------------------------------------------------------- weather */
+
+.gnomecustom-weather-panel {
+    spacing: 4px;
+}
+
+.gnomecustom-weather-panel-temp {
+    font-feature-settings: "tnum";
+}
+
+.gnomecustom-weather-item {
+    padding: 0;
+}
+
+/* Mesmo quadro dos outros cards: cores do tema do Shell. */
+.gnomecustom-weather-card {
+    width: 330px;
+    padding: 8px 10px 4px 10px;
+    spacing: 12px;
+}
+
+.gnomecustom-weather-header {
+    spacing: 4px;
+}
+
+.gnomecustom-weather-title {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.gnomecustom-weather-updated,
+.gnomecustom-weather-footer {
+    font-size: 0.85em;
+    opacity: 0.6;
+}
+
+.gnomecustom-weather-footer {
+    text-align: center;
+    padding-top: 4px;
+}
+
+.gnomecustom-weather-button {
+    padding: 6px;
+    border-radius: 6px;
+}
+
+.gnomecustom-weather-button:hover,
+.gnomecustom-weather-button:focus {
+    background-color: rgba(127, 127, 127, 0.2);
+}
+
+.gnomecustom-weather-now {
+    spacing: 14px;
+}
+
+.gnomecustom-weather-now-icon {
+    icon-size: 48px;
+}
+
+.gnomecustom-weather-now-temp {
+    font-size: 2.2em;
+    font-weight: 300;
+    font-feature-settings: "tnum";
+}
+
+.gnomecustom-weather-now-description {
+    opacity: 0.8;
+}
+
+.gnomecustom-weather-details {
+    font-size: 0.9em;
+    opacity: 0.75;
+}
+
+.gnomecustom-weather-hourly {
+    spacing: 2px;
+    padding: 8px 0;
+    border-top: 1px solid rgba(127, 127, 127, 0.25);
+    border-bottom: 1px solid rgba(127, 127, 127, 0.25);
+}
+
+.gnomecustom-weather-hour {
+    spacing: 3px;
+}
+
+.gnomecustom-weather-hour-time {
+    font-size: 0.8em;
+    opacity: 0.65;
+}
+
+.gnomecustom-weather-hour-temp {
+    font-feature-settings: "tnum";
+}
+
+.gnomecustom-weather-rain {
+    font-size: 0.75em;
+    color: #62a0ea;
+    font-feature-settings: "tnum";
+}
+
+.gnomecustom-weather-daily {
+    spacing: 2px;
+}
+
+.gnomecustom-weather-day {
+    spacing: 10px;
+    padding: 3px 2px;
+}
+
+.gnomecustom-weather-day-name {
+    min-width: 44px;
+    font-weight: bold;
+}
+
+.gnomecustom-weather-day-description {
+    font-size: 0.9em;
+    opacity: 0.7;
+}
+
+.gnomecustom-weather-day-min {
+    min-width: 30px;
+    text-align: right;
+    opacity: 0.6;
+    font-feature-settings: "tnum";
+}
+
+.gnomecustom-weather-day-max {
+    min-width: 30px;
+    text-align: right;
+    font-weight: bold;
+    font-feature-settings: "tnum";
+}
+
+.gnomecustom-weather-message {
+    padding: 6px 2px;
+    opacity: 0.75;
+}
+
 /* ------------------------------------------------------------- dock */
 
 /* Modo compacto (custom-theme-shrink do Dash to Dock): tira a folga que o tema dá

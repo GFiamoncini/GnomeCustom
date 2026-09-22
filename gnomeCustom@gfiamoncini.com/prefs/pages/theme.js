@@ -189,7 +189,8 @@ export class ThemePage extends Adw.PreferencesPage {
             max: 12,
         }));
         group.add(spinRow({
-            title: _('Border corner radius'),
+            title: _('Window corner radius'),
+            subtitle: _('The border follows it. Too small leaves a gap at the corners: 15 fits GNOME apps, 18 also covers Chrome'),
             settings: this._settings,
             key: 'tiling-border-radius',
             min: 0,
@@ -451,6 +452,12 @@ export class ThemePage extends Adw.PreferencesPage {
                     settings: this._settings,
                     key: 'shell-theme',
                     options,
+                }));
+                group.add(switchRow({
+                    title: _('Use it for applications too'),
+                    subtitle: _('When the theme also ships a GTK theme (like Dracula-AMOLED), the apps follow it, libadwaita ones included, and VS Code and Obsidian get its colours and the system window frame. Turning this off restores the previous look; apps need to be reopened'),
+                    settings: this._settings,
+                    key: 'apply-to-apps',
                 }));
                 group.add(switchRow({
                     title: _('AMOLED black'),

@@ -148,6 +148,19 @@ export class TilingController {
     }
 
     /**
+     * Espaço livre em volta da janela para a borda de foco (`borderRect`).
+     *
+     * Janela flutuante não está na árvore, e `gapFor` dava 0: a borda ia para dentro
+     * do quadro, cobrindo a beirada da janela, e o anel de 1 px que o Chrome desenha
+     * por fora ficava à mostra (visto em 2026-09-21). Solta, ela sempre tem espaço.
+     *
+     * @returns {number}
+     */
+    borderSpaceFor(id) {
+        return this.isFloating(id) ? Number.POSITIVE_INFINITY : this.gapFor(id);
+    }
+
+    /**
      * Resumo legível do último layout, para o log de depuração:
      * `0:0 h[101 v[102 103]] | 101=4,36 794x860 …`.
      *

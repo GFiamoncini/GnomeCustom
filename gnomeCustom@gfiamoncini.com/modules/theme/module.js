@@ -33,13 +33,14 @@ export class ThemeModule extends Module {
     }
 
     static get requires() {
-        return ['shellTheme', 'wallpaper', 'style'];
+        return ['shellTheme', 'wallpaper', 'style', 'appTheme'];
     }
 
     enable() {
         this._theme = this.service('shellTheme');
         this._wallpaper = this.service('wallpaper');
         this._style = this.service('style');
+        this._appTheme = this.service('appTheme');
         this._settings = this.settings.child('theme');
         this._rebuildToken = undefined;
 
@@ -48,11 +49,14 @@ export class ThemeModule extends Module {
 
         for (const key of ['shell-theme', 'amoled-black'])
             this.signals.connectSetting(this._settings, key, () => this._applyUserTheme());
+        for (const key of ['shell-theme', 'apply-to-apps'])
+            this.signals.connectSetting(this._settings, key, () => this._syncAppTheme());
 
         this._unsubscribePalette = this._wallpaper.onPaletteChanged(
             palette => this._onPaletteChanged(palette));
 
         this._applyUserTheme();
+        this._syncAppTheme();
         this._rebuild();
         this._refreshPaletteIfNeeded();
     }
@@ -67,6 +71,7 @@ export class ThemeModule extends Module {
             this.log.error('falha ao remover a folha de estilo', e));
         this._theme?.restoreUserTheme();
         this._style?.clear();
+        this._appTheme = null;   // o tema dos apps fica: ver _syncAppTheme
 
         this._theme = null;
         this._wallpaper = null;
@@ -137,6 +142,15 @@ export class ThemeModule extends Module {
         // Gravar a paleta dispara o observador de 'palette', que regera a folha.
         this._settings.set_strv('palette', palette);
         this.log.debug(`paleta atualizada: ${palette.slice(0, 3).join(' ')}…`);
+    }
+
+    /** Tema dos apps: não é desfeito no disable (ver services/system/app-theme.js). */
+    _syncAppTheme() {
+        this._appTheme?.sync({
+            themeName: this._settings.get_string('shell-theme'),
+            enabled: this._settings.get_boolean('apply-to-apps'),
+            settings: this._settings,
+        }).catch(e => this.log.error('falha ao aplicar o tema aos aplicativos', e));
     }
 
     _applyUserTheme() {

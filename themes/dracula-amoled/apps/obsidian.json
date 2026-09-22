@@ -1,0 +1,8 @@
+{
+    "app": {
+        "frame": "native"
+    },
+    "appearance": {
+        "accentColor": "#f8f8f2"
+    }
+}

@@ -80,6 +80,14 @@ export const MODULES_INFO = Object.freeze([
         implemented: true,
     },
     {
+        id: 'weather',
+        key: 'weather-enabled',
+        title: N_('Weather'),
+        summary: N_('Weather and forecast for your city, from Open-Meteo'),
+        phase: 10,
+        implemented: true,
+    },
+    {
         id: 'dock',
         key: 'dock-enabled',
         title: N_('Dock'),

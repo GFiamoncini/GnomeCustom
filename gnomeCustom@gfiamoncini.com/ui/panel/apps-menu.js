@@ -265,7 +265,10 @@ export class AppsMenuButton extends PanelMenu.Button {
 
     // ------------------------------------------------------------ acordeão
 
-    /** Cabeçalho da categoria e a lista dela, recolhida. */
+    /**
+     * Cabeçalho da categoria e a lista dela, recolhida. Só o nome, sem ícone
+     * (pedido do usuário, 2026-09-21); as aplicações continuam com os seus.
+     */
     _addAccordionSection(category) {
         const header = new St.Button({
             style_class: 'gnomecustom-apps-category',
@@ -274,14 +277,6 @@ export class AppsMenuButton extends PanelMenu.Button {
         });
 
         const box = new St.BoxLayout({vertical: false, x_expand: true});
-        const icon = category.directory.get_icon();
-        if (icon) {
-            box.add_child(new St.Icon({
-                gicon: icon,
-                icon_size: 22,
-                y_align: Clutter.ActorAlign.CENTER,
-            }));
-        }
         box.add_child(new St.Label({
             text: category.directory.get_name(),
             y_align: Clutter.ActorAlign.CENTER,

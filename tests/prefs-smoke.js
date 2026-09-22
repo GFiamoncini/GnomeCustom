@@ -41,6 +41,18 @@ function step(name, fn) {
     }
 }
 
+/** Como `step`, para testes que esperam uma promessa; chamar com `await`. */
+async function asyncStep(name, fn) {
+    try {
+        await fn();
+        print(`  ok    ${name}`);
+    } catch (e) {
+        failures++;
+        print(`  FALHA ${name}`);
+        print(`        ${e.message}`);
+    }
+}
+
 // Registrado porque `Adw`/`Gtk` do processo de preferências do Shell trazem
 // estilos e tipos daí; as páginas em si não dependem mais desse recurso.
 try {
@@ -83,6 +95,7 @@ const {applyPreset, readPresetValues} = await import(`../${UUID}/theme/presets/a
 const {PanelPage} = await import(`../${UUID}/prefs/pages/panel.js`);
 const {MenuPage} = await import(`../${UUID}/prefs/pages/menu.js`);
 const {MediaPage} = await import(`../${UUID}/prefs/pages/media.js`);
+const {WeatherPage} = await import(`../${UUID}/prefs/pages/weather.js`);
 const {captureAccel} = await import(`../${UUID}/prefs/widgets.js`);
 const {BluetoothPage} = await import(`../${UUID}/prefs/pages/bluetooth.js`);
 const {DockPage} = await import(`../${UUID}/prefs/pages/dock.js`);
@@ -296,7 +309,7 @@ step('ThemePage traz as linhas de superfícies e de bordas de tiling', () => {
         .filter(w => w instanceof Adw.PreferencesRow)
         .map(w => w.title);
     for (const wanted of ['Style popup menus', 'Style on-screen displays', 'Style the dock',
-        'Border colour', 'Border corner radius']) {
+        'Border colour', 'Window corner radius']) {
         if (!titles.includes(wanted))
             throw new Error(`linha ausente: ${wanted}`);
     }
@@ -490,6 +503,56 @@ step('captura de atalho: Esc cancela, Backspace limpa, modificador espera, letra
     check(Gdk.KEY_P, SHIFT_MASK, {action: 'invalid'});
     check(Gdk.KEY_Up, CONTROL_MASK | ALT_MASK | SUPER_MASK, {action: 'set', accel: '<Control><Alt><Super>Up'});
     check(Gdk.KEY_F9, 0, {action: 'set', accel: 'F9'});
+});
+
+await asyncStep('WeatherPage: busca a cidade, escolher grava nome e coordenadas', async () => {
+    const settings = childSettings('weather');
+    const fake = async text => (text === 'Rio do Sul' ? [
+        {name: 'Rio do Sul', detail: 'Santa Catarina, Brasil', latitude: -27.21417, longitude: -49.64306},
+        {name: 'Rio do Sul', detail: 'Anitápolis, Santa Catarina, Brasil', latitude: -27.97765, longitude: -49.14109},
+    ] : []);
+    const base = openOurs('');
+    base.set_boolean('weather-enabled', false);
+    const page = new WeatherPage(settings, _, {search: fake, baseSettings: base});
+
+    const toggle = descendants(page).find(w => w instanceof Adw.SwitchRow &&
+        w.title === 'Show the weather in the top bar');
+    if (!toggle || toggle.active)
+        throw new Error('a página deveria ter o interruptor do módulo, desligado');
+
+    const current = descendants(page).find(w => w instanceof Adw.ActionRow && w.title === 'Current location');
+    if (current.subtitle !== 'Not set')
+        throw new Error(`sem cidade deveria dizer "Not set", disse "${current.subtitle}"`);
+
+    const entry = descendants(page).find(w => w instanceof Adw.EntryRow);
+    entry.text = 'Rio do Sul';
+    await page._runSearch();
+
+    const list = page._resultsBox;
+    const results = descendants(list).filter(w => w instanceof Adw.ActionRow && w.activatable);
+    if (results.length !== 2)
+        throw new Error(`esperava 2 resultados, achei ${results.length}`);
+    if (!results[1].subtitle.startsWith('Anitápolis'))
+        throw new Error(`o homônimo deveria mostrar o município: ${results[1].subtitle}`);
+
+    results[0].emit('activated');
+    if (!base.get_boolean('weather-enabled') || !toggle.active)
+        throw new Error('escolher a cidade deveria ligar o módulo');
+    if (settings.get_string('location-name') !== 'Rio do Sul' ||
+        Math.abs(settings.get_double('latitude') + 27.21417) > 1e-6)
+        throw new Error('escolher não gravou a cidade');
+    if (!current.subtitle.startsWith('Rio do Sul (-27.2142'))
+        throw new Error(`linha atual não acompanhou: ${current.subtitle}`);
+
+    entry.text = 'Lugar Nenhum';
+    await page._runSearch();
+    const message = descendants(list).find(w => w instanceof Adw.ActionRow);
+    if (!message?.title.includes('No place found'))
+        throw new Error('busca vazia deveria avisar');
+
+    for (const key of ['location-name', 'latitude', 'longitude'])
+        settings.reset(key);
+    base.reset('weather-enabled');
 });
 
 step('TilingPage: atalhos editáveis, com colisão avisada', () => {

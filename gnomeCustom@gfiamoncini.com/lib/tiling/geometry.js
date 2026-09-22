@@ -135,7 +135,25 @@ export function borderRect(frame, width, gap) {
         y: frame.y - outset,
         width: frame.width + outset * 2,
         height: frame.height + outset * 2,
+        outset,
     };
+}
+
+/**
+ * Raio externo da borda para o arco interno encostar no canto da janela.
+ *
+ * O St desenha o arco interno com `raio - espessura`. Com o raio configurado
+ * aplicado direto, uma borda de 3 px e raio 12 fazia um arco interno de 9 px,
+ * enquanto as janelas arredondam com 13–15 px (libadwaita, Chrome): sobrava uma
+ * cunha do papel de parede em cada canto (visto em 2026-09-21). Por isso o raio
+ * configurado é o **do canto da janela**, e a borda cresce o que ficou por fora.
+ *
+ * @param {number} windowRadius raio do canto da janela
+ * @param {number} outset quanto a borda fica fora do quadro (de `borderRect`)
+ * @returns {number} `border-radius` a aplicar no ator da borda
+ */
+export function borderRadius(windowRadius, outset) {
+    return Math.max(0, windowRadius) + Math.max(0, outset);
 }
 
 /**

@@ -47,6 +47,10 @@ const {parseOsRelease} = await import(`${EXT}/services/system/distro.js`);
 const {VolumeModule, formatLevel} = await import(`${EXT}/modules/volume/module.js`);
 const Mpris = await import(`${EXT}/lib/mpris.js`);
 const LogosLib = await import(`${EXT}/lib/logos.js`);
+const Weather = await import(`${EXT}/lib/weather.js`);
+const {AppThemeService} = await import(`${EXT}/services/system/app-theme.js`);
+const {AppTweaks} = await import(`${EXT}/services/system/app-tweaks.js`);
+const Tweaks = await import(`${EXT}/lib/app-tweaks.js`);
 const Amoled = await import(`${EXT}/lib/amoled.js`);
 const Shortcuts = await import(`${EXT}/lib/shortcuts.js`);
 const Bt = await import(`${EXT}/lib/bluetooth.js`);
@@ -1167,10 +1171,12 @@ test('fase 7: SETTINGS_KEYS, PRESET_KEYS e o esquema concordam', () => {
     // preset não deve ligá-las nem desligá-las (2026-09-16).
     assertEqual(notInPresets, ['palette', 'compact-notifications', 'amoled-black'], 'fora dos presets:');
 
-    // Toda chave de estilo do esquema é conhecida pelo engine, exceto as que mudam
-    // qual tema de Shell é carregado (o nome e a variante AMOLED).
+    // Toda chave de estilo do esquema é conhecida pelo engine, exceto as que decidem
+    // qual tema é carregado (Shell e apps) e o estado interno do tema dos apps.
+    const NOT_STYLE_KEYS = ['shell-theme', 'apply-to-apps', 'app-theme-previous',
+        'app-theme-applied', 'app-theme-css', 'app-tweaks-state'];
     const unknown = Object.keys(schema)
-        .filter(key => !(key in SETTINGS_KEYS) && key !== 'shell-theme');
+        .filter(key => !(key in SETTINGS_KEYS) && !NOT_STYLE_KEYS.includes(key));
     assertEqual(unknown, [], 'chaves do esquema que o engine ignora:');
 });
 
@@ -1859,9 +1865,14 @@ test('geometria: deslocamento de bordas, borda de foco e vizinho geométrico', (
     assertEqual(Geometry.edgeDeltas(before, before, ['up']), {}, 'sem mudança:');
 
     const frame = {x: 100, y: 100, width: 400, height: 300};
-    assertEqual(Geometry.borderRect(frame, 3, 2), {x: 97, y: 97, width: 406, height: 306}, 'no gap:');
-    assertEqual(Geometry.borderRect(frame, 3, 0), frame, 'sem gap, por dentro:');
-    assertEqual(Geometry.borderRect(frame, 8, 1), {x: 98, y: 98, width: 404, height: 304}, 'limitada a 2·gap:');
+    assertEqual(Geometry.borderRect(frame, 3, 2), {x: 97, y: 97, width: 406, height: 306, outset: 3}, 'no gap:');
+    assertEqual(Geometry.borderRect(frame, 3, 0), {...frame, outset: 0}, 'sem gap, por dentro:');
+    assertEqual(Geometry.borderRect(frame, 8, 1), {x: 98, y: 98, width: 404, height: 304, outset: 2}, 'limitada a 2·gap:');
+
+    // Arco interno = raio do canto da janela (antes: raio − espessura, e sobrava uma cunha).
+    assertEqual(Geometry.borderRadius(12, 3), 15, 'borda de 3 px fora do quadro:');
+    assertEqual(Geometry.borderRadius(12, 0), 12, 'sem gap, a borda fica sobre a janela:');
+    assertEqual(Geometry.borderRadius(-4, 3), 3);
 
     const from = {x: 400, y: 400, width: 100, height: 100};
     const candidates = [
@@ -2045,6 +2056,9 @@ test('controlador: flutuar por janela é só memória, centraliza e fica no topo
     assert(ws.above.has(b), 'sempre no topo');
     controller.render();
     assertEqual(rectOf(ws, a), ws.workArea(0), 'a outra ocupa tudo, sem gaps:');
+    // Borda de foco: a solta tem espaço em volta (por fora); a única lado a lado, não.
+    assertEqual(Geometry.borderRect(rectOf(ws, b), 3, controller.borderSpaceFor(b)).outset, 3, 'flutuante: borda por fora:');
+    assertEqual(controller.borderSpaceFor(a), 0, 'janela única sem gap:');
 
     assert(controller.run({type: 'float-toggle'}), 'deveria voltar');
     assert(controller.isTiled(b) && !ws.above.has(b), 'volta ao tiling e sai do topo');
@@ -2560,6 +2574,220 @@ test('amoled: cinzas escuros viram preto, em ordem; o resto fica igual', () => {
     assertEqual(Amoled.darkenChannel(127), 127, 'sem degrau no limite:');
 });
 
+test('amoled: tema já marcado como AMOLED não é convertido', () => {
+    assert(!Amoled.isAmoledReady('#panel { background-color: #242424; }'), 'tema comum converte');
+    assert(Amoled.isAmoledReady(`.x { color: #fff; }\n/* ${Amoled.AMOLED_READY_MARK} */`), 'marca reconhecida');
+});
+
+// ------------------------------------------------------------------ clima
+
+// ------------------------------------------------------- tema dos apps
+
+/** Gio.Settings de mentira: só get/set de string e booleano. */
+function fakeSettings(values) {
+    return {
+        get_string: key => values[key] ?? '',
+        set_string: (key, value) => { values[key] = value; },
+        get_boolean: key => Boolean(values[key]),
+        values,
+    };
+}
+
+test('tema dos apps: aplica, guarda o gtk.css do usuário e devolve tudo ao desligar', async () => {
+    const root = Gio.File.new_for_path(GLib.dir_make_tmp('gnomecustom-apptheme-XXXXXX'));
+    const theme = root.get_child('Dracula-AMOLED');
+    for (const part of ['gtk-3.20', 'libadwaita'])
+        theme.get_child(part).make_directory_with_parents(null);
+    theme.get_child('libadwaita').get_child('gtk.css').replace_contents(
+        new TextEncoder().encode('/* tema */'), null, false, Gio.FileCreateFlags.NONE, null);
+    const plain = root.get_child('SoShell');   // tema só de Shell, sem GTK
+    plain.make_directory_with_parents(null);
+
+    const config = root.get_child('config');
+    config.make_directory_with_parents(null);
+    const css = config.get_child('gtk.css');
+    css.replace_contents(new TextEncoder().encode('/* meu */'), null, false, Gio.FileCreateFlags.NONE, null);
+
+    const iface = fakeSettings({'gtk-theme': 'Orchis-Grey-Dark-Compact'});
+    const settings = fakeSettings({});
+    const service = new AppThemeService({
+        logger: new Logger({level: 'silent', sink: new FakeSink()}),
+        interfaceSettings: iface,
+        cssFile: () => css,
+        themeDir: async name => ({'Dracula-AMOLED': theme, 'SoShell': plain})[name] ?? null,
+        tweaks: {apply() {}, revert() {}},
+    });
+    const read = file => new TextDecoder().decode(file.load_contents(null)[1]);
+    const isLink = file => file.query_info('standard::is-symlink', Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS, null).get_is_symlink();
+
+    await service.sync({themeName: 'Dracula-AMOLED', enabled: true, settings});
+    assertEqual(iface.values['gtk-theme'], 'Dracula-AMOLED', 'tema GTK trocado:');
+    assert(isLink(css) && read(css) === '/* tema */', 'gtk.css aponta para o do tema');
+    assertEqual(read(config.get_child('gtk.css.gnomecustom-backup')), '/* meu */', 'o do usuário foi guardado');
+
+    // Tema só de Shell: os apps voltam ao que eram.
+    await service.sync({themeName: 'SoShell', enabled: true, settings});
+    assertEqual(iface.values['gtk-theme'], 'Orchis-Grey-Dark-Compact', 'tema GTK devolvido:');
+    assert(!isLink(css) && read(css) === '/* meu */', 'gtk.css do usuário restaurado');
+    assert(!config.get_child('gtk.css.gnomecustom-backup').query_exists(null), 'backup consumido');
+
+    // De novo, e o usuário troca o tema GTK por fora: ao desligar, a escolha dele fica.
+    await service.sync({themeName: 'Dracula-AMOLED', enabled: true, settings});
+    iface.values['gtk-theme'] = 'Adwaita';
+    await service.sync({themeName: 'Dracula-AMOLED', enabled: false, settings});
+    assertEqual(iface.values['gtk-theme'], 'Adwaita', 'troca feita por fora é respeitada:');
+    assertEqual([settings.values['app-theme-applied'], settings.values['app-theme-css']], ['', ''], 'estado limpo:');
+    assert(read(css) === '/* meu */', 'gtk.css do usuário continua');
+});
+
+test('apps Electron: bloco do VS Code entra e sai sem tocar no resto', () => {
+    const original = [
+        '{',
+        '    "workbench.colorTheme": "Min Dark",',
+        '    //Configs Editor',
+        '    "editor.fontFamily": "JetBrains Mono",',
+        '    "editor.minimap.enabled": false',
+        '    // "window.titleBarStyle": "custom",',
+        '  }',
+    ].join('\n');
+    const entries = {'window.titleBarStyle': 'native', 'workbench.colorCustomizations': {'editor.background': '#000000'}};
+    const {text, applied, skipped} = Tweaks.vscodeApply(original, entries);
+    assertEqual(applied, ['window.titleBarStyle', 'workbench.colorCustomizations']);
+    assertEqual(skipped, [], 'chave só comentada não conta como definida:');
+    assert(text.includes('"editor.minimap.enabled": false,'), 'vírgula na última propriedade');
+    assert(text.includes('"editor.background": "#000000"') && text.includes(Tweaks.VSCODE_BEGIN));
+    // JSONC válido: sem comentários e vírgulas finais, vira JSON.
+    const asJson = text.replace(/^\s*\/\/.*$/gm, '').replace(/,(\s*[}\]])/g, '$1');
+    assertEqual(JSON.parse(asJson)['window.titleBarStyle'], 'native');
+
+    assertEqual(Tweaks.vscodeApply(text, entries).text, text, 'aplicar de novo não muda nada');
+    const back = Tweaks.vscodeRemove(text);
+    assertEqual(back, original, 'bloco retirado, arquivo como era:');
+
+    const own = Tweaks.vscodeApply('{\n    "window.titleBarStyle": "custom"\n}', entries);
+    assertEqual(own.skipped, ['window.titleBarStyle'], 'escolha do usuário fica:');
+    assert(own.text.includes('"custom"') && !own.text.includes('"native"'));
+});
+
+test('apps Electron: valores do Obsidian voltam, salvo se o usuário mudou depois', () => {
+    const {data, previous} = Tweaks.applyValues({accentColor: '#6d6d6f'}, {accentColor: '#f8f8f2', frame: 'native'});
+    assertEqual(data, {accentColor: '#f8f8f2', frame: 'native'});
+    assertEqual(Tweaks.applyValues(data, {accentColor: '#fff'}, previous).previous.accentColor, '#6d6d6f',
+        'segundo apply guarda o original:');
+    assertEqual(Tweaks.restoreValues(data, {accentColor: '#f8f8f2', frame: 'native'}, previous), {accentColor: '#6d6d6f'});
+    assertEqual(Tweaks.restoreValues({...data, frame: 'hidden'}, {accentColor: '#f8f8f2', frame: 'native'}, previous),
+        {accentColor: '#6d6d6f', frame: 'hidden'}, 'mudança posterior fica:');
+
+    const on = Tweaks.obsidianSnippet({enabledCssSnippets: ['meu']}, true);
+    assertEqual(on.enabledCssSnippets, ['meu', Tweaks.OBSIDIAN_SNIPPET]);
+    assertEqual(Tweaks.obsidianSnippet(on, false).enabledCssSnippets, ['meu']);
+    assertEqual(Tweaks.obsidianSnippet(Tweaks.obsidianSnippet({}, true), false), {enabledCssSnippets: []});
+    assertEqual(Tweaks.obsidianVaults({vaults: {a: {path: '/x'}, b: {}}}), ['/x']);
+});
+
+test('apps Electron: receita do tema aplicada nos arquivos e desfeita por inteiro', () => {
+    const root = Gio.File.new_for_path(GLib.dir_make_tmp('gnomecustom-tweaks-XXXXXX'));
+    const write = (target, text) => {
+        if (!target.get_parent().query_exists(null))
+            target.get_parent().make_directory_with_parents(null);
+        target.replace_contents(new TextEncoder().encode(text), null, false, Gio.FileCreateFlags.NONE, null);
+    };
+    const read = target => new TextDecoder().decode(target.load_contents(null)[1]);
+    const apps = root.get_child('Tema').get_child('apps');
+    write(apps.get_child('vscode.json'), '{"window.titleBarStyle": "native"}');
+    write(apps.get_child('obsidian.json'), '{"app": {"frame": "native"}, "appearance": {"accentColor": "#f8f8f2"}}');
+    write(apps.get_child('obsidian.css'), '.theme-dark { --background-primary: #000; }');
+
+    const code = root.get_child('Code').get_child('settings.json');
+    const codeText = '{\n    "editor.fontSize": 13\n}\n';
+    write(code, codeText);
+    const vault = root.get_child('Cofre');
+    const appearance = vault.get_child('.obsidian').get_child('appearance.json');
+    write(appearance, '{"accentColor": "#6d6d6f", "enabledCssSnippets": ["meu"]}');
+    const obsidian = root.get_child('obsidian').get_child('obsidian.json');
+    write(obsidian, JSON.stringify({vaults: {v: {path: vault.get_path(), open: true}}}));
+
+    const settings = fakeSettings({});
+    const tweaks = new AppTweaks({
+        logger: new Logger({level: 'silent', sink: new FakeSink()}),
+        vscodeFiles: () => [code, root.get_child('Nao').get_child('settings.json')],
+        obsidianConfigs: () => [obsidian],
+    });
+
+    tweaks.apply(root.get_child('Tema'), settings);
+    assert(read(code).includes('"window.titleBarStyle": "native"'), 'VS Code com moldura nativa');
+    assert(!root.get_child('Nao').query_exists(null), 'app ausente não ganha arquivo');
+    assertEqual(read(code.get_parent().get_child('settings.json.gnomecustom-backup')), codeText, 'backup do original');
+    assertEqual(JSON.parse(read(obsidian)).frame, 'native');
+    const look = JSON.parse(read(appearance));
+    assertEqual([look.accentColor, look.enabledCssSnippets], ['#f8f8f2', ['meu', Tweaks.OBSIDIAN_SNIPPET]]);
+    const snippet = vault.get_child('.obsidian').get_child('snippets').get_child(`${Tweaks.OBSIDIAN_SNIPPET}.css`);
+    assert(snippet.query_exists(null), 'snippet no cofre');
+    assert(settings.values['app-tweaks-state'], 'estado guardado');
+
+    tweaks.apply(root.get_child('Tema'), settings);   // de novo: nada muda
+    assertEqual(JSON.parse(read(appearance)).enabledCssSnippets, ['meu', Tweaks.OBSIDIAN_SNIPPET]);
+
+    tweaks.revert(settings);
+    assertEqual(read(code), codeText, 'VS Code como era');
+    assertEqual(JSON.parse(read(obsidian)).frame, undefined, 'moldura devolvida');
+    assertEqual(JSON.parse(read(appearance)), {accentColor: '#6d6d6f', enabledCssSnippets: ['meu']}, 'cofre como era');
+    assert(!snippet.query_exists(null), 'snippet removido');
+    assertEqual(settings.values['app-tweaks-state'], '', 'estado limpo:');
+
+    // Tema sem receita: desfaz como o revert.
+    tweaks.apply(root.get_child('Tema'), settings);
+    tweaks.apply(root.get_child('SemReceita'), settings);
+    assertEqual(read(code), codeText, 'tema sem apps/ desfaz');
+});
+
+test('clima: previsão real de Rio do Sul (SC) é lida por inteiro', () => {
+    const f = Weather.parseForecast(JSON.parse(readText('tests', 'fixtures', 'openmeteo-forecast.json')));
+    assert(f, 'deveria ler a resposta');
+    assertEqual(f.timezone, 'America/Sao_Paulo');
+    assertEqual(f.units, {temperature: '°C', wind: 'km/h'});
+    assert(Number.isInteger(f.current.temperature) && Number.isInteger(f.current.feelsLike), 'temperaturas inteiras');
+    assert(f.current.icon.startsWith('weather-') && f.current.description, 'condição traduzível');
+    assertEqual(f.hourly.length, Weather.HOURS_SHOWN, 'próximas horas:');
+    assertEqual(f.daily.length, Weather.DAYS_SHOWN, 'próximos dias:');
+
+    // A primeira hora da faixa é a seguinte à atual, na hora local do lugar.
+    assertEqual(f.hourly[0].hour, (f.current.hour + 1) % 24, 'começa na próxima hora:');
+    for (const day of f.daily)
+        assert(day.min <= day.max, `${day.date}: mínima acima da máxima`);
+});
+
+test('clima: resposta sem dados atuais não vira previsão', () => {
+    assertEqual(Weather.parseForecast(null), null);
+    assertEqual(Weather.parseForecast({current: {}}), null);
+});
+
+test('clima: busca de cidade separa homônimos pelo município', () => {
+    const results = Weather.parseGeocoding(JSON.parse(readText('tests', 'fixtures', 'openmeteo-geocoding.json')));
+    assertEqual(results.map(r => r.detail), ['Santa Catarina, Brasil', 'Anitápolis, Santa Catarina, Brasil']);
+    assertEqual([results[0].latitude, results[0].longitude], [-27.21417, -49.64306]);
+    assertEqual(Weather.parseGeocoding({}), [], 'sem resultados:');
+    assertEqual(Weather.geocodingUrl('a'), null, 'texto curto demais:');
+    assert(Weather.geocodingUrl('Rio do Sul', 'pt').includes('name=Rio%20do%20Sul&count=10&language=pt'));
+});
+
+test('clima: códigos WMO, noite, vento e unidades', () => {
+    assertEqual(Weather.describeWeather(0, true).icon, 'weather-clear-symbolic');
+    assertEqual(Weather.describeWeather(0, false).icon, 'weather-clear-night-symbolic', 'noite:');
+    assertEqual(Weather.describeWeather(3, false).icon, 'weather-overcast-symbolic', 'sem variante noturna:');
+    assertEqual(Weather.describeWeather(95).description, 'Thunderstorm');
+    assertEqual(Weather.describeWeather(1234).icon, 'weather-severe-alert-symbolic', 'desconhecido:');
+    assertEqual([Weather.windDirection(0), Weather.windDirection(175), Weather.windDirection(-90)], ['N', 'S', 'W']);
+
+    const imperial = Weather.forecastUrl({latitude: -27.21417, longitude: -49.64306, units: 'imperial'});
+    assert(imperial.includes('latitude=-27.2142') && imperial.includes('temperature_unit=fahrenheit') &&
+        imperial.includes('wind_speed_unit=mph'), imperial);
+    assert(!Weather.hasLocation(0, 0), '0,0 é "sem cidade"');
+    assert(Weather.hasLocation(-27.2, -49.6));
+    assertEqual([Weather.formatTemperature(17), Weather.formatTemperature(null), Weather.formatHour(7)],
+        ['17°', '–', '07:00']);
+});
+
 test('logos: galeria completa, índices do Logo Menu e escolha pela distribuição', () => {
     const Logos = LogosLib;
     const dir = Logos.logosDirectory();
@@ -2681,8 +2909,11 @@ test('perfis: todos cobrem os 10 módulos, citam presets reais e têm ids único
     }
     assert(!ids.has(Profiles.CUSTOM_PROFILE), 'id reservado');
 
-    // Os 10 módulos do perfil são exatamente os implementados (menos o diagnóstico).
-    const implemented = MODULES_INFO.filter(i => i.implemented && i.id !== 'diagnostics').map(i => i.id).sort();
+    // Os 10 módulos do perfil são exatamente os implementados, menos o diagnóstico e
+    // o clima: os perfis reproduzem as 11 extensões do baseline, e o clima é um
+    // opcional novo (2026-09-21) que só liga quando o usuário escolhe.
+    const outside = ['diagnostics', 'weather'];
+    const implemented = MODULES_INFO.filter(i => i.implemented && !outside.includes(i.id)).map(i => i.id).sort();
     assertEqual([...Profiles.PROFILE_MODULES].sort(), implemented, 'módulos cobertos:');
 });
 

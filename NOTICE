@@ -56,3 +56,14 @@ assets/logos/*.svg
     © Aryan Kaushik e colaboradores, pasta Resources/, commit cf988c0 (24.8).
     Sem modificação. Licença de origem: GPL-2.0 (assets/logos/LICENSE-GPL-2.0),
     distribuídos junto como obra separada. Cada logotipo é marca de seu projeto.
+
+Dados do clima (módulo weather)
+    Open-Meteo (https://open-meteo.com), dados sob CC BY 4.0; a atribuição aparece
+    no card. Nenhum código de terceiros: a ideia vem do OpenWeather
+    (gitlab.com/skrewball/openweather, GPL-3.0), sem reaproveitamento.
+
+themes/dracula-amoled/ (tema Dracula-AMOLED, gerado)
+    Derivado do Dracula (https://github.com/dracula/gtk), © Eliver Lara e
+    colaboradores, GPL-3.0, commit 71640b9. O gerador (build.py) baixa as fontes,
+    troca a paleta, compacta as medidas e desenha os botões das janelas; o tema
+    resultante mantém a GPL-3.0 (COPYING dentro dele).

@@ -20,6 +20,7 @@ import {PanelPage} from './prefs/pages/panel.js';
 import {MenuPage} from './prefs/pages/menu.js';
 import {BluetoothPage} from './prefs/pages/bluetooth.js';
 import {MediaPage} from './prefs/pages/media.js';
+import {WeatherPage} from './prefs/pages/weather.js';
 import {DockPage} from './prefs/pages/dock.js';
 import {OverviewPage} from './prefs/pages/overview.js';
 import {AnimationPage} from './prefs/pages/animation.js';
@@ -49,6 +50,7 @@ export default class GnomeCustomPreferences extends ExtensionPreferences {
             new MenuPage(child('menu'), _),
             new BluetoothPage(child('bluetooth'), _),
             new MediaPage(child('media'), _, {openSettings}),
+            new WeatherPage(child('weather'), _, {baseSettings: settings}),
             new DockPage(child('dock'), _),
             new OverviewPage(child('overview'), _),
             new AnimationPage(child('animation'), _),

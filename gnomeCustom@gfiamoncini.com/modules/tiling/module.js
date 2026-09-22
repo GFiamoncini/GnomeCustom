@@ -362,7 +362,7 @@ export class TilingModule extends Module {
             !this._windows.overviewVisible;
 
         if (visible)
-            this._border.show(this._windows.window(id), this._controller.gapFor(id));
+            this._border.show(this._windows.window(id), this._controller.borderSpaceFor(id));
         else
             this._border.hide();
     }

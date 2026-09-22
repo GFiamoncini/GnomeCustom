@@ -16,7 +16,7 @@
 import St from 'gi://St';
 
 import {SignalTracker} from '../../core/signals.js';
-import {borderRect} from '../../lib/tiling/geometry.js';
+import {borderRadius, borderRect} from '../../lib/tiling/geometry.js';
 
 export class FocusBorder {
     /** @param {object} options @param {object} options.logger */
@@ -34,13 +34,15 @@ export class FocusBorder {
         this._followTokens = [];
         this._width = 3;
         this._gap = 0;
+        this._color = 'transparent';
+        this._radius = 0;
     }
 
     /** @param {{border: string, width: number, radius: number}} tokens */
     setStyle({border, width, radius}) {
         this._width = width;
-        this._actor.style =
-            `border: ${width}px solid ${border}; border-radius: ${radius}px;`;
+        this._color = border;
+        this._radius = radius;
         this._sync();
     }
 
@@ -84,6 +86,9 @@ export class FocusBorder {
         const rect = borderRect(this._window.get_frame_rect(), this._width, this._gap);
         this._actor.set_position(rect.x, rect.y);
         this._actor.set_size(rect.width, rect.height);
+        // O raio depende de quanto a borda ficou fora do quadro (varia com o gap).
+        this._actor.style = `border: ${this._width}px solid ${this._color}; ` +
+            `border-radius: ${borderRadius(this._radius, rect.outset)}px;`;
 
         // Logo acima da janela: por cima dela, por baixo das que estão à frente.
         if (windowActor.get_parent() === global.window_group)

@@ -1,0 +1,100 @@
+/*
+ * Dracula-AMOLED para apps libadwaita (GTK 4).
+ *
+ * Os apps libadwaita ignoram o tema GTK; este arquivo, ligado em
+ * ~/.config/gtk-4.0/gtk.css pelo GnomeCustom, troca só as cores nomeadas que o
+ * libadwaita usa — o desenho dos widgets continua o do GNOME, o que sobrevive às
+ * atualizações do libadwaita. Preto puro, destaque branco, botões das janelas
+ * nas cores do macOS e barras de título mais baixas (densidade do Orchis Compact).
+ *
+ * Derivado do Dracula (github.com/dracula/gtk, GPL-3.0).
+ */
+
+/* Destaque: branco no lugar do roxo */
+@define-color accent_bg_color #f8f8f2;
+@define-color accent_fg_color #000000;
+@define-color accent_color #ffffff;
+
+/* Superfícies em preto; cartões e popovers um passo acima, para separar. */
+@define-color window_bg_color #000000;
+@define-color window_fg_color #f8f8f2;
+@define-color view_bg_color #000000;
+@define-color view_fg_color #f8f8f2;
+@define-color headerbar_bg_color #000000;
+@define-color headerbar_fg_color #f8f8f2;
+@define-color headerbar_backdrop_color #000000;
+@define-color headerbar_shade_color rgba(255, 255, 255, 0.08);
+@define-color headerbar_darker_shade_color rgba(255, 255, 255, 0.12);
+@define-color sidebar_bg_color #0a0a0a;
+@define-color sidebar_fg_color #f8f8f2;
+@define-color sidebar_backdrop_color #0a0a0a;
+@define-color sidebar_shade_color rgba(255, 255, 255, 0.06);
+@define-color secondary_sidebar_bg_color #050505;
+@define-color secondary_sidebar_fg_color #f8f8f2;
+@define-color secondary_sidebar_backdrop_color #050505;
+@define-color card_bg_color rgba(255, 255, 255, 0.05);
+@define-color card_fg_color #f8f8f2;
+@define-color card_shade_color rgba(255, 255, 255, 0.06);
+@define-color dialog_bg_color #0d0d0d;
+@define-color dialog_fg_color #f8f8f2;
+@define-color popover_bg_color #0d0d0d;
+@define-color popover_fg_color #f8f8f2;
+@define-color popover_shade_color rgba(0, 0, 0, 0.5);
+@define-color thumbnail_bg_color #0d0d0d;
+@define-color thumbnail_fg_color #f8f8f2;
+@define-color shade_color rgba(0, 0, 0, 0.5);
+
+/* Cores de estado da paleta Dracula */
+@define-color destructive_bg_color #ff5555;
+@define-color destructive_fg_color #000000;
+@define-color destructive_color #ff6e6e;
+@define-color success_bg_color #50fa7b;
+@define-color success_fg_color #000000;
+@define-color success_color #50fa7b;
+@define-color warning_bg_color #ffb86c;
+@define-color warning_fg_color #000000;
+@define-color warning_color #ffb86c;
+@define-color error_bg_color #ff5555;
+@define-color error_fg_color #000000;
+@define-color error_color #ff6e6e;
+
+/* Densidade do Orchis Compact: barras de título mais baixas. */
+headerbar {
+  min-height: 40px;
+}
+
+/* Botões das janelas: círculos do macOS; o símbolo aparece com o ponteiro. */
+windowcontrols > button {
+  min-height: 16px;
+  min-width: 16px;
+  padding: 3px;
+}
+
+windowcontrols > button > image {
+  padding: 0;
+  border-radius: 999px;
+  min-height: 14px;
+  min-width: 14px;
+  -gtk-icon-size: 10px;
+  color: transparent;
+  background: #3a3a3a;
+  box-shadow: none;
+}
+
+windowcontrols > button.close > image { background: #ff5f57; }
+windowcontrols > button.minimize > image { background: #febc2e; }
+windowcontrols > button.maximize > image { background: #28c840; }
+
+windowcontrols > button:hover > image,
+windowcontrols > button:active > image {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+windowcontrols > button:hover,
+windowcontrols > button:active {
+  background: none;
+}
+
+window:backdrop windowcontrols > button > image {
+  background: #3a3a3a;
+}

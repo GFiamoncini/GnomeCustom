@@ -43,6 +43,11 @@
       <summary>Enable the Media module</summary>
       <description>MPRIS playback controls in the panel.</description>
     </key>
+    <key name="weather-enabled" type="b">
+      <default>false</default>
+      <summary>Enable the Weather module</summary>
+      <description>Current weather and forecast for a location, in the top bar.</description>
+    </key>
     <key name="dock-enabled" type="b">
       <default>false</default>
       <summary>Enable the Dock module</summary>

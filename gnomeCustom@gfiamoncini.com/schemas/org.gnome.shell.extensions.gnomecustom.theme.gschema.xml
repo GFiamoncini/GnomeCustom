@@ -186,7 +186,10 @@
     <key name="tiling-border-radius" type="u">
       <default>14</default>
       <range min="0" max="40"/>
-      <summary>Corner radius of the focused window border</summary>
+      <summary>Corner radius of the windows, followed by the focus border</summary>
+      <description>The inner edge of the border is drawn with this radius, so it
+      should match how rounded the windows are; a smaller value leaves a gap at the
+      corners. GNOME apps use about 15; Chrome needs about 18.</description>
     </key>
 
     <key name="amoled-black" type="b">
@@ -194,6 +197,31 @@
       <summary>AMOLED black</summary>
       <description>Loads a copy of the shell theme with its dark greys turned into
       pure black, for OLED screens. Light text and accent colours stay as they are.</description>
+    </key>
+    <key name="apply-to-apps" type="b">
+      <default>false</default>
+      <summary>Use the shell theme for applications too</summary>
+      <description>When the chosen shell theme also ships a GTK theme, it becomes the
+      theme of the applications, and its libadwaita stylesheet (if any) is linked at
+      ~/.config/gtk-4.0/gtk.css. A theme with an apps/ folder also sets the colours
+      and the window frame of VS Code and Obsidian. Turning this off or picking
+      another theme restores what was there before.</description>
+    </key>
+    <key name="app-theme-previous" type="s">
+      <default>''</default>
+      <summary>Internal: GTK theme before the shell theme was applied to applications</summary>
+    </key>
+    <key name="app-theme-applied" type="s">
+      <default>''</default>
+      <summary>Internal: GTK theme set by the extension</summary>
+    </key>
+    <key name="app-theme-css" type="s">
+      <default>''</default>
+      <summary>Internal: stylesheet linked at ~/.config/gtk-4.0/gtk.css by the extension</summary>
+    </key>
+    <key name="app-tweaks-state" type="s">
+      <default>''</default>
+      <summary>Internal: values changed in Electron apps (VS Code, Obsidian) by the extension, as JSON</summary>
     </key>
     <key name="shell-theme" type="s">
       <default>''</default>

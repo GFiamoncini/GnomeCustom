@@ -12,6 +12,9 @@
  * (posição + instante) e o consumidor estima o tempo a partir dela; a âncora é
  * refeita no `Seeked`, na troca de faixa ou de estado, e quando alguém pede.
  *
+ * Os controles (tocar/pausar, próxima, anterior) são repassados por `control()`;
+ * quem escolhe o player e confere as propriedades `Can*` é o módulo.
+ *
  * As chamadas usam callback em vez de `Gio._promisify`: o Shell e outras
  * extensões podem já ter preparado `Gio.DBusConnection.call`, e preparar de novo
  * gera aviso.
@@ -39,11 +42,20 @@ const PlayerProxy = Gio.DBusProxy.makeProxyWrapper(`
     <property name="PlaybackStatus" type="s" access="read"/>
     <property name="Metadata" type="a{sv}" access="read"/>
     <property name="Rate" type="d" access="read"/>
+    <property name="CanControl" type="b" access="read"/>
+    <property name="CanPlay" type="b" access="read"/>
+    <property name="CanPause" type="b" access="read"/>
+    <property name="CanGoNext" type="b" access="read"/>
+    <property name="CanGoPrevious" type="b" access="read"/>
+    <property name="CanSeek" type="b" access="read"/>
     <signal name="Seeked">
       <arg name="Position" type="x"/>
     </signal>
   </interface>
 </node>`);
+
+/** Métodos de reprodução que o serviço aceita repassar. */
+const CONTROL_METHODS = new Set(['PlayPause', 'Next', 'Previous']);
 
 const now = () => GLib.get_monotonic_time();
 
@@ -125,6 +137,54 @@ export class MprisService {
         } catch (e) {
             if (!isCancelled(e))
                 this._logger.debug(`posição indisponível em ${busName}: ${e.message}`);
+        }
+    }
+
+    /**
+     * Pede ao player uma ação de reprodução.
+     *
+     * @param {string} busName
+     * @param {string} method 'PlayPause' | 'Next' | 'Previous'
+     * @returns {Promise<boolean>} se a chamada chegou ao player
+     */
+    async control(busName, method) {
+        if (!this._players.has(busName) || !CONTROL_METHODS.has(method))
+            return false;
+
+        try {
+            await callAsync(this._bus, busName, MPRIS_PATH, PLAYER_IFACE, method, null, '()',
+                this._cancellable);
+            return true;
+        } catch (e) {
+            if (!isCancelled(e))
+                this._logger.warn(`${method} falhou em ${busName}: ${e.message}`);
+            return false;
+        }
+    }
+
+    /**
+     * Pula para um ponto da faixa (`SetPosition`). O player ignora o pedido se a
+     * faixa já tiver mudado, por isso o `trackId` vai junto.
+     *
+     * @param {string} busName
+     * @param {string} trackId caminho de objeto da faixa atual
+     * @param {number} position microssegundos
+     * @returns {Promise<boolean>}
+     */
+    async seek(busName, trackId, position) {
+        if (!this._players.has(busName))
+            return false;
+
+        try {
+            await callAsync(this._bus, busName, MPRIS_PATH, PLAYER_IFACE, 'SetPosition',
+                new GLib.Variant('(ox)', [trackId, Math.round(position)]), '()', this._cancellable);
+            // Nem todo player emite `Seeked`; a âncora é refeita pela leitura real.
+            this.refreshPosition(busName);
+            return true;
+        } catch (e) {
+            if (!isCancelled(e))
+                this._logger.warn(`SetPosition falhou em ${busName}: ${e.message}`);
+            return false;
         }
     }
 
@@ -236,6 +296,15 @@ export class MprisService {
             status: entry.player.PlaybackStatus || 'Stopped',
             track: normalizeMetadata(unpackMetadata(entry.player.Metadata)),
             anchor: {...entry.anchor},
+            // Ausente no proxy = desconhecido; `canInvoke` trata como permitido.
+            can: {
+                control: entry.player.CanControl ?? null,
+                play: entry.player.CanPlay ?? null,
+                pause: entry.player.CanPause ?? null,
+                next: entry.player.CanGoNext ?? null,
+                previous: entry.player.CanGoPrevious ?? null,
+                seek: entry.player.CanSeek ?? null,
+            },
         };
     }
 

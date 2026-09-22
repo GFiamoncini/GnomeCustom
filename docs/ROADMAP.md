@@ -103,7 +103,8 @@ Entrega: extensão que carrega, não faz nada visível, e descarrega sem deixar 
       base trocada de spotify-controls para **spotify-controller** (NarkAgni). Na barra
       superior, à direita, `[mini capa] nome da música`; o clique abre o card com capa
       redonda, título, artistas / álbum, tempo só de leitura e fundo em degradê da capa.
-      **Sem** controles de reprodução, scroll de volume, curtir, playlists ou letra.
+      **Sem** scroll de volume, curtir, playlists ou letra. (Controles de reprodução na barra e
+      atalhos foram acrescentados depois do roadmap, a pedido do usuário, em 2026-09-16.)
       Players permitidos configuráveis nas preferências (padrão: Spotify)
 - **Aceite:** bateria do teclado AULA visível no menu; número no OSD ao ajustar volume;
   Spotify Controls pode ser desabilitada.
@@ -162,32 +163,81 @@ Entrega: extensão que carrega, não faz nada visível, e descarrega sem deixar 
       pt-BR 263/263
 - **Aceite:** Impatience pode ser desabilitado.
 
-## Fase 7 — Theme Engine completo
-- [ ] Tokens para dock, menus, OSD, bordas de tiling
-- [ ] Presets (Adwaita, Dark, Minimal, Fedora, Custom)
-- [ ] Regeneração assíncrona e *debounced* na troca de wallpaper
-- **Aceite:** um preset altera painel, dock, menus e OSD de forma coerente.
+## Fase 7 — Theme Engine completo ✅
+- [x] Tokens para menus, OSD, dock e bordas de tiling, **todos derivados da mesma cor base**
+      da barra (menus e OSD um passo afastados, para profundidade). Contraste AA garantido em
+      cada superfície
+- [x] Superfícies ligadas por chave (`style-menus`, `style-osd`, `style-dock`), **desligadas
+      por padrão** — o baseline do usuário não tematiza menus, OSD nem dock
+- [x] CSS por superfície, com seletores conferidos no `gnome-shell-dark.css` do gresource do
+      GNOME 49 (`.popup-menu-content`, `.popup-menu-item`, `.osd-window .level` com
+      `-barlevel-*`); com cor, os ícones do dock perdem o disco `#38383b` do tema
+- [x] Dock: cor publicada pelo novo `services/theme/style.js` e aplicada pelo próprio dock com
+      a opacidade dele — estilo inline vence folha, e o dock segue sem depender do módulo de tema
+- [x] Presets como dados puros (`theme/presets/presets.js`): Papel de parede (= defaults do
+      esquema = baseline), Adwaita, Escuro, Mínimo, Fedora; "Personalizado" é **derivado** dos
+      valores, sem chave de estado que possa dessincronizar
+- [x] Seletor de preset nas preferências, mais os grupos de superfícies e de bordas de tiling
+- [x] Regeneração assíncrona e *debounced* (já existia) + **correção**: trocar o papel de parede
+      durante uma extração era descartado; agora vira uma nova rodada
+- [x] Lista única chave→configuração (`SETTINGS_KEYS`): o módulo lê, observa e os presets são
+      validados por ela
+- [x] 19 testes novos do núcleo (117) e 5 passos novos das prefs; pt-BR 308/308
+- [x] **Aceite verificado** em GNOME Shell 49.9 headless: preset Fedora com barra, menu do
+      logotipo, OSD de volume e dock coerentes (conferido por captura e amostragem de pixels);
+      troca a quente para o preset Escuro; zero CRITICAL; limpeza "nada pendente"
+- **Aceite:** um preset altera painel, dock, menus e OSD de forma coerente. ✅
 
-## Fase 8 — Tiling
-Pesquisa antecipada a partir da Fase 4 (estudo do Forge em paralelo, sem código).
+## Fase 8 — Tiling ✅
+Camada pura (`lib/tiling/`, testada fora do Shell) + ponte com o Mutter.
 
-- [ ] `services/shell/window-manager.js`, `services/windows`
-- [ ] `tree.js`: containers, split H/V, foco, movimentação, swap
-- [ ] `layout.js`: geometria + gaps (2px, ocultos em janela única)
-- [ ] `keybindings.js`: os 40 atalhos do baseline
-- [ ] `rules.js`: overrides por `wmClass`/`wmTitle` (as 32 regras, menos as 4 por `wmId`)
-- [ ] Float por janela e sempre-flutuar por classe; float sempre no topo
-- [ ] Snap (centro, 1/3, 2/3); borda de foco
-- [ ] Toggle no Quick Settings
-- [ ] Multi-monitor; caso `num-workspaces = 1`
-- **Aceite:** Forge pode ser desabilitado; testes automatizados da árvore passam.
+- [x] `lib/tiling/tree.js`: árvore no modelo i3 — split, foco com histórico, mover (incluindo
+      sair de contêiner e envolver a raiz), swap, redimensionar por pesos, troca de chave
+- [x] `lib/tiling/layout.js`: fórmula de gaps do Forge (2·gap), gaps ocultos em janela única,
+      fatias que somam exatamente a área
+- [x] `lib/tiling/rules.js` + `default-rules.js`: as 28 regras do Forge, semântica de
+      correspondência dele; **regras por `wmId` não existem** — flutuar por janela é memória
+- [x] `lib/tiling/actions.js`: os 39 atalhos do baseline (o 40º item era o modificador do
+      mouse); esquema gerado deles por `make tiling-schemas`
+- [x] `lib/tiling/controller.js`: toda a decisão — eventos, flutuar, sempre-flutuar, snap,
+      resize por teclado e mouse, arrastar para trocar, monitor vizinho, área sem tiling
+- [x] `services/shell/windows.js` (adaptador do Mutter 17), `ui/tiling/focus-border.js`,
+      `ui/tiling/quick-toggle.js`, `services/shell/quick-settings.js`, `modules/tiling`
+- [x] Espera automática enquanto o Forge estiver ativo, e aviso de atalhos em colisão
+- [x] Página de preferências: comportamento, gaps, regras (adicionar/remover), áreas sem
+      tiling, atalhos
+- [x] 36 testes novos do núcleo (172) e 3 passos das prefs; pt-BR 396/396
+- [x] **Aceite verificado** em GNOME Shell 49.9 headless com o Editor de Texto de verdade:
+      tiling com os gaps do baseline, `Super+V` + janela nova, `Super+C`, `Ctrl+Super+H`,
+      `Ctrl+Alt+D`, mudança de monitor com dois monitores virtuais, espera com o Forge
+      ativo e retomada ao desativá-lo; zero CRITICAL com a extensão ativa
+- **Aceite:** Forge pode ser desabilitado; testes automatizados da árvore passam. ✅
 
-## Fase 9 — Migração e polimento
-- [ ] `core/migration/*` conforme `MIGRATION.md`, com relatório e reversão
-- [ ] Presets/perfis (Default, Developer, Minimal, Laptop, Desktop, Gaming, Custom)
-- [ ] `po/`: pt-BR completo
-- [ ] Documentação de usuário
-- [ ] Avaliar declarar GNOME 50 (só após teste real)
+Descobertas ao rodar no Shell (todas com teste ou correção):
+- O Mutter maximiza sozinho janelas que abrem grandes, e `allows_resize()` é falso enquanto a
+  janela está maximizada: usar `resizeable` e desmaximizar no layout, como o Forge.
+- O foco chega na janela nova antes de ela estar pronta: o evento de foco não pode esperar.
+- No Wayland o retângulo só muda quando o cliente confirma: não repetir o mesmo pedido.
+- O aviso de desativação do Forge chega antes de ele soltar os atalhos: sair da espera com atraso
+  e tentar de novo atalhos recusados.
+- `Super+V` do baseline colide com `toggle-message-tray` do GNOME, que vence — **inclusive na
+  sessão real do usuário** (decisão dele se quer liberar).
+
+## Fase 9 — Migração e polimento ✅
+- [x] `lib/migration/importers.js`: importadores das 11 extensões, puros, sobre o **valor efetivo**
+      (o Logo Menu esconde bloquear/energia por padrão; importar só o alterado mudaria o menu)
+- [x] `lib/migration/apply.js`: leitura só-leitura dos esquemas de cada extensão e dos arquivos
+      do Forge; backup em `migration-backup`; ajuste aos limites; relatório; desfazer exato
+- [x] Página **Migração** nas preferências, com relatório e os passos da troca
+- [x] Perfis em `lib/profiles.js` (Nada ligado, Desktop, Desenvolvedor, Notebook, Mínimo, Jogos;
+      Personalizado derivado), com aviso antes de ligar módulos cujas originais estão ativas
+- [x] `MIGRATION.md` reescrito conforme o implementado (o da Fase 0 citava chaves inexistentes)
+- [x] `docs/USER-GUIDE.md`: instalar, trocar as extensões, perfis, módulos, atalhos, problemas
+- [x] GNOME 50 avaliado e **não declarado** (sem teste real); roteiro em `COMPATIBILITY.md` §6
+- [x] 11 testes novos do núcleo (183) e 7 passos das prefs; pt-BR 456/456
+- [x] **Critério verificado:** importar o baseline reproduz os padrões do GnomeCustom; ensaio
+      só-leitura sobre as extensões instaladas: 90 gravações, 3 mudariam algo (tema Orchis;
+      bloquear e energia escondidos como no Logo Menu); regras fantasmas do Forge descartadas
 
 ---
 
@@ -199,8 +249,8 @@ Pesquisa antecipada a partir da Fase 4 (estudo do Forge em paralelo, sem código
 | **M2** (parcial) | Fase 2 ✅ | Open Bar, Logo Menu, apps-menu, User Themes |
 | **M2** ✅ | Fase 3 ✅ | + BT Battery, OSD Volume, Spotify Controls |
 | **M3 (MVP)** ✅ | Fase 4–6 ✅ | + Dash to Dock, GNOME UI Tune, Impatience |
-| **M4** | Fases 7–8 | + Forge → **todas as 11** |
-| **M5** | Fase 9 | migração, presets, i18n |
+| **M4** ✅ | Fases 7 e 8 | + Forge → **todas as 11** |
+| **M5** ✅ | Fase 9 | migração, perfis, guia do usuário, i18n |
 
 O MVP da §33 do briefing corresponde a **M3**. O tiling entra em **M4**, conforme previsto.
 

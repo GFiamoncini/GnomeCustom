@@ -1,0 +1,23 @@
+/* Dracula-AMOLED (GnomeCustom), posto pela extensão em cada cofre: preto puro e destaque branco, como o tema do Shell. */
+.theme-dark {
+  --background-primary: #000000;
+  --background-primary-alt: #0a0a0a;
+  --background-secondary: #0a0a0a;
+  --background-secondary-alt: #000000;
+  --background-modifier-border: #262626;
+  --background-modifier-hover: rgba(255, 255, 255, 0.08);
+  --background-modifier-form-field: #141414;
+  --titlebar-background: #000000;
+  --titlebar-background-focused: #000000;
+  --tab-container-background: #0a0a0a;
+  --ribbon-background: #000000;
+  --ribbon-background-collapsed: #000000;
+  --modal-background: #0d0d0d;
+  --text-normal: #f8f8f2;
+  --text-accent: #ffffff;
+  --interactive-accent: #f8f8f2;
+  --interactive-accent-hover: #ffffff;
+  --text-on-accent: #000000;
+  --text-selection: rgba(248, 248, 242, 0.25);
+  --color-accent: #f8f8f2;
+}

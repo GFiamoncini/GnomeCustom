@@ -19,6 +19,17 @@
       <default>'right'</default>
       <summary>Top bar section for the Bluetooth button</summary>
     </key>
+    <key name="hide-when-disconnected" type="b">
+      <default>false</default>
+      <summary>Hide the button when nothing is connected</summary>
+      <description>When off, the button stays in the top bar with the Bluetooth
+      icon, so the card can turn the radio on and connect paired devices.</description>
+    </key>
+    <key name="hidden-devices" type="as">
+      <default>[]</default>
+      <summary>Devices left out of the card</summary>
+      <description>Bluetooth addresses. They stay paired in the system.</description>
+    </key>
     <key name="low-battery-threshold" type="u">
       <default>20</default>
       <range min="0" max="100"/>

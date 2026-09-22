@@ -1,0 +1,124 @@
+
+/* ---- Dracula-AMOLED: complementos acrescentados depois do CSS compilado ---- */
+
+/* gnomecustom: amoled-ready — o tema já é preto; o "Preto AMOLED" do GnomeCustom
+   não o converte de novo (apagaria os cinzas dos botões e hovers). */
+
+/* Botões do menu rápido ligados: branco sólido com texto preto, como o destaque.
+   O Dracula usa a cor de seleção mais transparente aqui, o que no branco sumia. */
+.quick-toggle:checked,
+.quick-toggle:checked:focus {
+  background-color: #f8f8f2;
+  color: #000000;
+}
+
+.quick-toggle:checked:hover {
+  background-color: #ffffff;
+  color: #000000;
+}
+
+.quick-toggle:checked StIcon,
+.quick-toggle:checked .quick-toggle-label,
+.quick-toggle:checked .quick-toggle-subtitle {
+  color: #000000;
+}
+
+/* Botões sobre o preto: o Dracula dá fundo quase preto com borda preta, o que no
+   AMOLED some; e o hover punha o texto em preto (herdado do destaque roxo), o que
+   apagava o ícone. Aqui ganham um fundo um passo acima e um contorno claro. */
+.button, .icon-button,
+.quick-settings-system-item .icon-button,
+.modal-dialog .modal-dialog-button-box .modal-dialog-button,
+.app-folder-dialog .edit-folder-button {
+  color: #f8f8f2;
+  background-color: #141414;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.button:hover, .icon-button:hover,
+.button:focus, .icon-button:focus,
+.quick-slider .icon-button:hover,
+.modal-dialog .modal-dialog-button-box .modal-dialog-button:hover,
+.modal-dialog .modal-dialog-button-box .modal-dialog-button:focus,
+.app-folder-dialog .edit-folder-button:hover {
+  color: #ffffff;
+  background-color: #262626;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+}
+
+.button:active, .button:checked, .icon-button:active, .icon-button:checked {
+  color: #000000;
+  background-color: #f8f8f2;
+  border: 1px solid #f8f8f2;
+}
+
+/* Botões do menu rápido desligados: mesmo contorno. */
+.quick-toggle {
+  color: #f8f8f2;
+  background-color: #141414;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.quick-toggle:hover,
+.quick-toggle:focus {
+  color: #ffffff;
+  background-color: #262626;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+}
+
+.quick-toggle:checked,
+.quick-toggle:checked:focus,
+.quick-toggle:checked:hover {
+  border: 1px solid #f8f8f2;
+}
+
+/* Metade da seta nos botões com menu: continua o botão, com a divisória visível. */
+.quick-menu-toggle .quick-toggle-arrow,
+.quick-menu-toggle .quick-toggle-menu-button,
+.quick-toggle-has-menu .quick-toggle-arrow,
+.quick-toggle-has-menu .quick-toggle-menu-button {
+  color: #f8f8f2;
+  background-color: #1c1c1c;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-left-width: 0;
+}
+
+.quick-menu-toggle .quick-toggle-arrow:rtl,
+.quick-menu-toggle .quick-toggle-menu-button:rtl,
+.quick-toggle-has-menu .quick-toggle-arrow:rtl,
+.quick-toggle-has-menu .quick-toggle-menu-button:rtl {
+  border-left-width: 1px;
+  border-right-width: 0;
+}
+
+/* Ligado: a seta acompanha o branco do botão, um tom abaixo para separar. */
+.quick-menu-toggle .quick-toggle-arrow:checked,
+.quick-menu-toggle .quick-toggle-menu-button:checked,
+.quick-toggle-has-menu .quick-toggle-arrow:checked,
+.quick-toggle-has-menu .quick-toggle-menu-button:checked {
+  color: #000000;
+  background-color: #d6d6d0;
+  border: 1px solid #f8f8f2;
+  border-left-width: 0;
+}
+
+.quick-menu-toggle .quick-toggle-arrow:checked:hover,
+.quick-menu-toggle .quick-toggle-menu-button:checked:hover,
+.quick-toggle-has-menu .quick-toggle-arrow:checked:hover,
+.quick-toggle-has-menu .quick-toggle-menu-button:checked:hover {
+  color: #000000;
+  background-color: #ffffff;
+}
+
+.quick-menu-toggle .quick-toggle-arrow:hover,
+.quick-menu-toggle .quick-toggle-menu-button:hover,
+.quick-toggle-has-menu .quick-toggle-arrow:hover,
+.quick-toggle-has-menu .quick-toggle-menu-button:hover {
+  color: #ffffff;
+  background-color: #303030;
+}
+
+/* Trilho das barras de volume e brilho mais visível. */
+.slider {
+  -barlevel-background-color: rgba(255, 255, 255, 0.22);
+}

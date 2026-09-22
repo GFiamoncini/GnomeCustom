@@ -1,0 +1,34 @@
+
+/* ---- Dracula-AMOLED: complementos acrescentados depois do CSS compilado ---- */
+
+/* Cantos das janelas iguais aos do libadwaita (15px nos quatro): o Dracula usa 4px
+   só em cima, e apps que desenham a própria moldura pelo tema GTK (o Chrome no modo
+   "GTK") ficavam com o canto quase reto, saindo por fora da borda arredondada do
+   mosaico (docs/Melhorias/EV02.png). */
+decoration,
+window.csd {
+  border-radius: 15px;
+}
+
+window:not(.tiled):not(.maximized) separator:first-child + headerbar,
+window:not(.tiled):not(.maximized) separator:first-child + headerbar:backdrop,
+window:not(.tiled):not(.maximized) headerbar:first-child,
+window:not(.tiled):not(.maximized) headerbar:first-child:backdrop {
+  border-top-left-radius: 15px;
+}
+
+window:not(.tiled):not(.maximized) headerbar:last-child,
+window:not(.tiled):not(.maximized) headerbar:last-child:backdrop {
+  border-top-right-radius: 15px;
+}
+
+.maximized decoration, .fullscreen decoration, .tiled decoration,
+.tiled-top decoration, .tiled-left decoration, .tiled-right decoration, .tiled-bottom decoration,
+window.csd.maximized, window.csd.fullscreen, window.csd.tiled,
+window.csd.tiled-top, window.csd.tiled-left, window.csd.tiled-right, window.csd.tiled-bottom {
+  border-radius: 0;
+}
+
+.popup decoration, window.csd.popup {
+  border-radius: 0;
+}

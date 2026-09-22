@@ -26,9 +26,14 @@ import {ShellOverviewService} from './services/shell/overview.js';
 import {AnimationService} from './services/shell/animation.js';
 import {BluetoothService} from './services/bluetooth/devices.js';
 import {MprisService} from './services/mpris/players.js';
+import {OpenMeteoClient} from './services/weather/openmeteo.js';
 import {CoverArtService} from './services/system/cover-art.js';
 import {DistroService} from './services/system/distro.js';
 import {WallpaperService} from './services/system/wallpaper.js';
+import {AppThemeService} from './services/system/app-theme.js';
+import {StyleService} from './services/theme/style.js';
+import {WindowsService} from './services/shell/windows.js';
+import {QuickSettingsService} from './services/shell/quick-settings.js';
 
 import {ThemeModule} from './modules/theme/module.js';
 import {PanelModule} from './modules/panel/module.js';
@@ -36,9 +41,11 @@ import {MenuModule} from './modules/menu/module.js';
 import {BluetoothModule} from './modules/bluetooth/module.js';
 import {VolumeModule} from './modules/volume/module.js';
 import {MediaModule} from './modules/media/module.js';
+import {WeatherModule} from './modules/weather/module.js';
 import {DockModule} from './modules/dock/module.js';
 import {OverviewModule} from './modules/overview/module.js';
 import {AnimationModule} from './modules/animation/module.js';
+import {TilingModule} from './modules/tiling/module.js';
 import {DiagnosticsModule} from './modules/diagnostics/module.js';
 
 /**
@@ -54,9 +61,11 @@ const MODULES = [
     BluetoothModule,
     VolumeModule,
     MediaModule,
+    WeatherModule,
     DockModule,
     OverviewModule,
     AnimationModule,
+    TilingModule,
     DiagnosticsModule,
 ];
 
@@ -84,8 +93,13 @@ export default class GnomeCustomExtension extends Extension {
                 bluetooth: ({logger}) => new BluetoothService({logger}),
                 mpris: ({logger}) => new MprisService({logger}),
                 coverArt: ({logger}) => new CoverArtService({logger}),
+                weather: ({logger}) => new OpenMeteoClient({logger}),
                 distro: ({logger}) => new DistroService({logger}),
                 wallpaper: ({logger}) => new WallpaperService({logger}),
+                appTheme: ({logger}) => new AppThemeService({logger}),
+                style: ({logger}) => new StyleService({logger}),
+                windows: ({logger}) => new WindowsService({logger}),
+                quickSettings: ({logger}) => new QuickSettingsService({logger}),
             },
             modules: MODULES,
         });

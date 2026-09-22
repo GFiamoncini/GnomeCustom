@@ -43,6 +43,11 @@
       <summary>Enable the Media module</summary>
       <description>MPRIS playback controls in the panel.</description>
     </key>
+    <key name="weather-enabled" type="b">
+      <default>false</default>
+      <summary>Enable the Weather module</summary>
+      <description>Current weather and forecast for a location, in the top bar.</description>
+    </key>
     <key name="dock-enabled" type="b">
       <default>false</default>
       <summary>Enable the Dock module</summary>
@@ -86,6 +91,11 @@
       <default>0</default>
       <summary>Migration version already applied</summary>
       <description>Used to run each configuration import only once.</description>
+    </key>
+    <key name="migration-backup" type="s">
+      <default>''</default>
+      <summary>Settings saved before the last import</summary>
+      <description>JSON snapshot used by “Undo last import”. Not meant to be edited.</description>
     </key>
     <key name="conflict-warnings" type="b">
       <default>true</default>

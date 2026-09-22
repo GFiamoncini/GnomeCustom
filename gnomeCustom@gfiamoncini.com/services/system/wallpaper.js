@@ -39,20 +39,26 @@ export class WallpaperService {
      * @param {object} options
      * @param {object} options.logger
      * @param {object} [options.signals] rastreador externo, quando houver
+     * @param {object} [options.backgroundSettings] Gio.Settings de
+     *   `org.gnome.desktop.background`; injetável para testes
+     * @param {object} [options.interfaceSettings] idem, `org.gnome.desktop.interface`
      */
-    constructor({logger, signals = null}) {
+    constructor({logger, signals = null, backgroundSettings = null, interfaceSettings = null}) {
         this._logger = logger;
         this._signals = signals ?? new SignalTracker({name: 'svc:wallpaper', logger});
         this._ownsSignals = signals === null;
 
-        this._background = new Gio.Settings({schema_id: BACKGROUND_SCHEMA});
-        this._interface = new Gio.Settings({schema_id: INTERFACE_SCHEMA});
+        this._background = backgroundSettings ??
+            new Gio.Settings({schema_id: BACKGROUND_SCHEMA});
+        this._interface = interfaceSettings ??
+            new Gio.Settings({schema_id: INTERFACE_SCHEMA});
 
         this._palette = [];
         this._paletteUri = null;
         this._listeners = new Set();
         this._pendingToken = undefined;
         this._extracting = false;
+        this._rerunRequested = false;
 
         for (const key of ['picture-uri', 'picture-uri-dark'])
             this._signals.connectSetting(this._background, key, () => this._schedule());
@@ -108,10 +114,15 @@ export class WallpaperService {
         }
 
         if (this._extracting) {
-            this._logger.debug('extração já em andamento');
+            // O papel de parede mudou no meio de uma extração. Descartar o pedido
+            // deixaria a paleta presa na imagem anterior até a próxima troca;
+            // em vez disso, uma nova rodada é marcada para quando esta terminar.
+            this._logger.debug('extração em andamento; nova rodada agendada');
+            this._rerunRequested = true;
             return this.palette;
         }
         this._extracting = true;
+        this._rerunRequested = false;
 
         try {
             const pixels = await this._samplePixels(uri);
@@ -132,6 +143,10 @@ export class WallpaperService {
             return [];
         } finally {
             this._extracting = false;
+            if (this._rerunRequested) {
+                this._rerunRequested = false;
+                this._schedule();
+            }
         }
     }
 
@@ -201,6 +216,7 @@ export class WallpaperService {
 
     destroy() {
         this._listeners.clear();
+        this._rerunRequested = false;
         if (this._ownsSignals)
             this._signals.destroy();
         this._background = null;

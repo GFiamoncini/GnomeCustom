@@ -10,7 +10,7 @@
  */
 
 /** Versões efetivamente testadas. Não declarar o que não foi testado. */
-export const TESTED_MAJORS = Object.freeze([49]);
+export const TESTED_MAJORS = Object.freeze([49, 50]);
 
 /**
  * Capacidades conhecidas e a faixa de versões em que existem.

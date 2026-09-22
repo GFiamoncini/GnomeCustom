@@ -12,7 +12,7 @@ import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
 
 import {test, assert, assertEqual, assertThrows, run} from './harness.js';
-import {FakeEmitter, FakeSettings, FakeInjectionManager, FakeExtension, FakeSink} from './fakes.js';
+import {FakeEmitter, FakeSettings, FakeInjectionManager, FakeExtension, FakeSink, FakeWindowSystem} from './fakes.js';
 
 const EXT = '../gnomeCustom@gfiamoncini.com';
 
@@ -30,11 +30,29 @@ const {MODULES_INFO} = await import(`${EXT}/lib/modules-info.js`);
 const {KNOWN_EXTENSIONS} = await import(`${EXT}/lib/known-extensions.js`);
 const Color = await import(`${EXT}/theme/engine/color.js`);
 const {quantize} = await import(`${EXT}/theme/engine/quantize.js`);
-const {buildTokens, DEFAULT_CONFIG} = await import(`${EXT}/theme/engine/tokens.js`);
+const {buildTokens, DEFAULT_CONFIG, SETTINGS_KEYS} = await import(`${EXT}/theme/engine/tokens.js`);
 const {generateStylesheet} = await import(`${EXT}/theme/engine/stylesheet.js`);
+const Presets = await import(`${EXT}/theme/presets/presets.js`);
+const {StyleService} = await import(`${EXT}/services/theme/style.js`);
+const {WallpaperService} = await import(`${EXT}/services/system/wallpaper.js`);
+const {TilingTree, leavesOf} = await import(`${EXT}/lib/tiling/tree.js`);
+const {computeLayout, distribute, inset} = await import(`${EXT}/lib/tiling/layout.js`);
+const Rules = await import(`${EXT}/lib/tiling/rules.js`);
+const Geometry = await import(`${EXT}/lib/tiling/geometry.js`);
+const {TILING_ACTIONS, normalizeAccel, findCollisions} = await import(`${EXT}/lib/tiling/actions.js`);
+const {TilingController, keyFor, GAP_INCREMENT_MAX} = await import(`${EXT}/lib/tiling/controller.js`);
+const Migration = await import(`${EXT}/lib/migration/importers.js`);
+const Profiles = await import(`${EXT}/lib/profiles.js`);
 const {parseOsRelease} = await import(`${EXT}/services/system/distro.js`);
 const {VolumeModule, formatLevel} = await import(`${EXT}/modules/volume/module.js`);
 const Mpris = await import(`${EXT}/lib/mpris.js`);
+const LogosLib = await import(`${EXT}/lib/logos.js`);
+const Weather = await import(`${EXT}/lib/weather.js`);
+const {AppThemeService} = await import(`${EXT}/services/system/app-theme.js`);
+const {AppTweaks} = await import(`${EXT}/services/system/app-tweaks.js`);
+const Tweaks = await import(`${EXT}/lib/app-tweaks.js`);
+const Amoled = await import(`${EXT}/lib/amoled.js`);
+const Shortcuts = await import(`${EXT}/lib/shortcuts.js`);
 const Bt = await import(`${EXT}/lib/bluetooth.js`);
 const Dock = await import(`${EXT}/lib/dock.js`);
 const {isFirefoxPip} = await import(`${EXT}/lib/overview.js`);
@@ -816,12 +834,18 @@ test('tokens: estilo "none" desliga o engine', () => {
     assertEqual(generateStylesheet(t), '', 'CSS deveria ser vazio:');
 });
 
-test('tokens: estilo "attached" zera margens e raio', () => {
+test('tokens: estilo "attached" zera margens; o raio vale só nos cantos de baixo', () => {
     const t = buildTokens({panelStyle: 'attached', palette: ['#602011']});
+    assertEqual(t.panel.margin, {top: 0, bottom: 0, sides: 0});
     assert(t.enabled, 'deveria estar ligado');
     assertEqual(t.panel.floating, false);
-    assertEqual(t.panel.radius, 0);
-    assertEqual(t.panel.margin, {top: 0, bottom: 0, sides: 0});
+    assertEqual(t.panel.radius, 15, 'o raio continua sendo o escolhido:');
+
+    const css = generateStylesheet(t);
+    assert(css.includes('border-radius: 0 0 15px 15px !important;'),
+        'colada à borda deveria arredondar só embaixo');
+    assert(generateStylesheet(buildTokens({palette: ['#602011']}))
+        .includes('border-radius: 15px !important;'), 'flutuante arredonda os quatro cantos');
 });
 
 test('tokens: cor explícita tem precedência sobre a paleta', () => {
@@ -861,6 +885,28 @@ test('tokens: o texto resolvido contrasta com o fundo', () => {
     }
 });
 
+test('tokens: cores próprias da barra ignoram paleta e cor base', () => {
+    const base = {palette: ['#9a472b'], paletteFromWallpaper: true, backgroundAlpha: 0.8, borderAlpha: 0.5};
+
+    const shared = buildTokens(base);
+    assertEqual(shared.panel.backgroundHex, '#9a472b', 'desligado segue a paleta:');
+
+    const custom = buildTokens({...base, panelCustomColors: true, panelBackgroundColor: '#102030',
+        panelBorderColor: '#FF0000'});
+    assertEqual(custom.panel.backgroundHex, '#102030');
+    assertEqual(custom.panel.background, 'rgba(16, 32, 48, 0.8)');
+    assertEqual(custom.panel.border, 'rgba(255, 0, 0, 0.5)');
+    const ratio = Color.contrastRatio([16, 32, 48], Color.parseHex(custom.panel.foreground));
+    assert(ratio >= 4.5, `texto automático sem contraste: ${ratio}`);
+
+    const autoBorder = buildTokens({...base, panelCustomColors: true, panelBackgroundColor: '#102030'});
+    assert(autoBorder.panel.border && !autoBorder.panel.border.startsWith('rgba(255, 0, 0'),
+        'borda vazia deriva do fundo');
+    assert(!buildTokens({...base, backgroundColor: '', panelBorderColor: '#FF0000'}).panel.border.startsWith('rgba(255, 0, 0'),
+        'cor de borda só vale com as cores próprias ligadas');
+    assertEqual(custom.menu.background, shared.menu.background, 'menus continuam na base compartilhada');
+});
+
 test('tokens: cor de destaque inválida cai no default', () => {
     const t = buildTokens({accentColor: 'lixo'});
     assertEqual(t.accent.hex, '#1c71d8');
@@ -871,13 +917,45 @@ test('tokens: cor de destaque inválida cai no default', () => {
 test('stylesheet: reproduz a geometria do baseline', () => {
     const css = generateStylesheet(buildTokens({palette: ['#602011']}));
 
-    assert(css.includes('margin: 1.5px 4.5px 2.1px 4.5px !important;'),
-        'margens do painelBox ausentes');
+    assert(css.includes('padding: 1.5px 4.5px 2.1px 4.5px !important;'),
+        'recuo do panelBox ausente');
+    assert(!/#panelBox \{[^}]*margin: [1-9]/.test(css),
+        'margem no #panelBox empurra a barra para fora da tela à direita');
     assert(css.includes('height: 29px !important;'), 'altura ausente');
     assert(css.includes('border-radius: 15px !important;'), 'raio ausente');
     assert(css.includes('border: 2px solid'), 'borda ausente');
     assert(css.includes('background-color: rgba(96, 32, 17, 0.9) !important;'),
         'fundo ausente');
+});
+
+test('stylesheet: #panel sem margem própria e sem realce do tema somado ao nosso', () => {
+    // Configuração real do usuário em 2026-09-16: colada, cor fixa, tema Orchis.
+    const css = generateStylesheet(buildTokens({panelStyle: 'attached', backgroundColor: '#1E1E1E',
+        accentColor: '#77767B', palette: ['#9a472b']}));
+    const panel = css.match(/#panel \{[^}]*\}/)?.[0] ?? '';
+    assert(panel.includes('margin: 0 !important;'), 'o #panel deveria zerar a margem do tema');
+    assert(css.includes('#panel .panel-button, #panel .panel-button .clock {\n    box-shadow: none !important;'),
+        'sombra-realce do tema não foi anulada');
+    const active = css.match(/#panel \.panel-button:active, [^{]*\{[^}]*\}/)?.[0] ?? '';
+    assert(/background-color: rgba\([^)]*, 0\.2\)/.test(active), `aberto deveria ser véu suave: ${active}`);
+});
+
+test('stylesheet: tamanho dos ícones da barra vale sobre o tema, dentro da faixa', () => {
+    const css = size => generateStylesheet(buildTokens({palette: ['#602011'], panelIconSize: size}));
+    assert(css(13).includes('.system-status-icon, #panel .gnomecustom-media-control-icon {\n    icon-size: 13px !important;'),
+        'ícone de 13 px ausente');
+    assert(css(16).includes('icon-size: 16px !important;'), 'padrão do GNOME');
+    assert(css(2).includes('icon-size: 10px !important;'), 'limite inferior');
+});
+
+test('stylesheet: notificações compactas só quando pedidas, mesmo sem outra superfície', () => {
+    const off = generateStylesheet(buildTokens({palette: ['#602011']}));
+    assert(!off.includes('.message-list'), 'desligado não mexe nas notificações');
+
+    const alone = generateStylesheet(buildTokens({panelStyle: 'none', compactNotifications: true}));
+    assert(alone.includes('.message .message-box .message-icon {\n    icon-size: 32px !important;'), 'ícone menor');
+    assert(alone.includes('.message-list {\n    width: 26em !important;'), 'lista mais estreita');
+    assert(!alone.includes('#panel'), 'sem barra estilizada, só as notificações');
 });
 
 test('stylesheet: usa !important para vencer o tema do usuário', () => {
@@ -924,6 +1002,1951 @@ test('stylesheet: DEFAULT_CONFIG e o esquema não divergem', () => {
         assert(match !== null, `chave ${key} não encontrada no esquema`);
         assertEqual(Number(match[1]), value, `default de ${key}:`);
     }
+});
+
+// ------------------------------------------------- theme engine: fase 7
+
+/** Lê os defaults do esquema do tema, já convertidos para JS. */
+function themeSchemaDefaults() {
+    const file = Gio.File.new_for_path(GLib.build_filenamev([GLib.get_current_dir(),
+        'gnomeCustom@gfiamoncini.com', 'schemas',
+        'org.gnome.shell.extensions.gnomecustom.theme.gschema.xml']));
+    const xml = new TextDecoder().decode(file.load_contents(null)[1]);
+
+    const keys = {};
+    const re = /<key name="([^"]+)"(?: type="([^"]+)")?(?: enum="[^"]+")?>([\s\S]*?)<\/key>/g;
+    for (const [, name, type, body] of xml.matchAll(re)) {
+        const raw = /<default>([\s\S]*?)<\/default>/.exec(body)[1].trim();
+        const range = /<range min="([^"]+)" max="([^"]+)"\/>/.exec(body);
+        let value;
+        if (type === 'b')
+            value = raw === 'true';
+        else if (type === 'u' || type === 'd' || type === 'i')
+            value = Number(raw);
+        else if (type === 'as')
+            value = [];
+        else
+            value = raw.replace(/^'|'$/g, '');   // 's' e enum
+        keys[name] = {
+            type: type ?? 'enum',
+            value,
+            min: range ? Number(range[1]) : null,
+            max: range ? Number(range[2]) : null,
+        };
+    }
+
+    // Nicks aceitos por cada enum referenciado.
+    const enums = {};
+    for (const [, id, body] of xml.matchAll(/<enum id="([^"]+)">([\s\S]*?)<\/enum>/g))
+        enums[id] = [...body.matchAll(/nick="([^"]+)"/g)].map(m => m[1]);
+    for (const [, name, enumId] of xml.matchAll(/<key name="([^"]+)" enum="([^"]+)"/g))
+        keys[name].nicks = enums[enumId];
+
+    return keys;
+}
+
+/** Converte valores por chave do esquema em configuração do engine. */
+function configFromKeys(values) {
+    const config = {};
+    for (const [key, name] of Object.entries(SETTINGS_KEYS)) {
+        if (key in values)
+            config[name] = values[key];
+    }
+    return config;
+}
+
+test('fase 7: superfícies novas nascem desligadas (baseline intacto)', () => {
+    const t = buildTokens({palette: ['#602011']});
+    assertEqual([t.menu.enabled, t.osd.enabled, t.dock.enabled], [false, false, false]);
+
+    const css = generateStylesheet(t);
+    for (const selector of ['.popup-menu-content', '.osd-window', '.gnomecustom-dock'])
+        assert(!css.includes(selector), `o baseline não deveria estilizar ${selector}`);
+});
+
+test('fase 7: menus, OSD e dock partem da mesma cor base da barra', () => {
+    const t = buildTokens({
+        palette: ['#294172'], styleMenus: true, styleOsd: true, styleDock: true,
+    });
+
+    assertEqual(t.dock.backgroundRgb, Color.parseHex(t.panel.backgroundHex),
+        'o dock deveria usar exatamente a cor da barra:');
+
+    // Menus e OSD ficam um passo afastados, mas próximos da base.
+    for (const surface of [t.menu.background, t.osd.background]) {
+        const [r, g, b] = /rgba\((\d+), (\d+), (\d+)/.exec(surface).slice(1).map(Number);
+        const base = Color.parseHex(t.panel.backgroundHex);
+        const distance = Math.max(Math.abs(r - base[0]), Math.abs(g - base[1]), Math.abs(b - base[2]));
+        assert(distance > 0 && distance < 40, `superfície ${surface} longe demais da base`);
+    }
+    assertEqual(t.osd.levelFill, t.accent.hex, 'a barra de nível usa o destaque:');
+    assertEqual(t.dock.dotFocused, t.accent.hex, 'o ponto focado usa o destaque:');
+});
+
+test('fase 7: texto de menus e OSD passa do contraste AA', () => {
+    for (const color of ['#602011', '#eeeeee', '#7f7f7f', '#1c71d8', '#294172', '#000000']) {
+        const t = buildTokens({palette: [color], styleMenus: true, styleOsd: true});
+        for (const [name, section] of [['menu', t.menu], ['osd', t.osd]]) {
+            const bg = /rgba\((\d+), (\d+), (\d+)/.exec(section.background).slice(1).map(Number);
+            const ratio = Color.contrastRatio(bg, Color.parseHex(section.foreground));
+            assert(ratio >= 4.5, `${name} sobre ${color}: contraste ${ratio.toFixed(2)}`);
+        }
+    }
+});
+
+test('fase 7: sem cor resolvida, menus e OSD recebem só geometria (AD-14)', () => {
+    const t = buildTokens({palette: [], styleMenus: true, styleOsd: true, styleDock: true});
+    assert(t.menu.enabled && t.menu.background === null, 'menu sem cor');
+    assertEqual(t.dock.backgroundRgb, null, 'dock sem cor:');
+
+    const css = generateStylesheet(t);
+    assert(css.includes('.popup-menu-content'), 'o raio do menu deveria sair');
+    const colorLines = css.split('\n').filter(line =>
+        /background-color|-barlevel|(^|\s)color:/.test(line) &&
+        !line.includes('#panel'));
+    assertEqual(colorLines, [], 'nenhuma cor fora da barra deveria sair:');
+});
+
+test('fase 7: OSD usa as propriedades -barlevel e o dock não emite fundo', () => {
+    const css = generateStylesheet(buildTokens({
+        palette: ['#294172'], styleOsd: true, styleDock: true,
+    }));
+    assert(css.includes('-barlevel-active-background-color'), 'barra de nível ausente');
+
+    const dockBackground = /\.gnomecustom-dock #dash \.dash-background \{([^}]*)\}/.exec(css);
+    assert(dockBackground !== null, 'bloco do fundo do dock ausente');
+    assert(!dockBackground[1].includes('background-color'),
+        'o fundo do dock é estilo próprio do ator; a folha não deve disputá-lo');
+});
+
+test('fase 7: com cor, os ícones do dock perdem o disco cinza do tema', () => {
+    const colored = generateStylesheet(buildTokens({palette: ['#294172'], styleDock: true}));
+    assert(/\.overview-tile \.overview-icon \{\s*background-color: transparent !important;/.test(colored),
+        'o disco do tema deveria ficar transparente');
+    assert(colored.includes('.overview-tile:hover .overview-icon'), 'realce de hover ausente');
+
+    const plain = generateStylesheet(buildTokens({palette: [], styleDock: true}));
+    assert(!plain.includes('.overview-icon'), 'sem cor resolvida o tema continua decidindo (AD-14)');
+});
+
+test('fase 7: barra desligada não impede menus estilizados', () => {
+    const css = generateStylesheet(buildTokens({
+        panelStyle: 'none', palette: ['#294172'], styleMenus: true,
+    }));
+    assert(css.includes('.popup-menu-content'), 'menus deveriam sair');
+    assert(!css.includes('#panel'), 'a barra não deveria sair');
+});
+
+test('fase 7: todas as superfícies ligadas continuam com !important', () => {
+    const css = generateStylesheet(buildTokens({
+        palette: ['#294172'], styleMenus: true, styleOsd: true, styleDock: true,
+    }));
+    const without = css.split('\n')
+        .filter(line => line.trim().endsWith(';') && !line.includes('!important'));
+    assertEqual(without, [], 'declarações sem !important:');
+});
+
+test('fase 7: borda do tiling segue o baseline e, vazia, o destaque', () => {
+    const baseline = buildTokens({});
+    assertEqual([baseline.tiling.border, baseline.tiling.width, baseline.tiling.radius],
+        ['#9a9996', 3, 14], 'baseline do Forge:');
+    assertEqual(baseline.tiling.followsAccent, false);
+
+    const follow = buildTokens({tilingBorderColor: '', accentColor: '#51A2DA'});
+    assertEqual(follow.tiling.border, '#51a2da');
+    assert(follow.tiling.followsAccent, 'deveria seguir o destaque');
+});
+
+test('fase 7: SETTINGS_KEYS, PRESET_KEYS e o esquema concordam', () => {
+    const schema = themeSchemaDefaults();
+    for (const key of Object.keys(SETTINGS_KEYS))
+        assert(key in schema, `chave do engine ausente no esquema: ${key}`);
+
+    for (const key of Presets.PRESET_KEYS)
+        assert(key in SETTINGS_KEYS, `chave de preset fora do engine: ${key}`);
+
+    const notInPresets = Object.keys(SETTINGS_KEYS)
+        .filter(key => !Presets.PRESET_KEYS.includes(key));
+    // A paleta é cache; notificações compactas são densidade, não aparência: um
+    // preset não deve ligá-las nem desligá-las (2026-09-16).
+    assertEqual(notInPresets, ['palette', 'compact-notifications', 'amoled-black'], 'fora dos presets:');
+
+    // Toda chave de estilo do esquema é conhecida pelo engine, exceto as que decidem
+    // qual tema é carregado (Shell e apps) e o estado interno do tema dos apps.
+    const NOT_STYLE_KEYS = ['shell-theme', 'apply-to-apps', 'app-theme-previous',
+        'app-theme-applied', 'app-theme-css', 'app-tweaks-state'];
+    const unknown = Object.keys(schema)
+        .filter(key => !(key in SETTINGS_KEYS) && !NOT_STYLE_KEYS.includes(key));
+    assertEqual(unknown, [], 'chaves do esquema que o engine ignora:');
+});
+
+test('fase 7: DEFAULT_CONFIG reproduz todos os defaults do esquema', () => {
+    const schema = themeSchemaDefaults();
+    for (const [key, name] of Object.entries(SETTINGS_KEYS)) {
+        const expected = schema[key].value;
+        const actual = DEFAULT_CONFIG[name];
+        assertEqual(typeof actual === 'string' ? actual.toLowerCase() : actual,
+            typeof expected === 'string' ? expected.toLowerCase() : expected,
+            `default de ${key}:`);
+    }
+});
+
+test('presets: o preset "default" é exatamente o esquema (e o baseline)', () => {
+    const schema = themeSchemaDefaults();
+    const preset = Presets.findPreset('default');
+    for (const key of Presets.PRESET_KEYS) {
+        const a = preset.values[key];
+        const b = schema[key].value;
+        assertEqual(typeof a === 'string' ? a.toLowerCase() : a,
+            typeof b === 'string' ? b.toLowerCase() : b, `preset default, ${key}:`);
+    }
+});
+
+test('presets: cada preset define todas as chaves com valores válidos', () => {
+    const schema = themeSchemaDefaults();
+    const ids = new Set();
+
+    for (const preset of Presets.PRESETS) {
+        assert(!ids.has(preset.id), `id repetido: ${preset.id}`);
+        ids.add(preset.id);
+
+        assertEqual(Object.keys(preset.values).sort(), [...Presets.PRESET_KEYS].sort(),
+            `chaves do preset ${preset.id}:`);
+
+        for (const [key, value] of Object.entries(preset.values)) {
+            const spec = schema[key];
+            const where = `${preset.id}.${key}`;
+            if (spec.type === 'b') {
+                assertEqual(typeof value, 'boolean', `${where} tipo:`);
+            } else if (['u', 'd', 'i'].includes(spec.type)) {
+                assertEqual(typeof value, 'number', `${where} tipo:`);
+                if (spec.type === 'u')
+                    assert(Number.isInteger(value) && value >= 0, `${where} não é uint`);
+                if (spec.min !== null)
+                    assert(value >= spec.min && value <= spec.max,
+                        `${where}=${value} fora de [${spec.min}, ${spec.max}]`);
+            } else if (spec.nicks) {
+                assert(spec.nicks.includes(value), `${where}='${value}' não é nick válido`);
+            } else {
+                assertEqual(typeof value, 'string', `${where} tipo:`);
+                if (key.endsWith('color') && value !== '')
+                    assert(Color.parseHex(value) !== null, `${where} cor inválida: ${value}`);
+            }
+        }
+    }
+    assert(!ids.has(Presets.CUSTOM_PRESET), 'nenhum preset pode usar o id reservado');
+});
+
+test('presets: matchPreset reconhece, detecta edição e ignora caixa das cores', () => {
+    const fedora = {...Presets.findPreset('fedora').values};
+    assertEqual(Presets.matchPreset(fedora), 'fedora');
+
+    assertEqual(Presets.matchPreset({...fedora, 'accent-color': '#51a2da'}), 'fedora',
+        'cor em minúsculas:');
+    assertEqual(Presets.matchPreset({...fedora, 'panel-height': 31}), Presets.CUSTOM_PRESET,
+        'um valor editado vira personalizado:');
+    assertEqual(Presets.matchPreset({}), Presets.CUSTOM_PRESET, 'valores ausentes:');
+});
+
+test('CRITÉRIO fase 7: presets alteram barra, dock, menus e OSD de forma coerente', () => {
+    for (const id of ['dark', 'minimal', 'fedora']) {
+        const t = buildTokens(configFromKeys(Presets.findPreset(id).values));
+
+        assert(t.panel.enabled && t.menu.enabled && t.osd.enabled && t.dock.enabled,
+            `${id}: as quatro superfícies deveriam estar ligadas`);
+        assert(t.panel.background && t.menu.background && t.osd.background,
+            `${id}: todas deveriam ter cor resolvida`);
+        assertEqual(t.dock.backgroundRgb, Color.parseHex(t.panel.backgroundHex),
+            `${id}: dock e barra com a mesma base:`);
+
+        // Mesmo destaque em todo lugar onde ele aparece.
+        const accentUses = [t.osd.levelFill, t.dock.dotFocused];
+        assert(accentUses.every(hex => hex === t.accent.hex), `${id}: destaque divergente`);
+
+        // Legibilidade em cada superfície.
+        const ratio = (bg, fg) => Color.contrastRatio(
+            typeof bg === 'string' && bg.startsWith('#') ? Color.parseHex(bg)
+                : /rgba\((\d+), (\d+), (\d+)/.exec(bg).slice(1).map(Number),
+            Color.parseHex(fg));
+        assert(ratio(t.panel.backgroundHex, t.panel.foreground) >= 4.5, `${id}: barra ilegível`);
+        assert(ratio(t.menu.background, t.menu.foreground) >= 4.5, `${id}: menu ilegível`);
+        assert(ratio(t.osd.background, t.osd.foreground) >= 4.5, `${id}: OSD ilegível`);
+
+        const css = generateStylesheet(t);
+        for (const selector of ['#panel {', '.popup-menu-content', '.osd-window', '.gnomecustom-dock-dot'])
+            assert(css.includes(selector), `${id}: ${selector} ausente no CSS`);
+    }
+
+    // E o preset Adwaita devolve tudo ao tema: nada é gerado.
+    const adwaita = buildTokens(configFromKeys(Presets.findPreset('adwaita').values));
+    assertEqual(generateStylesheet(adwaita), '', 'Adwaita não deveria gerar CSS:');
+});
+
+// ----------------------------------------------------------------- estilo
+
+test('style: publicar, observar, retirar e isolar falha de observador', () => {
+    const service = new StyleService({logger: new Logger({level: 'silent', sink: new FakeSink()})});
+    const seen = [];
+    service.onChanged(() => {
+        throw new Error('observador quebrado');
+    });
+    const unsubscribe = service.onChanged(tokens => seen.push(tokens));
+
+    assertEqual(service.tokens, null, 'começa vazio:');
+    service.publish({dock: {backgroundRgb: [1, 2, 3]}});
+    assertEqual(service.tokens.dock.backgroundRgb, [1, 2, 3]);
+
+    service.clear();
+    assertEqual(service.tokens, null, 'após clear:');
+    service.clear();
+    assertEqual(seen.length, 2, 'clear repetido não notifica de novo:');
+
+    unsubscribe();
+    service.publish({});
+    assertEqual(seen.length, 2, 'observador removido:');
+    service.destroy();
+});
+
+// ------------------------------------------------------------- papel de parede
+
+function makeWallpaper() {
+    const background = new FakeSettings({
+        'picture-uri': 'file:///fake/a.png', 'picture-uri-dark': 'file:///fake/a.png',
+    });
+    const iface = new FakeSettings({'color-scheme': 'prefer-dark'});
+    const service = new WallpaperService({
+        logger: new Logger({level: 'silent', sink: new FakeSink()}),
+        backgroundSettings: background,
+        interfaceSettings: iface,
+    });
+    return {service, background, iface};
+}
+
+test('papel de parede: rajada de mudanças agenda uma única extração', () => {
+    const {service, background} = makeWallpaper();
+
+    for (let i = 0; i < 5; i++)
+        background.set('picture-uri-dark', `file:///fake/${i}.png`);
+
+    assertEqual(service._signals.pending.sources, 1, 'temporizadores pendentes:');
+    service.destroy();
+    assertEqual(background.handlerCount, 0, 'sinais após destroy:');
+});
+
+test('papel de parede: troca durante a extração não é descartada', async () => {
+    const {service} = makeWallpaper();
+
+    // Extração controlada: só termina quando o teste manda.
+    let finish;
+    service._samplePixels = () => new Promise(resolve => {
+        finish = () => resolve([[200, 30, 40], [10, 10, 10], [200, 30, 40]]);
+    });
+    let rescheduled = 0;
+    service._schedule = () => rescheduled++;
+
+    const first = service.extract({force: true});
+
+    // Pedido que chega no meio da primeira extração.
+    await service.extract({force: true});
+    assertEqual(rescheduled, 0, 'ainda não deveria reagendar:');
+
+    finish();
+    const palette = await first;
+    assert(palette.length > 0, 'a primeira extração deveria produzir paleta');
+    assertEqual(rescheduled, 1, 'o pedido do meio deveria virar uma nova rodada:');
+    service.destroy();
+});
+
+test('papel de parede: extração sem mudanças não roda de novo', async () => {
+    const {service} = makeWallpaper();
+    let calls = 0;
+    service._samplePixels = () => {
+        calls++;
+        return Promise.resolve([[120, 60, 30]]);
+    };
+
+    await service.extract({force: true});
+    await service.extract();
+
+    assertEqual(calls, 1, 'a mesma URI não deveria ser relida:');
+    service.destroy();
+});
+
+// ------------------------------------------------------------ tiling: árvore
+
+const K = '0:0';
+
+/** Árvore com as janelas inseridas em sequência, cada uma depois da anterior. */
+function treeWith(...ids) {
+    const tree = new TilingTree();
+    let previous = null;
+    for (const id of ids) {
+        tree.insert(id, K, {after: previous});
+        previous = id;
+    }
+    return tree;
+}
+
+test('árvore: inserir segue a janela de referência e cai no fim sem ela', () => {
+    const tree = treeWith(1, 2, 3);
+    assertEqual(tree.describe(K), 'h[1 2 3]');
+
+    tree.insert(4, K, {after: 1});
+    assertEqual(tree.describe(K), 'h[1 4 2 3]', 'depois da janela 1:');
+
+    tree.insert(5, K);
+    assertEqual(tree.describe(K), 'h[1 4 2 3 5]', 'sem referência vai para o fim:');
+
+    assertEqual(tree.insert(5, K), false, 'id repetido é recusado:');
+    assertEqual(tree.size, 5);
+});
+
+test('árvore: split com uma janela só muda a orientação; com várias, aninha', () => {
+    const tree = treeWith(1);
+    tree.split(1, 'v');
+    assertEqual(tree.describe(K), 'v[1]', 'única janela:');
+
+    tree.insert(2, K, {after: 1});
+    assertEqual(tree.describe(K), 'v[1 2]');
+
+    tree.split(2, 'h');
+    tree.insert(3, K, {after: 2});
+    assertEqual(tree.describe(K), 'v[1 h[2 3]]', 'a janela nova entra na divisão pedida:');
+});
+
+test('árvore: remover achata contêineres de um filho só', () => {
+    const tree = treeWith(1, 2);
+    tree.split(2, 'v');
+    tree.insert(3, K, {after: 2});
+    assertEqual(tree.describe(K), 'h[1 v[2 3]]');
+
+    tree.remove(3);
+    assertEqual(tree.describe(K), 'h[1 2]', 'contêiner com um filho some:');
+
+    tree.remove(1);
+    tree.remove(2);
+    assertEqual(tree.describe(K), 'h[]', 'a raiz fica, vazia:');
+    assertEqual(tree.remove(99), false, 'id desconhecido:');
+});
+
+test('árvore: raiz com um único contêiner herda a orientação dele', () => {
+    const tree = treeWith(1, 2);
+    tree.split(2, 'v');
+    tree.insert(3, K, {after: 2});   // h[1 v[2 3]]
+    tree.remove(1);
+    assertEqual(tree.describe(K), 'v[2 3]');
+});
+
+test('árvore: vizinho por direção em layout aninhado', () => {
+    const tree = treeWith(1, 2);
+    tree.split(2, 'v');
+    tree.insert(3, K, {after: 2});   // h[1 v[2 3]]
+
+    assertEqual(tree.neighbor(1, 'right'), 2, '1 → direita:');
+    assertEqual(tree.neighbor(3, 'left'), 1, '3 → esquerda sobe até a raiz:');
+    assertEqual(tree.neighbor(2, 'down'), 3);
+    assertEqual(tree.neighbor(3, 'up'), 2);
+    assertEqual(tree.neighbor(1, 'up'), null, 'borda:');
+    assertEqual(tree.neighbor(2, 'right'), null, 'borda direita:');
+});
+
+test('árvore: vizinho prefere a janela usada mais recentemente', () => {
+    const tree = treeWith(1, 2);
+    tree.split(2, 'v');
+    tree.insert(3, K, {after: 2});   // h[1 v[2 3]]
+
+    assertEqual(tree.neighbor(1, 'right'), 2, 'sem histórico, a primeira:');
+    assertEqual(tree.neighbor(1, 'right', {recent: [3, 2]}), 3, 'com histórico, a mais recente:');
+});
+
+test('árvore: vizinho pula janelas que não podem receber foco', () => {
+    const tree = treeWith(1, 2, 3);   // h[1 2 3]
+    const notTwo = id => id !== 2;
+    assertEqual(tree.neighbor(1, 'right', {usable: notTwo}), 3, 'passa por cima da 2:');
+    assertEqual(tree.neighbor(3, 'left', {usable: notTwo, recent: [2]}), 1, 'histórico não traz a 2:');
+    assertEqual(tree.neighbor(1, 'right', {usable: id => id === 1}), null, 'nenhuma serve: borda:');
+
+    tree.split(3, 'v');
+    tree.insert(4, K, {after: 3});    // h[1 2 v[3 4]]
+    assertEqual(tree.neighbor(1, 'right', {usable: id => id === 4}), 4, 'desce até a utilizável:');
+});
+
+test('árvore: swap troca lugares e tamanhos', () => {
+    const tree = treeWith(1, 2);
+    tree.split(2, 'v');
+    tree.insert(3, K, {after: 2});   // h[1 v[2 3]]
+    tree.leaf(1).weight = 3;
+
+    assert(tree.swap(1, 3), 'swap deveria funcionar');
+    assertEqual(tree.describe(K), 'h[3 v[2 1]]');
+    assertEqual([tree.leaf(3).weight, tree.leaf(1).weight], [3, 1], 'pesos acompanham o lugar:');
+    assertEqual(tree.swap(1, 1), false, 'consigo mesma:');
+});
+
+test('árvore: mover troca com a vizinha e entra em contêineres', () => {
+    const tree = treeWith(1, 2, 3);
+    assertEqual(tree.move(1, 'right'), {moved: true, edge: false});
+    assertEqual(tree.describe(K), 'h[2 1 3]', 'troca com a vizinha:');
+
+    tree.split(3, 'v');
+    tree.insert(4, K, {after: 3});   // h[2 1 v[3 4]]
+    tree.move(1, 'right');
+    assertEqual(tree.describe(K), 'h[2 v[1 3 4]]', 'entra no contêiner pela ponta de onde veio:');
+});
+
+test('árvore: mover sai do contêiner perpendicular', () => {
+    const tree = treeWith(1, 2);
+    tree.split(2, 'v');
+    tree.insert(3, K, {after: 2});   // h[1 v[2 3]]
+
+    tree.move(3, 'right');
+    assertEqual(tree.describe(K), 'h[1 2 3]', 'sai pela direita:');
+
+    const other = treeWith(1, 2);
+    other.split(2, 'v');
+    other.insert(3, K, {after: 2});  // h[1 v[2 3]]
+    other.move(2, 'left');
+    assertEqual(other.describe(K), 'h[1 2 3]', 'sai pela esquerda, ficando ao lado do ramo:');
+});
+
+test('árvore: mover na ponta de raiz perpendicular envolve a raiz', () => {
+    const tree = treeWith(1, 2);
+    tree.split(1, 'v');              // raiz com uma janela vira v… depois 2 entra
+    const fresh = new TilingTree();
+    fresh.insert(1, K);
+    fresh.split(1, 'v');
+    fresh.insert(2, K, {after: 1});  // v[1 2]
+
+    assertEqual(fresh.move(2, 'right'), {moved: true, edge: false});
+    assertEqual(fresh.describe(K), 'h[1 2]', 'a janela vai para o lado:');
+
+    void tree;
+});
+
+test('árvore: borda real é reportada, e aninhamento na mesma orientação não engana', () => {
+    const tree = treeWith(1, 2);
+    assertEqual(tree.move(2, 'right'), {moved: false, edge: true}, 'ponta da raiz:');
+    assertEqual(treeWith(1).move(1, 'left'), {moved: false, edge: true}, 'janela única:');
+
+    // h[1 h[2 3]]: mover 3 para a direita não muda nada visualmente → borda.
+    const nested = treeWith(1, 2);
+    nested.split(2, 'h');
+    nested.insert(3, K, {after: 2});
+    assertEqual(nested.describe(K), 'h[1 h[2 3]]');
+    assertEqual(nested.move(3, 'right'), {moved: false, edge: true});
+    assertEqual(nested.describe(K), 'h[1 h[2 3]]', 'a árvore não deveria mudar:');
+});
+
+test('árvore: sair de contêiner aninhado não deixa contêiner vazio', () => {
+    // h[1 v[h[2] 3]]: a janela 2 está num contêiner de um filho só, dentro de v.
+    const tree = treeWith(1, 2);
+    tree.split(2, 'v');
+    tree.insert(3, K, {after: 2});   // h[1 v[2 3]]
+    tree.split(2, 'h');              // h[1 v[h[2] 3]]
+    assertEqual(tree.describe(K), 'h[1 v[h[2] 3]]');
+
+    tree.move(2, 'left');
+    assertEqual(tree.describe(K), 'h[1 2 3]', 'sem contêiner vazio nem de um filho no caminho:');
+
+    // Mesmo caso pela raiz perpendicular: v[h[1] 2] movendo 1 para a direita.
+    const root = new TilingTree();
+    root.insert(1, K);
+    root.split(1, 'v');
+    root.insert(2, K, {after: 1});   // v[1 2]
+    root.split(1, 'h');              // v[h[1] 2]
+    root.move(1, 'right');
+    assertEqual(root.describe(K), 'h[2 1]');
+});
+
+for (const seed of [7, 42, 1234, 98765]) test(`árvore: mover preserva todas as janelas (invariante, semente ${seed})`, () => {
+    runRandomInvariant(seed);
+});
+
+function runRandomInvariant(initialSeed) {
+    const tree = treeWith(1, 2, 3, 4, 5, 6);
+    const directions = ['left', 'right', 'up', 'down'];
+    let seed = initialSeed;
+    const rand = n => {
+        seed = (seed * 1103515245 + 12345) % 2147483648;
+        return seed % n;
+    };
+
+    for (let step = 0; step < 1500; step++) {
+        const id = 1 + rand(6);
+        const op = rand(4);
+        if (op === 0)
+            tree.split(id, rand(2) ? 'h' : 'v');
+        else if (op === 1)
+            tree.move(id, directions[rand(4)]);
+        else if (op === 2)
+            tree.swap(id, 1 + rand(6));
+        else
+            tree.toggleLayout(id);
+
+        const ids = tree.ids(K).sort((a, b) => a - b);
+        assertEqual(ids, [1, 2, 3, 4, 5, 6], `passo ${step}: janelas perdidas ou duplicadas:`);
+
+        // Nenhum contêiner vazio abaixo da raiz, e pais coerentes. (Contêiner de
+        // um filho só é legítimo: é o que o split deixa à espera da próxima janela.)
+        const check = (node, parent) => {
+            if (node.parent !== parent)
+                throw new Error(`passo ${step}: ponteiro de pai incoerente em ${tree.describe(K)}`);
+            if (node.kind === 'split') {
+                if (parent && node.children.length === 0)
+                    throw new Error(`passo ${step}: contêiner vazio: ${tree.describe(K)}`);
+                node.children.forEach(child => check(child, node));
+            }
+        };
+        check(tree.root(K), null);
+    }
+}
+
+test('árvore: moveToKey leva a janela para outro monitor', () => {
+    const tree = treeWith(1, 2);
+    assert(tree.moveToKey(2, '1:0'), 'deveria mover');
+    assertEqual(tree.keyOf(2), '1:0');
+    assertEqual(tree.describe(K), 'h[1]');
+    assertEqual(tree.describe('1:0'), 'h[2]');
+    assertEqual(tree.moveToKey(2, '1:0'), false, 'mesma chave:');
+});
+
+test('árvore: redimensionar passa espaço ao vizinho e respeita o mínimo', () => {
+    const tree = treeWith(1, 2);
+    const area = {x: 0, y: 0, width: 1000, height: 500};
+    let layout = computeLayout(tree, K, area);
+
+    assert(tree.resize(1, 'right', 100, layout.containers), 'deveria redimensionar');
+    layout = computeLayout(tree, K, area);
+    assertEqual([layout.windows.get(1).width, layout.windows.get(2).width], [600, 400]);
+
+    // Borda esquerda da janela 1 está na tela: o espaço vem do outro lado.
+    assert(tree.resize(1, 'left', 100, layout.containers), 'deveria usar o lado oposto');
+    layout = computeLayout(tree, K, area);
+    assertEqual(layout.windows.get(1).width, 700);
+
+    // Encolher muito para no mínimo de 10%.
+    tree.resize(1, 'right', -5000, layout.containers);
+    layout = computeLayout(tree, K, area);
+    assertEqual(layout.windows.get(1).width, 100, 'mínimo de 10% do contêiner:');
+
+    assertEqual(tree.resize(1, 'up', 50, layout.containers), false, 'sem vizinho vertical:');
+});
+
+// ----------------------------------------------------------- tiling: layout
+
+test('layout: distribuição soma exatamente o total', () => {
+    assertEqual(distribute(100, [1, 1, 1]), [34, 33, 33]);
+    assertEqual(distribute(1000, [1, 1, 1, 1, 1, 1, 1]).reduce((a, b) => a + b, 0), 1000);
+    assertEqual(distribute(10, [0, 0]), [5, 5], 'pesos inválidos viram iguais:');
+    for (const total of [1, 7, 333, 1599, 2560]) {
+        const sizes = distribute(total, [0.3, 1.7, 1, 2.2]);
+        assertEqual(sizes.reduce((a, b) => a + b, 0), total, `total ${total}:`);
+    }
+});
+
+test('layout: fórmula de gaps do Forge (2·gap entre janelas e na borda)', () => {
+    const tree = treeWith(1, 2);
+    const area = {x: 0, y: 32, width: 1600, height: 868};
+    const {windows} = computeLayout(tree, K, area, {gap: 2, smartGaps: true});
+
+    assertEqual(windows.get(1), {x: 4, y: 36, width: 794, height: 860});
+    assertEqual(windows.get(2), {x: 802, y: 36, width: 794, height: 860});
+    const between = windows.get(2).x - (windows.get(1).x + windows.get(1).width);
+    assertEqual(between, 4, 'espaço entre janelas:');
+});
+
+test('layout: janela única sem gaps, e sem a opção, com gaps', () => {
+    const tree = treeWith(1);
+    const area = {x: 0, y: 32, width: 1600, height: 868};
+    assertEqual(computeLayout(tree, K, area, {gap: 2}).windows.get(1), area, 'smart gaps:');
+    assertEqual(computeLayout(tree, K, area, {gap: 2, smartGaps: false}).windows.get(1),
+        {x: 4, y: 36, width: 1592, height: 860});
+});
+
+test('layout: janelas fora do tiling não ocupam espaço', () => {
+    const tree = treeWith(1, 2, 3);
+    const area = {x: 0, y: 0, width: 900, height: 600};
+    const {windows} = computeLayout(tree, K, area, {isTiled: id => id !== 2});
+    assertEqual(windows.has(2), false);
+    assertEqual([windows.get(1).width, windows.get(3).width], [450, 450]);
+
+    const empty = computeLayout(tree, K, area, {isTiled: () => false});
+    assertEqual(empty.windows.size, 0, 'tudo minimizado:');
+});
+
+test('layout: layout aninhado cobre a área sem sobreposição', () => {
+    const tree = treeWith(1, 2);
+    tree.split(2, 'v');
+    tree.insert(3, K, {after: 2});
+    tree.split(3, 'h');
+    tree.insert(4, K, {after: 3});  // h[1 v[2 h[3 4]]]
+    const area = {x: 10, y: 20, width: 1001, height: 777};
+    const {windows} = computeLayout(tree, K, area);
+
+    const cells = [...windows.values()];
+    assertEqual(cells.reduce((sum, r) => sum + r.width * r.height, 0), area.width * area.height,
+        'as áreas somam a área útil:');
+    for (let i = 0; i < cells.length; i++) {
+        for (let j = i + 1; j < cells.length; j++) {
+            const [a, b] = [cells[i], cells[j]];
+            const overlap = a.x < b.x + b.width && b.x < a.x + a.width &&
+                a.y < b.y + b.height && b.y < a.y + a.height;
+            assert(!overlap, `janelas ${i} e ${j} se sobrepõem`);
+        }
+    }
+});
+
+test('layout: inset não some com janelas minúsculas', () => {
+    assertEqual(inset({x: 0, y: 0, width: 3, height: 50}, 2), {x: 0, y: 0, width: 3, height: 50});
+});
+
+// ----------------------------------------------------------- tiling: regras
+
+const win = (over = {}) => ({
+    wmClass: 'org.gnome.TextEditor', title: 'Documento', type: 'normal',
+    transient: false, allowsResize: true, ...over,
+});
+
+test('regras: tipo da janela decide antes das regras', () => {
+    assert(Rules.floatsByType(win({type: 'dialog'})), 'diálogo');
+    assert(Rules.floatsByType(win({type: 'modal-dialog'})), 'diálogo modal');
+    assert(Rules.floatsByType(win({transient: true})), 'transitória');
+    assert(Rules.floatsByType(win({title: ''})), 'sem título');
+    assert(Rules.floatsByType(win({wmClass: null})), 'sem classe');
+    assert(Rules.floatsByType(win({allowsResize: false})), 'tamanho fixo');
+    assert(!Rules.floatsByType(win()), 'janela comum');
+});
+
+test('regras: semântica de correspondência do Forge', () => {
+    const splash = {wmClass: 'jetbrains-idea', wmTitle: 'splash', mode: 'float'};
+    assert(Rules.ruleMatches(splash, win({wmClass: 'jetbrains-idea', title: 'splash'})), 'título contém');
+    assert(!Rules.ruleMatches(splash, win({wmClass: 'jetbrains-idea', title: 'Projeto'})), 'título diferente');
+
+    const list = {wmClass: 'firefox', wmTitle: 'About Mozilla Firefox,Library', mode: 'float'};
+    assert(Rules.ruleMatches(list, win({wmClass: 'firefox', title: 'Library'})), 'item da lista');
+
+    const negated = {wmClass: 'code', wmTitle: '!Visual Studio Code', mode: 'float'};
+    assert(Rules.ruleMatches(negated, win({wmClass: 'code', title: 'Abrir pasta'})), 'negação casa');
+    assert(!Rules.ruleMatches(negated, win({wmClass: 'code', title: 'x - Visual Studio Code'})), 'negação não casa');
+
+    const space = {wmClass: 'zoom', wmTitle: ' ', mode: 'float'};
+    assert(Rules.ruleMatches(space, win({wmClass: 'zoom', title: ' '})), 'título espaço');
+    assert(!Rules.ruleMatches(space, win({wmClass: 'zoom', title: 'Reunião'})), 'espaço é exato');
+
+    // A classe da regra *contém* a classe da janela (comportamento do Forge).
+    assert(Rules.ruleMatches({wmClass: 'org.gnome.Calculator', mode: 'float'},
+        win({wmClass: 'org.gnome.Calculator'})), 'classe exata');
+});
+
+test('regras: as padrão são as 28 do Forge, sem nenhum wmId', () => {
+    const file = Gio.File.new_for_path(GLib.build_filenamev([GLib.get_current_dir(),
+        'reference', 'forge', 'config', 'windows.json']));
+    if (!file.query_exists(null)) {
+        print('        (reference/forge ausente: comparação com o Forge ignorada)');
+    } else {
+        const forge = JSON.parse(new TextDecoder().decode(file.load_contents(null)[1])).overrides;
+        assertEqual(Rules.DEFAULT_RULES.map(r => [r.wmClass, r.wmTitle ?? null]),
+            forge.map(r => [r.wmClass, r.wmTitle ?? null]), 'regras padrão:');
+    }
+    assertEqual(Rules.DEFAULT_RULES.length, 28);
+    assert(Rules.DEFAULT_RULES.every(r => !('wmId' in r)), 'nenhuma regra por id');
+});
+
+test('regras: ler descarta wmId, aceita o formato do Forge e rejeita lixo', () => {
+    const forgeFormat = JSON.stringify({overrides: [
+        {wmClass: 'org.gnome.Calculator', mode: 'float'},
+        {wmClass: 'google-chrome', wmId: 2694494745, mode: 'float'},
+        {wmClass: 'org.gnome.Ptyxis', wmId: 2694494746, mode: 'float'},
+        {wmTitle: 'sem classe', mode: 'float'},
+    ]});
+    const parsed = Rules.parseRules(forgeFormat);
+    assertEqual(parsed.rules, [{wmClass: 'org.gnome.Calculator', mode: 'float'}]);
+    assertEqual([parsed.droppedById, parsed.invalid], [2, 1]);
+
+    assertEqual(Rules.parseRules('isto não é json'), {rules: [], droppedById: 0, invalid: 1});
+    assertEqual(Rules.parseRules(Rules.serializeRules([...Rules.DEFAULT_RULES])).rules.length, 28,
+        'ida e volta:');
+});
+
+test('regras: sempre-flutuar alterna por classe e nunca grava id', () => {
+    const base = [{wmClass: 'jetbrains-idea', wmTitle: 'splash', mode: 'float'}];
+
+    const on = Rules.toggleClassRule(base, 'google-chrome');
+    assertEqual(on.floating, true);
+    assertEqual(on.rules.at(-1), {wmClass: 'google-chrome', mode: 'float'});
+    assert(!Rules.serializeRules(on.rules).includes('wmId'), 'sem wmId no JSON');
+
+    const off = Rules.toggleClassRule(on.rules, 'google-chrome');
+    assertEqual([off.floating, off.rules], [false, base]);
+
+    const titled = Rules.toggleClassRule(base, 'jetbrains-idea');
+    assertEqual(titled.rules.length, 2, 'regra com título não conta como regra de classe:');
+});
+
+// --------------------------------------------------------- tiling: geometria
+
+test('geometria: snaps de 1/3 e 2/3 com gap, centro e flutuante', () => {
+    const area = {x: 0, y: 32, width: 1500, height: 868};
+    assertEqual(Geometry.snapRect(area, 'left', 1 / 3, 2), {x: 2, y: 34, width: 496, height: 864});
+    assertEqual(Geometry.snapRect(area, 'right', 2 / 3, 0), {x: 500, y: 32, width: 1000, height: 868});
+    assertThrows(() => Geometry.snapRect(area, 'up', 0.5));
+
+    assertEqual(Geometry.centerRect(area, {x: 5, y: 5, width: 500, height: 300}),
+        {x: 500, y: 316, width: 500, height: 300});
+    assertEqual(Geometry.centerRect(area, {width: 9000, height: 9000}), area, 'limitado à área:');
+
+    assertEqual(Geometry.floatRect(area), {x: 263, y: 141, width: 975, height: 651});
+    assert(Geometry.containsPoint(area, 0, 32) && !Geometry.containsPoint(area, 1500, 32), 'contém');
+});
+
+// ------------------------------------------------ tiling: atalhos e esquema
+
+test('tiling: catálogo, esquema de atalhos e baseline do Forge concordam', () => {
+    const read = name => new TextDecoder().decode(Gio.File.new_for_path(
+        GLib.build_filenamev([GLib.get_current_dir(), ...name])).load_contents(null)[1]);
+
+    const schema = read(['gnomeCustom@gfiamoncini.com', 'schemas',
+        'org.gnome.shell.extensions.gnomecustom.tiling.keybindings.gschema.xml']);
+    const inSchema = [...schema.matchAll(/<key name="([^"]+)" type="as">\s*<default>([^<]*)<\/default>/g)]
+        .map(([, key, value]) => [key, value.replace(/&lt;/g, '<').replace(/&gt;/g, '>')]);
+    assertEqual(inSchema.map(([key]) => key), TILING_ACTIONS.map(spec => spec.key), 'chaves:');
+
+    const keys = new Set();
+    for (const spec of TILING_ACTIONS) {
+        assert(!keys.has(spec.key), `chave repetida: ${spec.key}`);
+        keys.add(spec.key);
+    }
+
+    // Baseline: todo atalho do Forge do usuário existe, com o mesmo valor —
+    // exceto "sempre flutuar", que o usuário desligou depois da captura.
+    const baseline = read(['baseline', 'dconf-ext-forge.ini']);
+    const section = baseline.slice(baseline.indexOf('[keybindings]'));
+    const forgeKeys = [...section.matchAll(/^([a-z-]+)=(\[.*\])$/gm)];
+    assertEqual(forgeKeys.length, 39, 'atalhos no baseline:');
+
+    for (const [, key, value] of forgeKeys) {
+        const spec = TILING_ACTIONS.find(s => s.key === key);
+        assert(spec, `atalho do baseline sem ação: ${key}`);
+        const baselineAccels = [...value.matchAll(/'([^']+)'/g)].map(m => m[1]);
+        if (key === 'window-toggle-always-float')
+            assertEqual(spec.accels, [], 'sempre flutuar nasce sem atalho (decisão do usuário):');
+        else
+            assertEqual(spec.accels, baselineAccels, `${key}:`);
+    }
+});
+
+test('tiling: o padrão de window-rules do esquema é o das regras padrão', () => {
+    const xml = new TextDecoder().decode(Gio.File.new_for_path(GLib.build_filenamev([
+        GLib.get_current_dir(), 'gnomeCustom@gfiamoncini.com', 'schemas',
+        'org.gnome.shell.extensions.gnomecustom.tiling.gschema.xml'])).load_contents(null)[1]);
+    const raw = /<key name="window-rules" type="s">\s*<default>'([\s\S]*?)'<\/default>/.exec(xml)[1]
+        .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/\\'/g, "'");
+    assertEqual(raw, Rules.serializeRules([...Rules.DEFAULT_RULES]));
+});
+
+// ------------------------------------------------------- tiling: geometria 2
+
+test('geometria: grabEdges decodifica os valores do Mutter 17', () => {
+    assertEqual(Geometry.grabEdges(1), {moving: true, resizing: false, keyboard: false, edges: []}, 'moving:');
+    assertEqual(Geometry.grabEdges(1025).moving, true, 'moving_unconstrained:');
+    assertEqual(Geometry.grabEdges(257), {moving: true, resizing: false, keyboard: true, edges: []}, 'keyboard_moving:');
+    assertEqual(Geometry.grabEdges(8193).edges, ['right'], 'resizing_e:');
+    assertEqual(Geometry.grabEdges(36865).edges, ['up', 'left'], 'resizing_nw:');
+    assertEqual(Geometry.grabEdges(24577).edges, ['down', 'right'], 'resizing_se:');
+    assertEqual(Geometry.grabEdges(8449), {moving: false, resizing: true, keyboard: true, edges: ['right']}, 'keyboard_resizing_e:');
+    assertEqual(Geometry.grabEdges(769).resizing, true, 'keyboard_resizing_unknown:');
+    assertEqual(Geometry.grabEdges(0), {moving: false, resizing: false, keyboard: false, edges: []}, 'none:');
+});
+
+test('geometria: deslocamento de bordas, borda de foco e vizinho geométrico', () => {
+    const before = {x: 100, y: 100, width: 400, height: 300};
+    assertEqual(Geometry.edgeDeltas(before, {x: 80, y: 100, width: 460, height: 300}, ['left', 'right']),
+        {left: 20, right: 40});
+    assertEqual(Geometry.edgeDeltas(before, before, ['up']), {}, 'sem mudança:');
+
+    const frame = {x: 100, y: 100, width: 400, height: 300};
+    assertEqual(Geometry.borderRect(frame, 3, 2), {x: 97, y: 97, width: 406, height: 306, outset: 3}, 'no gap:');
+    assertEqual(Geometry.borderRect(frame, 3, 0), {...frame, outset: 0}, 'sem gap, por dentro:');
+    assertEqual(Geometry.borderRect(frame, 8, 1), {x: 98, y: 98, width: 404, height: 304, outset: 2}, 'limitada a 2·gap:');
+
+    // Arco interno = raio do canto da janela (antes: raio − espessura, e sobrava uma cunha).
+    assertEqual(Geometry.borderRadius(12, 3), 15, 'borda de 3 px fora do quadro:');
+    assertEqual(Geometry.borderRadius(12, 0), 12, 'sem gap, a borda fica sobre a janela:');
+    assertEqual(Geometry.borderRadius(-4, 3), 3);
+
+    const from = {x: 400, y: 400, width: 100, height: 100};
+    const candidates = [
+        {id: 1, rect: {x: 700, y: 400, width: 100, height: 100}},   // direita, alinhada
+        {id: 2, rect: {x: 600, y: 800, width: 100, height: 100}},   // direita, bem abaixo
+        {id: 3, rect: {x: 100, y: 400, width: 100, height: 100}},   // esquerda
+    ];
+    assertEqual(Geometry.nearestInDirection(from, candidates, 'right'), 1, 'prefere alinhada:');
+    assertEqual(Geometry.nearestInDirection(from, candidates, 'left'), 3);
+    assertEqual(Geometry.nearestInDirection(from, candidates, 'up'), null, 'nada acima:');
+});
+
+test('atalhos do mosaico: setas para redimensionar, manter acima e abrir as prefs', () => {
+    const by = key => TILING_ACTIONS.find(spec => spec.key === key);
+    assertEqual(by('window-grow-right').accels, ['<Shift><Control><Super>Right']);
+    assertEqual(by('window-grow-right').action, {type: 'resize', edge: 'right', sign: 1},
+        'seta cresce naquela direção:');
+    assertEqual(by('window-toggle-above').accels, ['<Super>t']);
+    assertEqual(by('prefs-open').accels, ['<Control><Super>s']);
+
+    // Nenhum atalho nosso repete outro nosso (mosaico + mídia).
+    const ours = TILING_ACTIONS.map(spec => ({key: spec.key, accels: spec.accels}));
+    const duplicated = [];
+    const seen = new Map();
+    for (const {key, accels} of ours) {
+        for (const accel of accels) {
+            const canonical = normalizeAccel(accel);
+            if (seen.has(canonical))
+                duplicated.push(`${accel}: ${seen.get(canonical)} e ${key}`);
+            seen.set(canonical, key);
+        }
+    }
+    assertEqual(duplicated, [], 'atalhos repetidos entre si:');
+    for (const {key} of Mpris.MEDIA_ACTIONS) {
+        const accel = {'shortcut-play-pause': 'Up', 'shortcut-next': 'Right', 'shortcut-previous': 'Left'}[key];
+        assert(!seen.has(normalizeAccel(`<Control><Alt><Super>${accel}`)), `mídia colide: ${key}`);
+    }
+});
+
+test('atalhos: forma canônica e colisões com o sistema', () => {
+    assertEqual(normalizeAccel('<Super>V'), '<super>v');
+    assertEqual(normalizeAccel('<Shift><Control><Super>i'), normalizeAccel('<Super><Primary><Shift>I'));
+
+    const collisions = findCollisions(
+        [{key: 'con-split-vertical', accels: ['<Super>v']}, {key: 'window-focus-left', accels: ['<Super>Left']}],
+        [{schema: 'org.gnome.shell.keybindings', key: 'toggle-message-tray', accels: ['<Super>v', '<Super>m']}]);
+    assertEqual(collisions, [{accel: '<Super>v', ours: 'con-split-vertical',
+        schema: 'org.gnome.shell.keybindings', theirs: 'toggle-message-tray'}]);
+});
+
+// ---------------------------------------------------- tiling: controlador
+
+/**
+ * Controlador sobre o sistema falso. As gravações pedidas voltam por
+ * `setConfig` na mesma pilha, como acontece com o GSettings no Shell.
+ */
+function makeTiling({monitors, workspaces, config = {}} = {}) {
+    const ws = new FakeWindowSystem({monitors, workspaces});
+    const requests = [];
+    let renders = 0;
+    const toConfig = {
+        'tiling-mode': 'tilingMode', 'focus-border': 'focusBorder',
+        'gap-increment': 'gapIncrement', 'skip-workspaces': 'skipWorkspaces', 'window-rules': 'rules',
+    };
+    const controller = new TilingController({
+        windows: ws,
+        logger: new Logger({level: 'silent', sink: new FakeSink()}),
+        requestRender: () => renders++,
+        onRequestSetting: (key, value) => {
+            requests.push([key, value]);
+            controller.setConfig({[toConfig[key]]: value});
+        },
+    });
+    controller.setConfig({rules: [...Rules.DEFAULT_RULES], ...config});
+    return {ws, controller, requests, renders: () => renders};
+}
+
+const rectOf = (ws, id) => ws.frameRect(id);
+
+test('controlador: split seguido de janela nova abre dentro da divisão', () => {
+    // O bug visto no Shell era o adaptador descartar o foco de janelas ainda não
+    // prontas; isso é conferido ao vivo. Aqui fica o contrato do controlador.
+
+    const {ws, controller} = makeTiling();
+    const a = ws.add();
+    const b = ws.add();
+    controller.start();
+
+    // Como no Shell: o foco chega na janela nova antes de ela ser adicionada.
+    const c = ws.add();
+    ws.focused = c;
+    controller.focusChanged(c);
+    controller.windowAdded(c);
+    controller.run({type: 'split', orientation: 'v'});
+
+    const d = ws.add();
+    ws.focused = d;
+    controller.focusChanged(d);
+    controller.windowAdded(d);
+
+    assertEqual(controller.tree.describe('0:0'), `h[${a} ${b} v[${c} ${d}]]`);
+});
+
+test('controlador: não repete o pedido enquanto o cliente não confirma o tamanho', () => {
+    const {ws, controller} = makeTiling();
+    const a = ws.add();
+    const b = ws.add();
+    ws.deferConfigure = true;
+    controller.start();
+
+    assertEqual(controller.render(), 2, 'primeiro layout pede as duas:');
+    assertEqual(controller.render(), 0, 'antes da confirmação, não pede de novo:');
+
+    ws.configureAll();
+    assertEqual(controller.render(), 0, 'confirmado, nada a fazer:');
+
+    // Movida por fora (estado mudou): o layout precisa repor, mesmo retângulo.
+    ws.deferConfigure = false;
+    ws.windows.get(a).rect = {x: 0, y: 0, width: 10, height: 10};
+    controller.windowChanged(a, 'maximized');
+    assertEqual(controller.render(), 1, 'depois de mudança externa, repõe:');
+    void b;
+});
+
+test('controlador: adota as janelas em ordem visual e aplica os gaps do baseline', () => {
+    const {ws, controller} = makeTiling();
+    const right = ws.add({rect: {x: 900, y: 50, width: 300, height: 300}});
+    const left = ws.add({rect: {x: 50, y: 50, width: 300, height: 300}});
+    ws.focused = right;
+
+    controller.start();
+    controller.render();
+
+    assertEqual(controller.tree.ids('0:0'), [left, right], 'ordem visual:');
+    assertEqual(rectOf(ws, left), {x: 4, y: 36, width: 794, height: 860});
+    assertEqual(rectOf(ws, right), {x: 802, y: 36, width: 794, height: 860});
+    assertEqual(controller.render(), 0, 'segundo render não move nada:');
+});
+
+test('controlador: janela nova entra depois da usada antes dela', () => {
+    const {ws, controller} = makeTiling();
+    const a = ws.add();
+    const b = ws.add();
+    const c = ws.add();
+    controller.start();
+    controller.focusChanged(a);
+
+    const d = ws.add();
+    ws.focused = d;               // o foco já passou para a janela nova
+    controller.focusChanged(d);
+    controller.windowAdded(d);
+
+    assertEqual(controller.tree.ids('0:0'), [a, d, b, c]);
+});
+
+test('controlador: diálogos, regras e skip-taskbar ficam fora da árvore', () => {
+    const {ws, controller} = makeTiling();
+    const normal = ws.add();
+    const dialog = ws.add({type: 'dialog'});
+    const calculator = ws.add({wmClass: 'org.gnome.Calculator'});
+    const splash = ws.add({wmClass: 'jetbrains-idea', title: 'splash'});
+    const hidden = ws.add({skipTaskbar: true});
+    controller.start();
+
+    assertEqual(controller.tree.ids('0:0'), [normal]);
+    for (const id of [dialog, calculator, splash, hidden])
+        assert(!controller.isTiled(id), `janela ${id} não deveria estar na árvore`);
+});
+
+test('controlador: flutuar por janela é só memória, centraliza e fica no topo', () => {
+    const {ws, controller, requests} = makeTiling();
+    const a = ws.add();
+    const b = ws.add();
+    controller.start();
+    controller.render();
+    ws.focused = b;
+
+    assert(controller.run({type: 'float-toggle'}), 'deveria flutuar');
+    assert(!controller.isTiled(b) && controller.isFloating(b));
+    assertEqual(rectOf(ws, b), Geometry.floatRect(ws.workArea(0)), 'centralizada 65×75%:');
+    assert(ws.above.has(b), 'sempre no topo');
+    controller.render();
+    assertEqual(rectOf(ws, a), ws.workArea(0), 'a outra ocupa tudo, sem gaps:');
+    // Borda de foco: a solta tem espaço em volta (por fora); a única lado a lado, não.
+    assertEqual(Geometry.borderRect(rectOf(ws, b), 3, controller.borderSpaceFor(b)).outset, 3, 'flutuante: borda por fora:');
+    assertEqual(controller.borderSpaceFor(a), 0, 'janela única sem gap:');
+
+    assert(controller.run({type: 'float-toggle'}), 'deveria voltar');
+    assert(controller.isTiled(b) && !ws.above.has(b), 'volta ao tiling e sai do topo');
+    assertEqual(requests, [], 'flutuar por janela nunca grava configuração:');
+});
+
+test('controlador: sempre-flutuar grava regra de classe e centraliza (regressão de ordem)', () => {
+    const {ws, controller, requests} = makeTiling();
+    ws.add();
+    const chrome = ws.add({wmClass: 'google-chrome'});
+    controller.start();
+    controller.render();
+    ws.focused = chrome;
+
+    controller.run({type: 'float-class-toggle'});
+
+    assertEqual(requests.length, 1);
+    const [key, rules] = requests[0];
+    assertEqual(key, 'window-rules');
+    assertEqual(rules.at(-1), {wmClass: 'google-chrome', mode: 'float'});
+    assert(!JSON.stringify(rules).includes('wmId'), 'sem wmId');
+    assert(!controller.isTiled(chrome), 'a regra tirou a janela da árvore');
+    assertEqual(rectOf(ws, chrome), Geometry.floatRect(ws.workArea(0)),
+        'centralizada mesmo com a regra voltando na mesma pilha:');
+
+    controller.run({type: 'float-class-toggle'});
+    assert(controller.isTiled(chrome), 'desligar a regra devolve ao tiling');
+    assert(!ws.above.has(chrome), 'e tira do topo');
+});
+
+test('controlador: quem flutua sozinho (diálogo, regra) também fica no topo, como no Forge', () => {
+    const {ws, controller} = makeTiling();
+    const editor = ws.add();
+    const prefs = ws.add({type: 'modal-dialog', wmClass: 'org.gnome.Shell.Extensions'});
+    const calc = ws.add({wmClass: 'org.gnome.Calculator'});
+    controller.setConfig({rules: [{wmClass: 'org.gnome.Calculator', mode: 'float'}]});
+    controller.start();
+    controller.render();
+
+    assert(controller.isTiled(editor) && !ws.above.has(editor), 'a janela do tiling não sobe');
+    assert(ws.above.has(prefs), 'diálogo flutua e fica no topo');
+    assert(ws.above.has(calc), 'janela de regra fica no topo');
+
+    controller.setConfig({floatOnTop: false});
+    assert(!ws.above.has(prefs) && !ws.above.has(calc), 'desligar a opção tira do topo');
+    controller.setConfig({floatOnTop: true});
+    assert(ws.above.has(prefs), 'religar devolve');
+
+    controller.setConfig({rules: []});
+    assert(controller.isTiled(calc) && !ws.above.has(calc), 'sem a regra, volta ao tiling e sai do topo');
+
+    controller.stop();
+    assert(!ws.above.has(prefs), 'parar desfaz tudo');
+});
+
+test('controlador: foco por direção na árvore, entre monitores e a partir de flutuante', () => {
+    const {ws, controller} = makeTiling({monitors: [{width: 1600, height: 900}, {width: 1280, height: 720}]});
+    const a = ws.add();
+    const b = ws.add();
+    const c = ws.add({monitor: 1});
+    controller.start();
+    controller.render();
+
+    ws.focused = a;
+    controller.run({type: 'focus', direction: 'right'});
+    assertEqual(ws.focused, b, 'vizinha na árvore:');
+
+    controller.run({type: 'focus', direction: 'right'});
+    assertEqual(ws.focused, c, 'borda → monitor vizinho:');
+
+    controller.run({type: 'focus', direction: 'left'});
+    assertEqual(ws.focused, b, 'e de volta, pela mais recente:');
+
+    const floater = ws.add({type: 'dialog', rect: {x: 50, y: 300, width: 200, height: 200}});
+    controller.windowAdded(floater);
+    ws.focused = floater;
+    assert(controller.run({type: 'focus', direction: 'right'}), 'flutuante usa geometria');
+    assert([a, b].includes(ws.focused), 'focou uma janela à direita');
+});
+
+test('controlador: manter acima alterna, e o Super+T solta o que já estava acima', () => {
+    const {ws, controller} = makeTiling();
+    const a = ws.add();
+    controller.start();
+    controller.render();
+    ws.focused = a;
+
+    assert(controller.run({type: 'above-toggle'}), 'deveria agir');
+    assert(ws.above.has(a), 'prendeu acima');
+    controller.run({type: 'above-toggle'});
+    assert(!ws.above.has(a), 'soltou');
+
+    // Janela posta acima por fora (pelo próprio GNOME): o atalho também solta.
+    ws.setAbove(a, true);
+    controller.run({type: 'above-toggle'});
+    assert(!ws.above.has(a), 'soltou o que não fomos nós que prendemos');
+});
+
+test('controlador: foco por direção não restaura janela minimizada', () => {
+    const {ws, controller} = makeTiling();
+    const a = ws.add();
+    const b = ws.add();
+    const c = ws.add();
+    controller.start();
+    controller.render();
+
+    ws.set(b, {minimized: true});
+    controller.windowChanged(b, 'minimized');
+    ws.focused = a;
+    assert(controller.run({type: 'focus', direction: 'right'}), 'deveria achar a de depois');
+    assertEqual(ws.focused, c, 'pulou a minimizada:');
+    assert(ws.describe(b).minimized, 'a minimizada continua minimizada');
+
+    ws.set(c, {minimized: true});
+    controller.windowChanged(c, 'minimized');
+    ws.focused = a;
+    assertEqual(controller.run({type: 'focus', direction: 'right'}), false, 'só minimizadas: nada:');
+});
+
+test('controlador: mover na borda leva a janela ao monitor vizinho', () => {
+    const {ws, controller} = makeTiling({monitors: [{width: 1600, height: 900}, {width: 1280, height: 720}]});
+    const a = ws.add();
+    const b = ws.add();
+    const c = ws.add({monitor: 1, workspace: -1});   // monitor secundário: "em todas"
+    controller.start();
+    controller.render();
+    ws.focused = b;
+
+    assert(controller.run({type: 'move', direction: 'right'}), 'deveria ir para o outro monitor');
+    assertEqual(controller.tree.keyOf(b), '1:*', 'entra na chave que já existe ali:');
+    controller.render();
+    assertEqual(ws.describe(b).monitor, 1);
+    assertEqual(rectOf(ws, a), ws.workArea(0), 'a que ficou ocupa o monitor:');
+    assertEqual(controller.tree.ids('1:*'), [c, b]);
+});
+
+test('controlador: swap por direção e com a janela anterior', () => {
+    const {ws, controller} = makeTiling();
+    const a = ws.add();
+    const b = ws.add();
+    const c = ws.add();
+    controller.start();
+
+    ws.focused = a;
+    controller.run({type: 'swap', direction: 'right'});
+    assertEqual(controller.tree.ids('0:0'), [b, a, c]);
+
+    controller.focusChanged(c);
+    controller.focusChanged(a);
+    ws.focused = a;
+    controller.run({type: 'swap-last'});
+    assertEqual(controller.tree.ids('0:0'), [b, c, a], 'troca com a usada antes:');
+});
+
+test('controlador: maximizada (inclusive pelo auto-maximize do Mutter) volta ao tiling', () => {
+    const {ws, controller} = makeTiling();
+    const a = ws.add();
+    const b = ws.add({maximized: true, rect: ws.workArea(0)});
+    controller.start();
+    controller.render();
+
+    assert(!ws.describe(b).maximized, 'o layout desmaximiza');
+    assertEqual([rectOf(ws, a).width, rectOf(ws, b).width], [794, 794], 'e divide o espaço:');
+
+    ws.set(b, {maximized: true});
+    ws.windows.get(b).rect = ws.workArea(0);
+    controller.windowChanged(b, 'maximized');
+    controller.render();
+    assertEqual(rectOf(ws, b).width, 794, 'maximizar uma janela em tiling é desfeito, como no Forge:');
+});
+
+test('controlador: minimizada e tela cheia guardam o lugar sem ocupar espaço', () => {
+    const {ws, controller} = makeTiling();
+    const a = ws.add();
+    const b = ws.add();
+    controller.start();
+    controller.render();
+
+    for (const state of ['minimized', 'fullscreen']) {
+        ws.set(b, {[state]: true});
+        controller.windowChanged(b, state);
+        controller.render();
+        assertEqual(rectOf(ws, a), ws.workArea(0), `${state}: a outra ocupa tudo:`);
+        assert(controller.isTiled(b), `${state}: continua na árvore`);
+
+        ws.set(b, {[state]: false});
+        controller.windowChanged(b, state);
+        controller.render();
+        assertEqual(rectOf(ws, a).width, 794, `${state}: volta a dividir:`);
+    }
+});
+
+test('controlador: só a área de trabalho ativa é renderizada, e dá para pular uma', () => {
+    const {ws, controller, requests} = makeTiling({workspaces: 2});
+    const a = ws.add({workspace: 0});
+    const b = ws.add({workspace: 1, rect: {x: 5, y: 5, width: 100, height: 100}});
+    controller.start();
+    controller.render();
+
+    assertEqual(rectOf(ws, b), {x: 5, y: 5, width: 100, height: 100}, 'área inativa intocada:');
+
+    ws.active = 1;
+    controller.workspaceSwitched();
+    controller.render();
+    assertEqual(rectOf(ws, b), ws.workArea(0), 'ao trocar, é renderizada:');
+
+    controller.run({type: 'workspace-toggle'});
+    assertEqual(requests.at(-1), ['skip-workspaces', [1]], 'valor explícito:');
+    assert(!controller.isTiled(b) && controller.isTiled(a), 'só a área pulada solta as janelas');
+
+    controller.run({type: 'workspace-toggle'});
+    assertEqual(requests.at(-1), ['skip-workspaces', []]);
+    assert(controller.isTiled(b), 'volta');
+});
+
+test('controlador: desligar o tiling solta tudo e desfaz o "no topo"', () => {
+    const {ws, controller, requests} = makeTiling();
+    const a = ws.add();
+    const b = ws.add();
+    controller.start();
+    ws.focused = b;
+    controller.run({type: 'float-toggle'});
+    assert(ws.above.has(b));
+
+    controller.run({type: 'setting-toggle', setting: 'tiling-mode'});
+    assertEqual(requests.at(-1), ['tiling-mode', false], 'valor explícito, não "alternar":');
+    assertEqual(controller.tree.size, 0, 'nenhuma janela na árvore');
+    assert(!ws.above.has(b), 'no topo desfeito');
+
+    controller.run({type: 'setting-toggle', setting: 'tiling-mode'});
+    assertEqual(controller.tree.ids('0:0').sort(), [a, b].sort(), 'religado, readota as duas');
+});
+
+test('controlador: gaps por atalho com limites e valores explícitos', () => {
+    const {controller, requests} = makeTiling();
+    controller.start();
+    controller.run({type: 'gap', amount: 1});
+    assertEqual(requests.at(-1), ['gap-increment', 2]);
+    assertEqual(controller.gap, 4, 'tamanho × passo:');
+
+    controller.setConfig({gapIncrement: GAP_INCREMENT_MAX});
+    assertEqual(controller.run({type: 'gap', amount: 1}), false, 'no máximo não pede nada:');
+    controller.setConfig({gapIncrement: 0});
+    assertEqual(controller.run({type: 'gap', amount: -1}), false, 'no zero também:');
+});
+
+test('controlador: redimensionar por teclado e pelo mouse muda os pesos', () => {
+    const {ws, controller} = makeTiling({config: {gapSize: 0}});
+    const a = ws.add();
+    const b = ws.add();
+    controller.start();
+    controller.render();
+    ws.focused = a;
+
+    controller.run({type: 'resize', edge: 'right', sign: 1});
+    controller.render();
+    assertEqual([rectOf(ws, a).width, rectOf(ws, b).width], [815, 785], 'resize-amount 15:');
+
+    // Arrasto da borda direita de `a` com o mouse (resizing_e = 8193).
+    controller.grabBegin(a, 8193);
+    ws.moveResize(a, {...rectOf(ws, a), width: rectOf(ws, a).width + 100});
+    controller.render();
+    assertEqual(rectOf(ws, a).width, 915, 'durante o arrasto o layout não briga:');
+    controller.grabEnd(a, 8193);
+    controller.render();
+    assertEqual([rectOf(ws, a).width, rectOf(ws, b).width], [915, 685], 'o arrasto vira peso:');
+});
+
+test('controlador: arrastar sobre outra janela troca; em outro monitor, muda de árvore', () => {
+    const {ws, controller} = makeTiling({monitors: [{width: 1600, height: 900}, {width: 1280, height: 720}]});
+    const a = ws.add();
+    const b = ws.add();
+    controller.start();
+    controller.render();
+
+    controller.grabBegin(a, 1);
+    ws.pointerAt = [1200, 400];              // sobre `b`
+    controller.grabEnd(a, 1);
+    assertEqual(controller.tree.ids('0:0'), [b, a], 'troca:');
+
+    controller.grabBegin(a, 1);
+    ws.pointerAt = [2000, 300];              // monitor 1, vazio
+    controller.grabEnd(a, 1);
+    assertEqual(controller.tree.keyOf(a), '1:0', 'foi para o outro monitor:');
+
+    controller.setConfig({dragSwap: false});
+    controller.grabBegin(b, 1);
+    ws.pointerAt = [2000, 300];
+    controller.grabEnd(b, 1);
+    assertEqual(controller.tree.keyOf(b), '0:0', 'sem drag-swap, nada muda:');
+});
+
+test('controlador: snap solta só aquela janela; divisão automática segue o lado maior', () => {
+    const {ws, controller} = makeTiling();
+    const a = ws.add();
+    const b = ws.add();
+    controller.start();
+    ws.focused = b;
+
+    controller.run({type: 'snap', side: 'right', fraction: 2 / 3});
+    assertEqual(rectOf(ws, b), Geometry.snapRect(ws.workArea(0), 'right', 2 / 3, 2));
+    assert(controller.isFloating(b) && controller.isTiled(a), 'só a do snap flutua');
+
+    const auto = makeTiling({config: {autoSplit: true}});
+    const wide = auto.ws.add({rect: {x: 0, y: 0, width: 1000, height: 400}});
+    auto.controller.start();
+    auto.controller.focusChanged(wide);
+    const tall = auto.ws.add();
+    auto.controller.windowAdded(tall);
+    assertEqual(auto.controller.tree.describe('0:0'), 'h[' + wide + ' ' + tall + ']',
+        'janela única: split só muda a orientação da raiz (larga → h):');
+});
+
+test('controlador: janela fechada sai e o resto se reorganiza; stop não move nada', () => {
+    const {ws, controller} = makeTiling();
+    const a = ws.add();
+    const b = ws.add();
+    controller.start();
+    controller.render();
+
+    ws.remove(b);
+    controller.windowRemoved(b);
+    controller.render();
+    assertEqual(rectOf(ws, a), ws.workArea(0));
+
+    ws.focused = a;
+    controller.run({type: 'float-toggle'});
+    const moves = ws.moves.length;
+    controller.stop();
+    assertEqual(ws.moves.length, moves, 'stop não mexe nas janelas:');
+    assert(!ws.above.has(a), 'mas desfaz o "no topo"');
+    assertEqual(controller.run({type: 'focus', direction: 'left'}), false, 'parado não age:');
+});
+
+test('controlador: janela que muda de monitor por fora vai para a árvore certa', () => {
+    const {ws, controller} = makeTiling({monitors: [{width: 1600, height: 900}, {width: 1280, height: 720}]});
+    const a = ws.add();
+    controller.start();
+    ws.set(a, {monitor: 1});
+    controller.windowChanged(a, 'monitor');
+    assertEqual(controller.tree.keyOf(a), '1:0');
+    assertEqual(keyFor({monitor: 1, workspace: -1}), '1:*');
+});
+
+// ---------------------------------------------------------------- migração
+
+const readText = (...parts) => {
+    const file = Gio.File.new_for_path(GLib.build_filenamev([GLib.get_current_dir(), ...parts]));
+    return file.query_exists(null) ? new TextDecoder().decode(file.load_contents(null)[1]) : null;
+};
+
+/** Seções de um `dconf dump`: {'/': {chave: valor}, 'keybindings': {...}}. */
+function parseDconfDump(text) {
+    const sections = {};
+    let current = null;
+    for (const line of (text ?? '').split('\n')) {
+        const header = /^\[(.*)\]$/.exec(line.trim());
+        if (header) {
+            current = sections[header[1]] = {};
+            continue;
+        }
+        const eq = line.indexOf('=');
+        if (!current || eq < 0)
+            continue;
+        const key = line.slice(0, eq);
+        current[key] = GLib.Variant.parse(null, line.slice(eq + 1), null, null).recursiveUnpack();
+    }
+    return sections;
+}
+
+/** Baseline de cada fonte: arquivo do dump e seção de cada esquema. */
+const BASELINE_DUMPS = {
+    'dash-to-dock': ['dconf-ext-dash-to-dock.ini', {main: '/'}],
+    'forge': ['dconf-ext-forge.ini', {main: '/', keybindings: 'keybindings'}],
+    'openbar': ['dconf-ext-openbar.ini', {main: '/'}],
+    'user-theme': ['dconf-ext-user-theme.ini', {main: '/'}],
+    'impatience': ['dconf-ext-net.ini', {main: 'gfxmonk/impatience'}],
+    'gnome-ui-tune': ['dconf-ext-gnome-ui-tune.ini', {main: '/'}],
+    'logomenu': ['dconf-ext-Logo-menu.ini', {main: '/'}],
+    'bluetooth-battery': ['dconf-ext-bluetooth_battery_indicator.ini', {main: '/'}],
+    'osd-volume-number': ['dconf-ext-osd-volume-number.ini', {main: '/'}],
+    'spotify-controls': ['dconf-ext-spotify-controls.ini', {main: '/'}],
+    'apps-menu': [null, {main: '/'}],
+};
+
+/** Roda um importador sobre o baseline do usuário. */
+function importBaseline(id) {
+    const source = Migration.findSource(id);
+    const [dump, sectionOf] = BASELINE_DUMPS[id];
+    const sections = parseDconfDump(dump ? readText('baseline', dump) : '');
+    const read = (key, schema = 'main') => {
+        const section = sections[sectionOf[schema]] ?? {};
+        return key in section ? section[key] : source.defaults[schema]?.[key];
+    };
+    const file = name => ({
+        'forge-windows': readText('baseline', 'forge-windows.json'),
+        'forge-stylesheet': readText('baseline', 'forge-stylesheet.css'),
+    })[name] ?? null;
+    return source.run({read, file});
+}
+
+/** Defaults dos nossos esquemas, por esquema filho. */
+function ourDefaults(schemaName) {
+    const fileName = schemaName
+        ? `org.gnome.shell.extensions.gnomecustom.${schemaName}.gschema.xml`
+        : 'org.gnome.shell.extensions.gnomecustom.gschema.xml';
+    const xml = readText('gnomeCustom@gfiamoncini.com', 'schemas', fileName);
+    const values = {};
+    const re = /<key name="([^"]+)"(?: type="([^"]+)")?(?: enum="[^"]+")?>\s*<default>([\s\S]*?)<\/default>/g;
+    for (const [, key, type, raw] of xml.matchAll(re)) {
+        const text = raw.trim().replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+        values[key] = type
+            ? GLib.Variant.parse(new GLib.VariantType(type), text, null, null).recursiveUnpack()
+            : text.replace(/^'|'$/g, '');
+    }
+    return values;
+}
+
+const approxEqual = (a, b) => typeof a === 'number' && typeof b === 'number'
+    ? Math.abs(a - b) < 1e-6
+    : JSON.stringify(a) === JSON.stringify(b);
+
+test('migração: conversões de cor e da borda do Forge', () => {
+    assertEqual(Migration.openBarColorToHex(['0.110', '0.443', '0.847']), '#1C71D8');
+    assertEqual(Migration.openBarColorToHex(['x']), null);
+
+    const border = Migration.parseForgeBorder(readText('baseline', 'forge-stylesheet.css'));
+    assertEqual(border, {color: '#9A9996', width: 3, radius: 14}, 'baseline do usuário:');
+    assertEqual(Migration.parseForgeBorder('.outra { }'), null);
+});
+
+test('CRITÉRIO fase 9: importar o baseline reproduz os padrões do GnomeCustom', () => {
+    // Os padrões dos nossos esquemas foram ajustados ao baseline do usuário; se
+    // os importadores estiverem certos, importar a configuração dele não muda
+    // nada — com as exceções conhecidas abaixo, que são mudanças posteriores
+    // à captura ou decisões registradas.
+    const known = new Set([
+        'theme/shell-theme',            // padrão vazio; o usuário tem Orchis
+        'tiling/window-rules',          // o baseline tem os fantasmas por wmId (descartados)
+        'tiling.keybindings/window-toggle-always-float',   // desligado depois da captura
+        'menu/show-lock', 'menu/show-power',               // Logo Menu escondia; o nosso mostra
+        'menu/gallery-logo',            // padrão vazio = logotipo da distribuição (fedora no baseline)
+    ]);
+
+    const differences = [];
+    let total = 0;
+    for (const source of Migration.SOURCES) {
+        const {writes} = importBaseline(source.id);
+        for (const write of writes) {
+            total++;
+            const defaults = ourDefaults(write.schema);
+            assert(write.key in defaults, `${source.id}: chave de destino inexistente ${write.schema}/${write.key}`);
+            const ours = defaults[write.key];
+            const same = approxEqual(ours, write.value) ||
+                (typeof ours === 'string' && typeof write.value === 'string' &&
+                 ours.toLowerCase() === write.value.toLowerCase());
+            if (!same && !known.has(`${write.schema}/${write.key}`))
+                differences.push(`${source.id}: ${write.schema}/${write.key} nosso=${JSON.stringify(ours)} importado=${JSON.stringify(write.value)}`);
+        }
+    }
+    assert(total > 60, `poucas gravações: ${total}`);
+    assertEqual(differences, [], 'divergências inesperadas:');
+});
+
+test('migração: Forge descarta regras por wmId e traz os 39 atalhos', () => {
+    const {writes, notes} = importBaseline('forge');
+    const rules = JSON.parse(writes.find(w => w.key === 'window-rules').value);
+    assert(rules.every(rule => !('wmId' in rule)), 'nenhuma regra por id');
+    assert(notes.some(n => /id de janela descartada/.test(n.reason)), 'o descarte é relatado');
+
+    const bindings = writes.filter(w => w.schema === 'tiling.keybindings');
+    assertEqual(bindings.length, 39);
+    assertEqual(bindings.find(w => w.key === 'con-split-vertical').value, ['<Super>v']);
+});
+
+test('amoled: menus, OSD e dock estilizados ficam pretos; a barra mantém as cores dela', () => {
+    const base = {backgroundColor: '#1E1E1E', styleMenus: true, styleOsd: true, styleDock: true,
+        panelCustomColors: true, panelBackgroundColor: '#1E1E1E', backgroundAlpha: 0.7};
+    const normal = buildTokens(base);
+    assert(!normal.menu.background.startsWith('rgba(0, 0, 0'), 'sem AMOLED, cinza derivado');
+
+    const amoled = buildTokens({...base, amoledBlack: true});
+    assert(amoled.menu.background.startsWith('rgba(0, 0, 0,'), `menu: ${amoled.menu.background}`);
+    assert(amoled.osd.background.startsWith('rgba(0, 0, 0,'), `OSD: ${amoled.osd.background}`);
+    assertEqual(amoled.dock.backgroundRgb, [0, 0, 0]);
+    assertEqual(amoled.panel.background, normal.panel.background, 'barra intacta:');
+    assert(amoled.menu.foreground && Color.contrastRatio([0, 0, 0], Color.parseHex(amoled.menu.foreground)) >= 4.5,
+        'texto legível no preto');
+});
+
+test('amoled: cinzas escuros viram preto, em ordem; o resto fica igual', () => {
+    const css = [
+        '#panel { background-color: #242424; }',
+        '.message { background-color: #343434 !important; border-color: #3c3c3c; }',
+        '.hover { background-color: rgba(255, 255, 255, 0.12); color: #dddddd; }',
+        '.accent { color: #1C71D8; background: rgba(33, 33, 33, 0.65); }',
+        '.mid { color: #808080; }',
+        '.img { background-image: url("assets/toggle-on.svg"); }',
+        '.abs { background-image: url(resource:///org/gnome/x.svg); }',
+    ].join('\n');
+    const out = Amoled.amoledCss(css, {baseUri: 'file:///home/u/.themes/T/gnome-shell/'});
+
+    assert(out.includes('#panel { background-color: #000000; }'), 'fundo vira preto');
+    assert(out.includes('background-color: #161616 !important; border-color: #212121;'), 'card um passo acima');
+    assert(out.includes('rgba(255, 255, 255, 0.12)') && out.includes('#dddddd'), 'véus e texto claros intactos');
+    assert(out.includes('#1C71D8') && out.includes('rgba(0, 0, 0, 0.65)'), 'destaque intacto; translúcido escuro escurece');
+    assert(out.includes('#808080'), 'cinza médio intacto');
+    assert(out.includes('url("file:///home/u/.themes/T/gnome-shell/assets/toggle-on.svg")'), 'url relativa aponta para o tema');
+    assert(out.includes('url(resource:///org/gnome/x.svg)'), 'url absoluta intacta');
+
+    for (let v = 0; v < 255; v++)
+        assert(Amoled.darkenChannel(v) <= Amoled.darkenChannel(v + 1), `rampa não monotônica em ${v}`);
+    assertEqual(Amoled.darkenChannel(127), 127, 'sem degrau no limite:');
+});
+
+test('amoled: tema já marcado como AMOLED não é convertido', () => {
+    assert(!Amoled.isAmoledReady('#panel { background-color: #242424; }'), 'tema comum converte');
+    assert(Amoled.isAmoledReady(`.x { color: #fff; }\n/* ${Amoled.AMOLED_READY_MARK} */`), 'marca reconhecida');
+});
+
+// ------------------------------------------------------------------ clima
+
+// ------------------------------------------------------- tema dos apps
+
+/** Gio.Settings de mentira: só get/set de string e booleano. */
+function fakeSettings(values) {
+    return {
+        get_string: key => values[key] ?? '',
+        set_string: (key, value) => { values[key] = value; },
+        get_boolean: key => Boolean(values[key]),
+        values,
+    };
+}
+
+test('tema dos apps: aplica, guarda o gtk.css do usuário e devolve tudo ao desligar', async () => {
+    const root = Gio.File.new_for_path(GLib.dir_make_tmp('gnomecustom-apptheme-XXXXXX'));
+    const theme = root.get_child('Dracula-AMOLED');
+    for (const part of ['gtk-3.20', 'libadwaita'])
+        theme.get_child(part).make_directory_with_parents(null);
+    theme.get_child('libadwaita').get_child('gtk.css').replace_contents(
+        new TextEncoder().encode('/* tema */'), null, false, Gio.FileCreateFlags.NONE, null);
+    const plain = root.get_child('SoShell');   // tema só de Shell, sem GTK
+    plain.make_directory_with_parents(null);
+
+    const config = root.get_child('config');
+    config.make_directory_with_parents(null);
+    const css = config.get_child('gtk.css');
+    css.replace_contents(new TextEncoder().encode('/* meu */'), null, false, Gio.FileCreateFlags.NONE, null);
+
+    const iface = fakeSettings({'gtk-theme': 'Orchis-Grey-Dark-Compact'});
+    const settings = fakeSettings({});
+    const service = new AppThemeService({
+        logger: new Logger({level: 'silent', sink: new FakeSink()}),
+        interfaceSettings: iface,
+        cssFile: () => css,
+        themeDir: async name => ({'Dracula-AMOLED': theme, 'SoShell': plain})[name] ?? null,
+        tweaks: {apply() {}, revert() {}},
+    });
+    const read = file => new TextDecoder().decode(file.load_contents(null)[1]);
+    const isLink = file => file.query_info('standard::is-symlink', Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS, null).get_is_symlink();
+
+    await service.sync({themeName: 'Dracula-AMOLED', enabled: true, settings});
+    assertEqual(iface.values['gtk-theme'], 'Dracula-AMOLED', 'tema GTK trocado:');
+    assert(isLink(css) && read(css) === '/* tema */', 'gtk.css aponta para o do tema');
+    assertEqual(read(config.get_child('gtk.css.gnomecustom-backup')), '/* meu */', 'o do usuário foi guardado');
+
+    // Tema só de Shell: os apps voltam ao que eram.
+    await service.sync({themeName: 'SoShell', enabled: true, settings});
+    assertEqual(iface.values['gtk-theme'], 'Orchis-Grey-Dark-Compact', 'tema GTK devolvido:');
+    assert(!isLink(css) && read(css) === '/* meu */', 'gtk.css do usuário restaurado');
+    assert(!config.get_child('gtk.css.gnomecustom-backup').query_exists(null), 'backup consumido');
+
+    // De novo, e o usuário troca o tema GTK por fora: ao desligar, a escolha dele fica.
+    await service.sync({themeName: 'Dracula-AMOLED', enabled: true, settings});
+    iface.values['gtk-theme'] = 'Adwaita';
+    await service.sync({themeName: 'Dracula-AMOLED', enabled: false, settings});
+    assertEqual(iface.values['gtk-theme'], 'Adwaita', 'troca feita por fora é respeitada:');
+    assertEqual([settings.values['app-theme-applied'], settings.values['app-theme-css']], ['', ''], 'estado limpo:');
+    assert(read(css) === '/* meu */', 'gtk.css do usuário continua');
+});
+
+test('apps Electron: bloco do VS Code entra e sai sem tocar no resto', () => {
+    const original = [
+        '{',
+        '    "workbench.colorTheme": "Min Dark",',
+        '    //Configs Editor',
+        '    "editor.fontFamily": "JetBrains Mono",',
+        '    "editor.minimap.enabled": false',
+        '    // "window.titleBarStyle": "custom",',
+        '  }',
+    ].join('\n');
+    const entries = {'window.titleBarStyle': 'native', 'workbench.colorCustomizations': {'editor.background': '#000000'}};
+    const {text, applied, skipped} = Tweaks.vscodeApply(original, entries);
+    assertEqual(applied, ['window.titleBarStyle', 'workbench.colorCustomizations']);
+    assertEqual(skipped, [], 'chave só comentada não conta como definida:');
+    assert(text.includes('"editor.minimap.enabled": false,'), 'vírgula na última propriedade');
+    assert(text.includes('"editor.background": "#000000"') && text.includes(Tweaks.VSCODE_BEGIN));
+    // JSONC válido: sem comentários e vírgulas finais, vira JSON.
+    const asJson = text.replace(/^\s*\/\/.*$/gm, '').replace(/,(\s*[}\]])/g, '$1');
+    assertEqual(JSON.parse(asJson)['window.titleBarStyle'], 'native');
+
+    assertEqual(Tweaks.vscodeApply(text, entries).text, text, 'aplicar de novo não muda nada');
+    const back = Tweaks.vscodeRemove(text);
+    assertEqual(back, original, 'bloco retirado, arquivo como era:');
+
+    const own = Tweaks.vscodeApply('{\n    "window.titleBarStyle": "custom"\n}', entries);
+    assertEqual(own.skipped, ['window.titleBarStyle'], 'escolha do usuário fica:');
+    assert(own.text.includes('"custom"') && !own.text.includes('"native"'));
+});
+
+test('apps Electron: valores do Obsidian voltam, salvo se o usuário mudou depois', () => {
+    const {data, previous} = Tweaks.applyValues({accentColor: '#6d6d6f'}, {accentColor: '#f8f8f2', frame: 'native'});
+    assertEqual(data, {accentColor: '#f8f8f2', frame: 'native'});
+    assertEqual(Tweaks.applyValues(data, {accentColor: '#fff'}, previous).previous.accentColor, '#6d6d6f',
+        'segundo apply guarda o original:');
+    assertEqual(Tweaks.restoreValues(data, {accentColor: '#f8f8f2', frame: 'native'}, previous), {accentColor: '#6d6d6f'});
+    assertEqual(Tweaks.restoreValues({...data, frame: 'hidden'}, {accentColor: '#f8f8f2', frame: 'native'}, previous),
+        {accentColor: '#6d6d6f', frame: 'hidden'}, 'mudança posterior fica:');
+
+    const on = Tweaks.obsidianSnippet({enabledCssSnippets: ['meu']}, true);
+    assertEqual(on.enabledCssSnippets, ['meu', Tweaks.OBSIDIAN_SNIPPET]);
+    assertEqual(Tweaks.obsidianSnippet(on, false).enabledCssSnippets, ['meu']);
+    assertEqual(Tweaks.obsidianSnippet(Tweaks.obsidianSnippet({}, true), false), {enabledCssSnippets: []});
+    assertEqual(Tweaks.obsidianVaults({vaults: {a: {path: '/x'}, b: {}}}), ['/x']);
+});
+
+test('apps Electron: receita do tema aplicada nos arquivos e desfeita por inteiro', () => {
+    const root = Gio.File.new_for_path(GLib.dir_make_tmp('gnomecustom-tweaks-XXXXXX'));
+    const write = (target, text) => {
+        if (!target.get_parent().query_exists(null))
+            target.get_parent().make_directory_with_parents(null);
+        target.replace_contents(new TextEncoder().encode(text), null, false, Gio.FileCreateFlags.NONE, null);
+    };
+    const read = target => new TextDecoder().decode(target.load_contents(null)[1]);
+    const apps = root.get_child('Tema').get_child('apps');
+    write(apps.get_child('vscode.json'), '{"window.titleBarStyle": "native"}');
+    write(apps.get_child('obsidian.json'), '{"app": {"frame": "native"}, "appearance": {"accentColor": "#f8f8f2"}}');
+    write(apps.get_child('obsidian.css'), '.theme-dark { --background-primary: #000; }');
+
+    const code = root.get_child('Code').get_child('settings.json');
+    const codeText = '{\n    "editor.fontSize": 13\n}\n';
+    write(code, codeText);
+    const vault = root.get_child('Cofre');
+    const appearance = vault.get_child('.obsidian').get_child('appearance.json');
+    write(appearance, '{"accentColor": "#6d6d6f", "enabledCssSnippets": ["meu"]}');
+    const obsidian = root.get_child('obsidian').get_child('obsidian.json');
+    write(obsidian, JSON.stringify({vaults: {v: {path: vault.get_path(), open: true}}}));
+
+    const settings = fakeSettings({});
+    const tweaks = new AppTweaks({
+        logger: new Logger({level: 'silent', sink: new FakeSink()}),
+        vscodeFiles: () => [code, root.get_child('Nao').get_child('settings.json')],
+        obsidianConfigs: () => [obsidian],
+    });
+
+    tweaks.apply(root.get_child('Tema'), settings);
+    assert(read(code).includes('"window.titleBarStyle": "native"'), 'VS Code com moldura nativa');
+    assert(!root.get_child('Nao').query_exists(null), 'app ausente não ganha arquivo');
+    assertEqual(read(code.get_parent().get_child('settings.json.gnomecustom-backup')), codeText, 'backup do original');
+    assertEqual(JSON.parse(read(obsidian)).frame, 'native');
+    const look = JSON.parse(read(appearance));
+    assertEqual([look.accentColor, look.enabledCssSnippets], ['#f8f8f2', ['meu', Tweaks.OBSIDIAN_SNIPPET]]);
+    const snippet = vault.get_child('.obsidian').get_child('snippets').get_child(`${Tweaks.OBSIDIAN_SNIPPET}.css`);
+    assert(snippet.query_exists(null), 'snippet no cofre');
+    assert(settings.values['app-tweaks-state'], 'estado guardado');
+
+    tweaks.apply(root.get_child('Tema'), settings);   // de novo: nada muda
+    assertEqual(JSON.parse(read(appearance)).enabledCssSnippets, ['meu', Tweaks.OBSIDIAN_SNIPPET]);
+
+    tweaks.revert(settings);
+    assertEqual(read(code), codeText, 'VS Code como era');
+    assertEqual(JSON.parse(read(obsidian)).frame, undefined, 'moldura devolvida');
+    assertEqual(JSON.parse(read(appearance)), {accentColor: '#6d6d6f', enabledCssSnippets: ['meu']}, 'cofre como era');
+    assert(!snippet.query_exists(null), 'snippet removido');
+    assertEqual(settings.values['app-tweaks-state'], '', 'estado limpo:');
+
+    // Tema sem receita: desfaz como o revert.
+    tweaks.apply(root.get_child('Tema'), settings);
+    tweaks.apply(root.get_child('SemReceita'), settings);
+    assertEqual(read(code), codeText, 'tema sem apps/ desfaz');
+});
+
+test('clima: previsão real de Rio do Sul (SC) é lida por inteiro', () => {
+    const f = Weather.parseForecast(JSON.parse(readText('tests', 'fixtures', 'openmeteo-forecast.json')));
+    assert(f, 'deveria ler a resposta');
+    assertEqual(f.timezone, 'America/Sao_Paulo');
+    assertEqual(f.units, {temperature: '°C', wind: 'km/h'});
+    assert(Number.isInteger(f.current.temperature) && Number.isInteger(f.current.feelsLike), 'temperaturas inteiras');
+    assert(f.current.icon.startsWith('weather-') && f.current.description, 'condição traduzível');
+    assertEqual(f.hourly.length, Weather.HOURS_SHOWN, 'próximas horas:');
+    assertEqual(f.daily.length, Weather.DAYS_SHOWN, 'próximos dias:');
+
+    // A primeira hora da faixa é a seguinte à atual, na hora local do lugar.
+    assertEqual(f.hourly[0].hour, (f.current.hour + 1) % 24, 'começa na próxima hora:');
+    for (const day of f.daily)
+        assert(day.min <= day.max, `${day.date}: mínima acima da máxima`);
+});
+
+test('clima: resposta sem dados atuais não vira previsão', () => {
+    assertEqual(Weather.parseForecast(null), null);
+    assertEqual(Weather.parseForecast({current: {}}), null);
+});
+
+test('clima: busca de cidade separa homônimos pelo município', () => {
+    const results = Weather.parseGeocoding(JSON.parse(readText('tests', 'fixtures', 'openmeteo-geocoding.json')));
+    assertEqual(results.map(r => r.detail), ['Santa Catarina, Brasil', 'Anitápolis, Santa Catarina, Brasil']);
+    assertEqual([results[0].latitude, results[0].longitude], [-27.21417, -49.64306]);
+    assertEqual(Weather.parseGeocoding({}), [], 'sem resultados:');
+    assertEqual(Weather.geocodingUrl('a'), null, 'texto curto demais:');
+    assert(Weather.geocodingUrl('Rio do Sul', 'pt').includes('name=Rio%20do%20Sul&count=10&language=pt'));
+});
+
+test('clima: códigos WMO, noite, vento e unidades', () => {
+    assertEqual(Weather.describeWeather(0, true).icon, 'weather-clear-symbolic');
+    assertEqual(Weather.describeWeather(0, false).icon, 'weather-clear-night-symbolic', 'noite:');
+    assertEqual(Weather.describeWeather(3, false).icon, 'weather-overcast-symbolic', 'sem variante noturna:');
+    assertEqual(Weather.describeWeather(95).description, 'Thunderstorm');
+    assertEqual(Weather.describeWeather(1234).icon, 'weather-severe-alert-symbolic', 'desconhecido:');
+    assertEqual([Weather.windDirection(0), Weather.windDirection(175), Weather.windDirection(-90)], ['N', 'S', 'W']);
+
+    const imperial = Weather.forecastUrl({latitude: -27.21417, longitude: -49.64306, units: 'imperial'});
+    assert(imperial.includes('latitude=-27.2142') && imperial.includes('temperature_unit=fahrenheit') &&
+        imperial.includes('wind_speed_unit=mph'), imperial);
+    assert(!Weather.hasLocation(0, 0), '0,0 é "sem cidade"');
+    assert(Weather.hasLocation(-27.2, -49.6));
+    assertEqual([Weather.formatTemperature(17), Weather.formatTemperature(null), Weather.formatHour(7)],
+        ['17°', '–', '07:00']);
+});
+
+test('logos: galeria completa, índices do Logo Menu e escolha pela distribuição', () => {
+    const Logos = LogosLib;
+    const dir = Logos.logosDirectory();
+    for (const logo of Logos.LOGOS) {
+        assert(logo.colored || logo.symbolic, `${logo.id} sem arquivo`);
+        for (const file of [logo.colored, logo.symbolic].filter(Boolean))
+            assert(GLib.file_test(`${dir}${file}`, GLib.FileTest.EXISTS), `arquivo ausente: ${file}`);
+    }
+    assertEqual(Logos.logoFromLogoMenu(0, false), 'fedora', 'colorida 0:');
+    assertEqual(Logos.logoFromLogoMenu(0, true), null, 'simbólica 0 é o ícone do tema:');
+    assertEqual(Logos.logoFromLogoMenu(6, true), 'arch');
+    assertEqual(Logos.logoFromLogoMenu(999, false), null);
+
+    assertEqual(Logos.logoForDistro('fedora'), 'fedora');
+    assertEqual(Logos.logoForDistro('rhel'), 'redhat', 'apelido:');
+    assertEqual(Logos.logoForDistro('desconhecida'), 'tux');
+
+    assertEqual(Logos.resolveLogo('', true, 'fedora').file, 'fedora-logo-symbolic.svg');
+    assertEqual(Logos.resolveLogo('arch', false).file, 'arch-logo.svg');
+    const mx = Logos.resolveLogo('mx', false);
+    assertEqual([mx.file, mx.monochrome], ['mx-logo-symbolic.svg', true], 'sem colorida, usa a simbólica:');
+});
+
+test('migração: Logo Menu converte comandos e inverte os "hide"', () => {
+    const {writes} = importBaseline('logomenu');
+    const get = key => writes.find(w => w.key === key)?.value;
+    assertEqual([get('icon-source'), get('gallery-logo'), get('gallery-monochrome')],
+        ['gallery', 'fedora', false], 'imagem 0 colorida no baseline = Fedora da galeria:');
+    assertEqual(get('icon-size'), 19);
+    assertEqual(get('show-activities'), false);
+    assertEqual([get('show-force-quit'), get('show-software')], [true, true], 'hide-* invertidos:');
+    assertEqual([get('show-lock'), get('show-power')], [false, false], 'padrões do Logo Menu:');
+    assertEqual(get('software-app'), 'org.gnome.Software.desktop');
+    assertEqual(get('terminal-app'), '', 'gnome-terminal padrão vira o terminal do sistema:');
+    assertEqual(get('extensions-app'), 'com.mattjakeman.ExtensionManager.desktop');
+});
+
+test('migração: Open Bar do baseline vira a barra flutuante com paleta', () => {
+    const {writes, notes} = importBaseline('openbar');
+    const get = key => writes.find(w => w.key === key)?.value;
+    assertEqual(get('panel-style'), 'floating');
+    assertEqual([get('panel-height'), get('panel-margin-top'), get('panel-margin-sides')], [29, 1.5, 4.5]);
+    assertEqual([get('palette-from-wallpaper'), get('background-color'), get('accent-color')], [true, '', '#1C71D8']);
+    assertEqual([get('style-menus'), get('style-dock')], [false, false]);
+    assert(notes.length > 0, 'o que não tem equivalente é relatado');
+});
+
+test('migração: fontes sem destino só produzem notas, e ninguém escreve fora do GnomeCustom', () => {
+    for (const id of ['bluetooth-battery', 'osd-volume-number']) {
+        const {writes, notes} = importBaseline(id);
+        assertEqual(writes, [], `${id} não grava:`);
+        assert(id === 'osd-volume-number' || notes.length > 0, `${id} explica`);
+    }
+
+    const valid = new Set(['', 'theme', 'panel', 'menu', 'dock', 'overview', 'animation', 'media',
+        'tiling', 'tiling.keybindings', 'bluetooth']);
+    for (const source of Migration.SOURCES) {
+        for (const write of importBaseline(source.id).writes)
+            assert(valid.has(write.schema), `${source.id} escreve em esquema desconhecido: ${write.schema}`);
+    }
+});
+
+test('migração: Dash to Dock sem dados usa os padrões dele e explica o que não existe', () => {
+    const source = Migration.findSource('dash-to-dock');
+    const {writes, notes} = source.run({read: key => source.defaults.main[key], file: () => null});
+    assertEqual(writes.find(w => w.key === 'icon-size').value, 48);
+    assert(!writes.some(w => w.key === 'background-opacity'), 'transparência do tema não vira número');
+    const reasons = notes.map(n => n.from);
+    for (const key of ['dock-fixed', 'show-trash', 'show-mounts', 'transparency-mode'])
+        assert(reasons.includes(key), `nota para ${key}`);
+});
+
+test('migração: padrões declarados batem com os esquemas instalados (quando existem)', () => {
+    let checked = 0;
+    for (const source of Migration.SOURCES) {
+        const dirs = [
+            GLib.build_filenamev([GLib.get_home_dir(), '.local/share/gnome-shell/extensions', source.uuid, 'schemas']),
+            GLib.build_filenamev(['/usr/share/gnome-shell/extensions', source.uuid, 'schemas']),
+        ];
+        const dir = dirs.find(d => GLib.file_test(`${d}/gschemas.compiled`, GLib.FileTest.EXISTS));
+        if (!dir)
+            continue;
+        const schemaSource = Gio.SettingsSchemaSource.new_from_directory(dir, null, false);
+        for (const [schemaName, defaults] of Object.entries(source.defaults)) {
+            const schema = schemaSource.lookup(source.schemas[schemaName], false);
+            if (!schema)
+                continue;
+            for (const [key, declared] of Object.entries(defaults)) {
+                if (!schema.has_key(key))
+                    throw new Error(`${source.id}: chave ${key} não existe no esquema instalado`);
+                let real = schema.get_key(key).get_default_value().recursiveUnpack();
+                if (key === 'custom-icon-path')
+                    real = String(real).replace(/^''$/, '');
+                assert(approxEqual(real, declared),
+                    `${source.id}: padrão de ${key} declarado ${JSON.stringify(declared)}, instalado ${JSON.stringify(real)}`);
+                checked++;
+            }
+        }
+    }
+    if (checked === 0)
+        print('        (nenhuma extensão original instalada: conferência ignorada)');
+});
+
+// ------------------------------------------------------------------ perfis
+
+test('perfis: todos cobrem os 10 módulos, citam presets reais e têm ids únicos', () => {
+    assertEqual(Profiles.unknownPresets(), [], 'presets inexistentes:');
+    const ids = new Set();
+    for (const profile of Profiles.PROFILES) {
+        assert(!ids.has(profile.id), `id repetido: ${profile.id}`);
+        ids.add(profile.id);
+        assertEqual(Object.keys(profile.modules).sort(), [...Profiles.PROFILE_MODULES].sort(),
+            `${profile.id}: módulos:`);
+        for (const [schema, keys] of Object.entries(profile.values)) {
+            const defaults = ourDefaults(schema);
+            for (const key of Object.keys(keys))
+                assert(key in defaults, `${profile.id}: chave inexistente ${schema}/${key}`);
+        }
+    }
+    assert(!ids.has(Profiles.CUSTOM_PROFILE), 'id reservado');
+
+    // Os 10 módulos do perfil são exatamente os implementados, menos o diagnóstico e
+    // o clima: os perfis reproduzem as 11 extensões do baseline, e o clima é um
+    // opcional novo (2026-09-21) que só liga quando o usuário escolhe.
+    const outside = ['diagnostics', 'weather'];
+    const implemented = MODULES_INFO.filter(i => i.implemented && !outside.includes(i.id)).map(i => i.id).sort();
+    assertEqual([...Profiles.PROFILE_MODULES].sort(), implemented, 'módulos cobertos:');
+});
+
+test('perfis: estado padrão é "Nada ligado" e o Desktop é o baseline', () => {
+    const readDefault = (schema, key) => ourDefaults(schema)[key];
+    const modulesFrom = (fn) => Object.fromEntries(Profiles.PROFILE_MODULES.map(id => [id, fn(id)]));
+
+    assertEqual(Profiles.matchProfile({
+        modules: modulesFrom(id => ourDefaults('')[`${id}-enabled`]),
+        themePreset: 'default',
+        read: readDefault,
+    }), 'off', 'esquema recém-instalado:');
+
+    // Desktop = todos ligados + padrões do esquema (que são o baseline).
+    assertEqual(Profiles.matchProfile({
+        modules: modulesFrom(() => true), themePreset: 'default', read: readDefault,
+    }), 'desktop', 'baseline com tudo ligado:');
+
+    assertEqual(Profiles.matchProfile({
+        modules: {...modulesFrom(() => true), dock: false}, themePreset: 'default', read: readDefault,
+    }), Profiles.CUSTOM_PROFILE, 'um módulo diferente vira personalizado:');
+});
+
+test('perfis: conflitos só com extensões ativas que o perfil substituiria', () => {
+    const desktop = Profiles.findProfile('desktop');
+    const gaming = Profiles.findProfile('gaming');
+    const active = new Set(['forge@jmmaranan.com', 'dash-to-dock@micxgx.gmail.com']);
+    const isEnabled = uuid => active.has(uuid);
+
+    assertEqual(Profiles.conflictsFor(desktop, KNOWN_EXTENSIONS, isEnabled).map(c => c.name).sort(),
+        ['Dash to Dock', 'Forge']);
+    assertEqual(Profiles.conflictsFor(gaming, KNOWN_EXTENSIONS, isEnabled), [],
+        'sem tiling nem dock, Forge e Dash to Dock não conflitam:');
 });
 
 // -------------------------------------------------------------- os-release
@@ -1138,6 +3161,86 @@ test('mpris: lista de permitidos preserva a ordem', () => {
     assertEqual(Mpris.toggleAllowed([], 'vlc', false), [], 'remover ausente:');
 });
 
+/** Retrato de player como o serviço `mpris` entrega. */
+function playerSnapshot(id, status, {title = 'Faixa', can = {}} = {}) {
+    return {busName: `org.mpris.MediaPlayer2.${id}`, id, status, track: {title}, can};
+}
+
+test('mpris: comando vai ao player da barra, ou ao primeiro permitido aberto', () => {
+    const spotify = playerSnapshot('spotify', 'Stopped');
+    const vlc = playerSnapshot('vlc', 'Playing');
+    const firefox = playerSnapshot('firefox', 'Playing');
+
+    assertEqual(Mpris.pickControlTarget([spotify, vlc], ['spotify', 'vlc'])?.id, 'vlc', 'da barra:');
+    assertEqual(Mpris.pickControlTarget([spotify, firefox], ['spotify'])?.id, 'spotify',
+        'parado ainda recebe tocar:');
+    assertEqual(Mpris.pickControlTarget([firefox], ['spotify']), null, 'não permitido:');
+});
+
+test('mpris: propriedades Can* decidem o comando; ausentes permitem', () => {
+    assert(Mpris.canInvoke(playerSnapshot('a', 'Playing'), 'Next'), 'sem Can* deveria permitir');
+    assert(!Mpris.canInvoke(null, 'PlayPause'), 'sem player');
+    assert(!Mpris.canInvoke(playerSnapshot('a', 'Playing', {can: {next: false}}), 'Next'));
+    assert(Mpris.canInvoke(playerSnapshot('a', 'Playing', {can: {next: null}}), 'Next'),
+        'desconhecido permite');
+    assert(!Mpris.canInvoke(playerSnapshot('a', 'Playing', {can: {pause: false}}), 'PlayPause'),
+        'tocando sem pausa');
+    assert(Mpris.canInvoke(playerSnapshot('a', 'Paused', {can: {pause: false}}), 'PlayPause'),
+        'pausado usa CanPlay');
+    assert(!Mpris.canInvoke(playerSnapshot('a', 'Paused', {can: {control: false}}), 'Previous'),
+        'CanControl falso bloqueia tudo');
+    assert(!Mpris.canInvoke(playerSnapshot('a', 'Paused'), 'Seek'), 'método desconhecido');
+    assertEqual(Mpris.playPauseIcon('Playing'), 'media-playback-pause-symbolic');
+    assertEqual(Mpris.playPauseIcon('Paused'), 'media-playback-start-symbolic');
+});
+
+test('mpris: clique na barra de tempo vira posição, só onde dá para pular', () => {
+    assertEqual(Mpris.seekPosition(0.25, 200e6), 50e6);
+    assertEqual(Mpris.seekPosition(-1, 200e6), 0, 'antes do trilho:');
+    assertEqual(Mpris.seekPosition(1.5, 200e6), 200e6, 'depois do trilho:');
+    assertEqual(Mpris.seekPosition(0.5, 0), null, 'sem duração:');
+    assertEqual(Mpris.seekPosition(NaN, 100), null);
+
+    const player = (trackId, length, can = {}) => ({track: {trackId, length}, can});
+    assert(Mpris.canSeek(player('/com/spotify/track/6uqfE8hJTLb3j5O8OZaAt9', 3e8)), 'Spotify');
+    assert(!Mpris.canSeek(player('/com/spotify/track/x', 3e8, {seek: false})), 'CanSeek falso');
+    assert(!Mpris.canSeek(player('/t/1', 0)), 'sem duração');
+    assert(!Mpris.canSeek(player('', 3e8)), 'sem trackid');
+    assert(!Mpris.canSeek(player('spotify:track:x', 3e8)), 'trackid que não é caminho de objeto');
+    assert(!Mpris.canSeek(player('/org/mpris/MediaPlayer2/TrackList/NoTrack', 3e8)), 'NoTrack');
+    assert(!Mpris.canSeek(null));
+});
+
+test('mpris: ações de mídia têm chave com prefixo e método MPRIS', () => {
+    assertEqual(Mpris.MEDIA_ACTIONS.map(a => a.method), ['PlayPause', 'Next', 'Previous']);
+    for (const {key} of Mpris.MEDIA_ACTIONS)
+        assert(key.startsWith('shortcut-'), key);
+});
+
+test('atalhos: captura aceita só combinações seguras', () => {
+    assert(Shortcuts.isModifierKeyName('Super_L'));
+    assert(Shortcuts.isModifierKeyName('ISO_Level3_Shift'));
+    assert(!Shortcuts.isModifierKeyName('p'));
+
+    assert(Shortcuts.acceptShortcut('Up', true), 'com modificador');
+    assert(!Shortcuts.acceptShortcut('p', false), 'letra sozinha rouba a digitação');
+    assert(Shortcuts.acceptShortcut('F9', false), 'tecla de função');
+    assert(!Shortcuts.acceptShortcut('F99', false));
+    assert(Shortcuts.acceptShortcut('XF86AudioPlay', false), 'tecla de mídia');
+    assert(!Shortcuts.acceptShortcut('Control_L', true), 'só modificador');
+    assert(!Shortcuts.acceptShortcut('', true));
+});
+
+test('atalhos: entrada vazia não colide, e os padrões de mídia não colidem com o mosaico', () => {
+    assertEqual(Shortcuts.findCollisions([{key: 'a', accels: ['']}],
+        [{schema: 's', key: 'b', accels: ['']}]), []);
+
+    const media = Mpris.MEDIA_ACTIONS.map(({key}) => ({key,
+        accels: [`<Control><Alt><Super>${{'shortcut-play-pause': 'Up', 'shortcut-next': 'Right', 'shortcut-previous': 'Left'}[key]}`]}));
+    const tiling = TILING_ACTIONS.map(spec => ({schema: 'tiling', key: spec.key, accels: spec.accels}));
+    assertEqual(Shortcuts.findCollisions(media, tiling), []);
+});
+
 test('cor: fundo escurecido até o texto branco passar do AA', () => {
     const white = [255, 255, 255];
     for (const color of [[255, 230, 90], [200, 200, 200], [30, 144, 255], [20, 20, 20]]) {
@@ -1181,10 +3284,15 @@ function loadBluezState(objects = bluezObjects()) {
     return state;
 }
 
-test('bluetooth: o estado guarda só dispositivos e baterias', () => {
+test('bluetooth: o estado guarda só adaptador, dispositivos e baterias', () => {
     const state = loadBluezState();
-    assertEqual([...state.keys()].sort(),
-        ['/org/bluez/hci0/dev_84_D3_52_AB_7E_D7', '/org/bluez/hci0/dev_F6_A0_03_AE_F8_38']);
+    assertEqual([...state.keys()].sort(), ['/org/bluez/hci0',
+        '/org/bluez/hci0/dev_84_D3_52_AB_7E_D7', '/org/bluez/hci0/dev_F6_A0_03_AE_F8_38']);
+    assertEqual(Bt.adapterOf(state), {path: '/org/bluez/hci0', powered: true});
+    assert(Bt.changeProperties(state, '/org/bluez/hci0', Bt.ADAPTER_IFACE, {Powered: false}));
+    assertEqual(Bt.adapterOf(state).powered, false, 'rádio desligado:');
+    assertEqual(Bt.adapterOf(new Map()), null, 'sem adaptador:');
+    assertEqual(Bt.devicesFromState(state).length, 2, 'adaptador não vira dispositivo');
 
     const jbl = Bt.devicesFromState(state).find(d => d.address === '84:D3:52:AB:7E:D7');
     assertEqual(jbl, {
@@ -1216,18 +3324,27 @@ test('bluetooth: mudança de bateria e remoção de interface', () => {
     assert(!state.has(path), 'sem nenhuma interface o objeto deveria sair do estado');
 });
 
-test('bluetooth: o card mostra conectados, e os desconectados pelo card até fechar', () => {
+test('bluetooth: o card mostra os pareados, conectados primeiro, menos os escondidos', () => {
     const devices = [
-        {path: '/a', name: 'Zeta', paired: true, connected: true},
-        {path: '/b', name: 'Alfa', paired: true, connected: true},
-        {path: '/c', name: 'Beta', paired: true, connected: false},
-        {path: '/d', name: 'Estranho', paired: false, connected: true},
+        {path: '/a', address: 'A', name: 'Zeta', paired: true, connected: true},
+        {path: '/b', address: 'B', name: 'Alfa', paired: true, connected: true},
+        {path: '/c', address: 'C', name: 'Beta', paired: true, connected: false},
+        {path: '/d', address: 'D', name: 'Estranho', paired: false, connected: true},
     ];
 
-    assertEqual(Bt.visibleDevices(devices).map(d => d.path), ['/b', '/a'],
-        'só pareados e conectados, por nome:');
-    assertEqual(Bt.visibleDevices(devices, new Set(['/c'])).map(d => d.path), ['/b', '/a', '/c'],
-        'desconectado mantido vem por último:');
+    assertEqual(Bt.visibleDevices(devices).map(d => d.path), ['/b', '/a', '/c'],
+        'pareados, conectados primeiro, por nome:');
+    assertEqual(Bt.visibleDevices(devices, ['A', 'C']).map(d => d.path), ['/b'], 'escondidos:');
+
+    assertEqual(Bt.toggleHidden(['A'], 'C', true), ['A', 'C']);
+    assertEqual(Bt.toggleHidden(['A', 'C'], 'C', true), ['A', 'C'], 'sem repetir:');
+    assertEqual(Bt.toggleHidden(['A', 'C'], 'A', false), ['C']);
+    assertEqual(Bt.toggleHidden([], '', true), [], 'sem endereço:');
+
+    assertEqual(Bt.deviceStatus({connected: true}, false), 'connected');
+    assertEqual(Bt.deviceStatus({connected: false}, false), 'paired');
+    assertEqual(Bt.deviceStatus({connected: false}, true), 'connecting');
+    assertEqual(Bt.deviceStatus({connected: true}, true), 'disconnecting');
 });
 
 test('bluetooth: ícone simbólico e bateria baixa', () => {
@@ -1272,7 +3389,10 @@ test('dock: cliques seguem os padrões do Dash to Dock', () => {
     const base = {running: true, focused: false, inOverview: false};
 
     assertEqual(Dock.decideClick({...base, button: 1}), 'activate-first', 'app sem foco:');
-    assertEqual(Dock.decideClick({...base, button: 1, focused: true}), 'cycle', 'app com foco:');
+    assertEqual(Dock.decideClick({...base, button: 1, focused: true, windows: 3}), 'cycle',
+        'app com foco e várias janelas:');
+    assertEqual(Dock.decideClick({...base, button: 1, focused: true, windows: 1}), 'minimize',
+        'app com foco e uma janela minimiza:');
     assertEqual(Dock.decideClick({...base, button: 1, focused: true, shift: true}), 'minimize',
         'Shift:');
     assertEqual(Dock.decideClick({...base, button: 2}), 'new-window', 'clique do meio:');
@@ -1580,4 +3700,4 @@ test('dados: uuid de extensão conhecida não se repete', () => {
     assertEqual(uuids.length, new Set(uuids).size, 'uuids duplicados:');
 });
 
-imports.system.exit(run());
+imports.system.exit(await run());

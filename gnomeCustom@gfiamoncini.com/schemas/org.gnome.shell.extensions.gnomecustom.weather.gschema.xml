@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 Gabriel Fiamoncini
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<schemalist gettext-domain="gnomecustom">
+  <schema id="org.gnome.shell.extensions.gnomecustom.weather"
+          path="/org/gnome/shell/extensions/gnomecustom/weather/">
+
+    <key name="location-name" type="s">
+      <default>''</default>
+      <summary>Name shown for the location</summary>
+    </key>
+    <key name="latitude" type="d">
+      <default>0</default>
+      <range min="-90" max="90"/>
+      <summary>Latitude of the location</summary>
+    </key>
+    <key name="longitude" type="d">
+      <default>0</default>
+      <range min="-180" max="180"/>
+      <summary>Longitude of the location</summary>
+      <description>With latitude and longitude both 0 no location is set.</description>
+    </key>
+    <!-- Lista de valores, e não enum: o glib-compile-schemas lê os arquivos em
+         ordem alfabética, e um enum de outro arquivo pode não estar definido. -->
+    <key name="units" type="s">
+      <choices>
+        <choice value="metric"/>
+        <choice value="imperial"/>
+      </choices>
+      <default>'metric'</default>
+      <summary>Units</summary>
+      <description>“metric” is °C and km/h; “imperial” is °F and mph.</description>
+    </key>
+    <key name="refresh-minutes" type="u">
+      <default>20</default>
+      <range min="10" max="180"/>
+      <summary>Minutes between updates</summary>
+    </key>
+    <key name="panel-position" type="s">
+      <choices>
+        <choice value="left"/>
+        <choice value="center"/>
+        <choice value="right"/>
+      </choices>
+      <default>'right'</default>
+      <summary>Top bar section for the weather button</summary>
+    </key>
+  </schema>
+</schemalist>

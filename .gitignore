@@ -7,3 +7,6 @@ schemas/gschemas.compiled
 /dist/
 *.zip
 node_modules/
+
+# temporários do ntfs-3g (arquivo aberto e apagado)
+.fuse_hidden*

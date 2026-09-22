@@ -225,3 +225,17 @@ Estimativa: 90–120 chaves na v1.
 | AD-16 | Uma única folha gerada, em caminho estável no diretório de execução | reescrever o mesmo arquivo com `unload`+`load` é o caminho que o Open Bar validou, e não acumula arquivos |
 | AD-17 | O logotipo da distribuição vem do campo `LOGO` do `os-release` | nenhuma imagem é embarcada, o que também dispensa auditar licença de ícones |
 | AD-18 | Regras de tiling e ações de energia passam por serviços do GNOME (`SystemActions`), não por `systemctl` | respeita inibidores, polkit e disponibilidade real |
+| AD-19 | Menus, OSD e dock partem da **mesma** cor base da barra | é o que faz um preset parecer uma coisa só; superfícies elevadas só se afastam um passo |
+| AD-20 | Superfícies além da barra são opt-in e nascem desligadas | o baseline do usuário não as tematiza; o motor só assume o que for pedido |
+| AD-21 | Tokens para quem não se estiliza por CSS passam por `services/theme/style.js` | estilo inline vence folha; o consumidor lê um valor que pode ser `null`, sem saber se o módulo de tema existe (§6) |
+| AD-22 | O preset em uso é derivado dos valores, não armazenado | editar uma opção vira "Personalizado" sozinho; não há estado para dessincronizar |
+| AD-23 | `SETTINGS_KEYS` é a lista única chave→configuração do tema | leitura, observação e validação de presets seguem uma fonte só |
+| AD-24 | Toda decisão do tiling fica num controlador puro com adaptador de janelas | comportamento inteiro testável sem Shell; o módulo é só ponte |
+| AD-25 | Flutuar por janela é estado em memória; só regras de classe/título persistem | elimina por construção os "fantasmas" por `wmId` que quebravam o `Super+C` do Forge |
+| AD-26 | Janelas maximizadas em tiling são desmaximizadas; tela cheia é respeitada | o auto-maximize do Mutter deixaria janelas grandes fora do tiling |
+| AD-27 | O tiling fica em espera enquanto o Forge estiver ativo | dois gerenciadores sobre as mesmas janelas tornam a área de trabalho inutilizável |
+| AD-28 | Atalhos de modos não implementados (pilha, abas) não são registrados | não roubar teclas do sistema para não fazer nada |
+| AD-29 | A migração importa o valor efetivo de cada chave, não só o alterado | os padrões das extensões originais não são os nossos |
+| AD-30 | Importar nunca liga módulos; perfis ligam, com aviso sobre originais ativas | trocar extensões é decisão explícita, e duas implementações ativas brigam |
+| AD-31 | Backup antes de cada importação guarda também quais chaves estavam no padrão | "desfazer" precisa devolver ao padrão, não gravar o valor padrão por cima |
+| AD-32 | Não declarar GNOME 50 sem teste real | regra de §12 do briefing; os riscos estão mapeados em COMPATIBILITY §6 |

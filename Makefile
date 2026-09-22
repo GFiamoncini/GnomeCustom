@@ -49,6 +49,8 @@ help:
 	@echo '  make logs         acompanha o journal filtrado por [GnomeCustom]'
 	@echo '  make nested       abre um GNOME Shell aninhado para testar'
 	@echo ''
+	@echo '  make tiling-schemas regenera os esquemas do tiling a partir do JS'
+	@echo '  make theme-dracula-amoled gera e instala o tema Dracula-AMOLED em ~/.themes'
 	@echo '  make pot          regenera po/$(GETTEXT).pot'
 	@echo '  make update-po    atualiza os .po a partir do .pot'
 	@echo '  make clean        remove artefatos gerados'
@@ -77,6 +79,33 @@ $(SRC)/locale/%/LC_MESSAGES/$(GETTEXT).mo: po/%.po
 
 .PHONY: check
 check: lint schemas-check test test-prefs
+
+# Esquemas do tiling gerados de lib/tiling/actions.js e rules.js.
+.PHONY: tiling-schemas
+tiling-schemas:
+	gjs -m tools/gen-tiling-schemas.js
+	@$(MAKE) --no-print-directory schemas-check
+
+# Tema Dracula-AMOLED, derivado do Dracula (GPL-3.0) num commit fixado.
+DRACULA_REPO   := https://github.com/dracula/gtk.git
+DRACULA_COMMIT := 71640b9456110f3bac2130d0b387a3154a9fb4d2
+DRACULA_SRC    := $(BUILD)/dracula-src
+# NTFS: o git recusa o repositório ("dubious ownership") sem esta exceção local.
+GIT_DRACULA    := git -c safe.directory=$(CURDIR)/$(DRACULA_SRC)
+THEMES_DIR     := $(HOME)/.themes
+
+.PHONY: theme-dracula-amoled
+theme-dracula-amoled:
+	@if [ ! -d $(DRACULA_SRC)/.git ]; then \
+		mkdir -p $(DRACULA_SRC) && cd $(DRACULA_SRC) && $(GIT_DRACULA) init -q && \
+		$(GIT_DRACULA) remote add origin $(DRACULA_REPO); \
+	fi
+	@cd $(DRACULA_SRC) && $(GIT_DRACULA) fetch -q --depth 1 origin $(DRACULA_COMMIT) && $(GIT_DRACULA) checkout -q FETCH_HEAD
+	python3 themes/dracula-amoled/build.py $(DRACULA_SRC) $(BUILD)/themes/Dracula-AMOLED
+	@mkdir -p $(THEMES_DIR)
+	@rm -rf $(THEMES_DIR)/Dracula-AMOLED
+	cp -r $(BUILD)/themes/Dracula-AMOLED $(THEMES_DIR)/Dracula-AMOLED
+	@echo 'instalado em $(THEMES_DIR)/Dracula-AMOLED'
 
 .PHONY: schemas-check
 schemas-check:
@@ -187,7 +216,7 @@ nested: install
 
 .PHONY: pot
 pot:
-	xgettext --from-code=UTF-8 --keyword=_ --keyword=C_:1c,2 \
+	xgettext --from-code=UTF-8 --keyword=_ --keyword=N_ --keyword=C_:1c,2 \
 		--package-name=GnomeCustom --package-version=0.1.0 \
 		--copyright-holder="Gabriel Fiamoncini" \
 		--msgid-bugs-address="https://github.com/gfiamoncini/gnomecustom/issues" \

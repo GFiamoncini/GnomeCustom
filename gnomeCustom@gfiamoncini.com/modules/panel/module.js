@@ -39,6 +39,8 @@ export class PanelModule extends Module {
             () => this._syncActivities(), {fireNow: true});
         this.signals.connectSetting(this._settings, 'apps-menu-icon-size',
             () => this._button?.invalidate());
+        this.signals.connectSetting(this._settings, 'apps-menu-layout',
+            () => this._button?.applyLayout());
 
         this._unsubscribeApps = this._apps.onInstalledChanged(
             () => this._button?.invalidate());

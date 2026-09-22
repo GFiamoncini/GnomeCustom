@@ -2,10 +2,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import Adw from 'gi://Adw';
+import Gio from 'gi://Gio';
 import GioUnix from 'gi://GioUnix';
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk';
 
+import {LOGOS, logosDirectory} from '../../lib/logos.js';
 import {switchRow, spinRow, enumRow} from '../widgets.js';
 
 export class MenuPage extends Adw.PreferencesPage {
@@ -37,12 +39,12 @@ export class MenuPage extends Adw.PreferencesPage {
 
         group.add(enumRow({
             title: _('Logo'),
-            subtitle: _('The distribution logo comes from the system itself, so no images are bundled'),
             settings: this._settings,
             key: 'icon-source',
             options: [
-                ['distro', _('Distribution logo')],
-                ['symbolic', _('Monochrome icon')],
+                ['gallery', _('Logo gallery')],
+                ['distro', _('Icon of the system theme')],
+                ['symbolic', _('Generic monochrome icon')],
                 ['custom', _('Custom image')],
             ],
         }));
@@ -57,6 +59,100 @@ export class MenuPage extends Adw.PreferencesPage {
         group.add(this._customIconRow());
 
         this.add(group);
+        this._addGalleryGroup();
+    }
+
+    /**
+     * Galeria de logotipos (os do Logo Menu, em `assets/logos/`). Escolher um
+     * logotipo também passa a origem para "galeria".
+     */
+    _addGalleryGroup() {
+        const _ = this._;
+        const group = new Adw.PreferencesGroup({
+            title: _('Logo gallery'),
+            description: _('The same logos as the Logo Menu extension. Monochrome follows the text colour of the top bar.'),
+        });
+
+        group.add(switchRow({
+            title: _('Monochrome'),
+            settings: this._settings,
+            key: 'gallery-monochrome',
+        }));
+
+        this._gallery = new Gtk.FlowBox({
+            selection_mode: Gtk.SelectionMode.SINGLE,
+            homogeneous: true,
+            max_children_per_line: 8,
+            min_children_per_line: 3,
+            row_spacing: 6,
+            column_spacing: 6,
+            margin_top: 12,
+            css_classes: ['card'],
+        });
+        this._galleryIds = [];
+        this._fillGallery();
+
+        this._gallery.connect('child-activated', (_box, child) => {
+            const id = this._galleryIds[child.get_index()];
+            if (this._settings.get_string('gallery-logo') !== id)
+                this._settings.set_string('gallery-logo', id);
+            if (this._settings.get_string('icon-source') !== 'gallery')
+                this._settings.set_string('icon-source', 'gallery');
+        });
+
+        const handlers = [
+            this._settings.connect('changed::gallery-monochrome', () => this._fillGallery()),
+            this._settings.connect('changed::gallery-logo', () => this._selectCurrentLogo()),
+        ];
+        this._gallery.connect('destroy', () => handlers.forEach(id => this._settings.disconnect(id)));
+
+        group.add(this._gallery);
+        this.add(group);
+    }
+
+    _fillGallery() {
+        const _ = this._;
+        const monochrome = this._settings.get_boolean('gallery-monochrome');
+        const dir = logosDirectory();
+
+        this._gallery.remove_all();
+        this._galleryIds = [];
+
+        const entries = [
+            {id: '', title: _('From the distribution'), icon: new Gio.ThemedIcon({name: 'emblem-system-symbolic'})},
+            ...LOGOS.map(logo => {
+                const file = (monochrome ? logo.symbolic : logo.colored) ?? logo.symbolic ?? logo.colored;
+                return {id: logo.id, title: logo.title,
+                    icon: new Gio.FileIcon({file: Gio.File.new_for_path(`${dir}${file}`)})};
+            }),
+        ];
+
+        for (const {id, title, icon} of entries) {
+            const box = new Gtk.Box({
+                orientation: Gtk.Orientation.VERTICAL,
+                spacing: 4,
+                margin_top: 8,
+                margin_bottom: 8,
+                tooltip_text: title,
+            });
+            box.append(new Gtk.Image({gicon: icon, pixel_size: 32}));
+            box.append(new Gtk.Label({
+                label: title,
+                ellipsize: 3,   // Pango.EllipsizeMode.END
+                max_width_chars: 10,
+                css_classes: ['caption'],
+            }));
+            this._gallery.append(box);
+            this._galleryIds.push(id);
+        }
+        this._selectCurrentLogo();
+    }
+
+    _selectCurrentLogo() {
+        const index = this._galleryIds.indexOf(this._settings.get_string('gallery-logo'));
+        const child = this._gallery.get_child_at_index(Math.max(0, index));
+        if (child && !child.is_selected())
+            this._gallery.select_child(child);
     }
 
     _customIconRow() {

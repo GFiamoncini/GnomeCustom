@@ -34,10 +34,18 @@ export function assertThrows(fn, message = '') {
         throw new Error(`${message} esperava uma exceção`);
 }
 
-export function run() {
+/**
+ * Executa os testes em ordem. Um teste pode ser assíncrono (devolver promessa).
+ *
+ * Isto importa no GJS: o `run.js` usa `await` de topo, então os testes já rodam
+ * dentro de um job de promessa, e o GJS não drena promessas novas por um
+ * `GLib.MainLoop` aninhado nesse contexto — um teste que espere uma promessa com
+ * `loop.run()` fica parado para sempre. Com `await` a espera funciona.
+ */
+export async function run() {
     for (const {name, fn} of tests) {
         try {
-            fn();
+            await fn();
             passed++;
             print(`  ok    ${name}`);
         } catch (e) {

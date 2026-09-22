@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 Gabriel Fiamoncini
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<schemalist gettext-domain="gnomecustom">
+  <!-- Gerado a partir de lib/tiling/actions.js; um teste confere os dois. -->
+  <schema id="org.gnome.shell.extensions.gnomecustom.tiling.keybindings"
+          path="/org/gnome/shell/extensions/gnomecustom/tiling/keybindings/">
+    <key name="window-focus-left" type="as">
+      <default>['&lt;Super&gt;Left']</default>
+      <summary>Focus the window on the left</summary>
+    </key>
+    <key name="window-focus-right" type="as">
+      <default>['&lt;Super&gt;Right']</default>
+      <summary>Focus the window on the right</summary>
+    </key>
+    <key name="window-focus-up" type="as">
+      <default>['&lt;Super&gt;Up']</default>
+      <summary>Focus the window above</summary>
+    </key>
+    <key name="window-focus-down" type="as">
+      <default>['&lt;Super&gt;Down']</default>
+      <summary>Focus the window below</summary>
+    </key>
+    <key name="window-move-left" type="as">
+      <default>['&lt;Shift&gt;&lt;Super&gt;Left']</default>
+      <summary>Move the window left</summary>
+    </key>
+    <key name="window-move-right" type="as">
+      <default>['&lt;Shift&gt;&lt;Super&gt;Right']</default>
+      <summary>Move the window right</summary>
+    </key>
+    <key name="window-move-up" type="as">
+      <default>['&lt;Shift&gt;&lt;Super&gt;Up']</default>
+      <summary>Move the window up</summary>
+    </key>
+    <key name="window-move-down" type="as">
+      <default>['&lt;Shift&gt;&lt;Super&gt;Down']</default>
+      <summary>Move the window down</summary>
+    </key>
+    <key name="window-swap-left" type="as">
+      <default>['&lt;Control&gt;&lt;Super&gt;h']</default>
+      <summary>Swap with the window on the left</summary>
+    </key>
+    <key name="window-swap-down" type="as">
+      <default>['&lt;Control&gt;&lt;Super&gt;j']</default>
+      <summary>Swap with the window below</summary>
+    </key>
+    <key name="window-swap-up" type="as">
+      <default>['&lt;Control&gt;&lt;Super&gt;k']</default>
+      <summary>Swap with the window above</summary>
+    </key>
+    <key name="window-swap-right" type="as">
+      <default>['&lt;Control&gt;&lt;Super&gt;l']</default>
+      <summary>Swap with the window on the right</summary>
+    </key>
+    <key name="window-swap-last-active" type="as">
+      <default>['&lt;Super&gt;Return']</default>
+      <summary>Swap with the previously focused window</summary>
+    </key>
+    <key name="con-split-horizontal" type="as">
+      <default>['&lt;Super&gt;k']</default>
+      <summary>Split side by side</summary>
+    </key>
+    <key name="con-split-vertical" type="as">
+      <default>['&lt;Super&gt;v']</default>
+      <summary>Split one above the other</summary>
+    </key>
+    <key name="con-split-layout-toggle" type="as">
+      <default>['&lt;Super&gt;g']</default>
+      <summary>Toggle the split direction</summary>
+    </key>
+    <key name="window-toggle-float" type="as">
+      <default>['&lt;Super&gt;c']</default>
+      <summary>Float or tile this window</summary>
+    </key>
+    <key name="window-toggle-always-float" type="as">
+      <default>@as []</default>
+      <summary>Always float windows of this application</summary>
+    </key>
+    <key name="window-resize-top-increase" type="as">
+      <default>['&lt;Control&gt;&lt;Super&gt;i']</default>
+      <summary>Grow the top edge</summary>
+    </key>
+    <key name="window-resize-top-decrease" type="as">
+      <default>['&lt;Shift&gt;&lt;Control&gt;&lt;Super&gt;u']</default>
+      <summary>Shrink the top edge</summary>
+    </key>
+    <key name="window-resize-bottom-increase" type="as">
+      <default>['&lt;Control&gt;&lt;Super&gt;u']</default>
+      <summary>Grow the bottom edge</summary>
+    </key>
+    <key name="window-resize-bottom-decrease" type="as">
+      <default>['&lt;Shift&gt;&lt;Control&gt;&lt;Super&gt;i']</default>
+      <summary>Shrink the bottom edge</summary>
+    </key>
+    <key name="window-resize-left-increase" type="as">
+      <default>['&lt;Control&gt;&lt;Super&gt;y']</default>
+      <summary>Grow the left edge</summary>
+    </key>
+    <key name="window-resize-left-decrease" type="as">
+      <default>['&lt;Shift&gt;&lt;Control&gt;&lt;Super&gt;o']</default>
+      <summary>Shrink the left edge</summary>
+    </key>
+    <key name="window-resize-right-increase" type="as">
+      <default>['&lt;Control&gt;&lt;Super&gt;o']</default>
+      <summary>Grow the right edge</summary>
+    </key>
+    <key name="window-resize-right-decrease" type="as">
+      <default>['&lt;Shift&gt;&lt;Control&gt;&lt;Super&gt;y']</default>
+      <summary>Shrink the right edge</summary>
+    </key>
+    <key name="window-grow-left" type="as">
+      <default>['&lt;Shift&gt;&lt;Control&gt;&lt;Super&gt;Left']</default>
+      <summary>Grow towards the left</summary>
+    </key>
+    <key name="window-grow-right" type="as">
+      <default>['&lt;Shift&gt;&lt;Control&gt;&lt;Super&gt;Right']</default>
+      <summary>Grow towards the right</summary>
+    </key>
+    <key name="window-grow-up" type="as">
+      <default>['&lt;Shift&gt;&lt;Control&gt;&lt;Super&gt;Up']</default>
+      <summary>Grow upwards</summary>
+    </key>
+    <key name="window-grow-down" type="as">
+      <default>['&lt;Shift&gt;&lt;Control&gt;&lt;Super&gt;Down']</default>
+      <summary>Grow downwards</summary>
+    </key>
+    <key name="window-toggle-above" type="as">
+      <default>['&lt;Super&gt;t']</default>
+      <summary>Keep the window above the others</summary>
+    </key>
+    <key name="prefs-open" type="as">
+      <default>['&lt;Control&gt;&lt;Super&gt;s']</default>
+      <summary>Open the GnomeCustom settings</summary>
+    </key>
+    <key name="window-snap-center" type="as">
+      <default>['&lt;Control&gt;&lt;Alt&gt;c']</default>
+      <summary>Center the window</summary>
+    </key>
+    <key name="window-snap-one-third-left" type="as">
+      <default>['&lt;Control&gt;&lt;Alt&gt;d']</default>
+      <summary>Snap to the left third</summary>
+    </key>
+    <key name="window-snap-one-third-right" type="as">
+      <default>['&lt;Control&gt;&lt;Alt&gt;g']</default>
+      <summary>Snap to the right third</summary>
+    </key>
+    <key name="window-snap-two-third-left" type="as">
+      <default>['&lt;Control&gt;&lt;Alt&gt;e']</default>
+      <summary>Snap to the left two thirds</summary>
+    </key>
+    <key name="window-snap-two-third-right" type="as">
+      <default>['&lt;Control&gt;&lt;Alt&gt;t']</default>
+      <summary>Snap to the right two thirds</summary>
+    </key>
+    <key name="window-gap-size-increase" type="as">
+      <default>['&lt;Control&gt;&lt;Super&gt;plus']</default>
+      <summary>Increase the gaps</summary>
+    </key>
+    <key name="window-gap-size-decrease" type="as">
+      <default>['&lt;Control&gt;&lt;Super&gt;minus']</default>
+      <summary>Decrease the gaps</summary>
+    </key>
+    <key name="focus-border-toggle" type="as">
+      <default>['&lt;Super&gt;x']</default>
+      <summary>Show or hide the focus border</summary>
+    </key>
+    <key name="prefs-tiling-toggle" type="as">
+      <default>['&lt;Shift&gt;&lt;Super&gt;p']</default>
+      <summary>Turn tiling on or off</summary>
+    </key>
+    <key name="workspace-active-tile-toggle" type="as">
+      <default>['&lt;Shift&gt;&lt;Super&gt;w']</default>
+      <summary>Turn tiling on or off for this workspace</summary>
+    </key>
+    <key name="con-stacked-layout-toggle" type="as">
+      <default>['&lt;Shift&gt;&lt;Super&gt;a']</default>
+      <summary>Stacked layout (not available)</summary>
+    </key>
+    <key name="con-tabbed-layout-toggle" type="as">
+      <default>['&lt;Shift&gt;&lt;Super&gt;t']</default>
+      <summary>Tabbed layout (not available)</summary>
+    </key>
+    <key name="con-tabbed-showtab-decoration-toggle" type="as">
+      <default>['&lt;Control&gt;&lt;Alt&gt;y']</default>
+      <summary>Tab decorations (not available)</summary>
+    </key>
+  </schema>
+</schemalist>

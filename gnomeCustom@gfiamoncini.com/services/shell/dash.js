@@ -116,6 +116,7 @@ class DockIcon extends Dash.DashIcon {
             shift: (state & Clutter.ModifierType.SHIFT_MASK) !== 0,
             ctrl: (state & Clutter.ModifierType.CONTROL_MASK) !== 0,
             running: windows.length > 0,
+            windows: windows.length,
             focused: Shell.WindowTracker.get_default().focus_app === this.app,
             inOverview: Main.overview.visible,
         });
@@ -175,9 +176,13 @@ class DockDash extends Dash.Dash {
         this._queueRedisplay();
     }
 
-    /** @param {number} alpha 0 (transparente) a 1 */
-    setBackgroundOpacity(alpha) {
-        this._background.style = `background-color: ${rgba(BACKGROUND_COLOR, alpha)};`;
+    /**
+     * @param {number} alpha 0 (transparente) a 1
+     * @param {?number[]} [color] RGB vindo do Theme Engine; null usa a cor padrão
+     */
+    setBackgroundOpacity(alpha, color = null) {
+        this._background.style =
+            `background-color: ${rgba(color ?? BACKGROUND_COLOR, alpha)};`;
     }
 
     // Adaptado de Dash._createAppItem (GNOME Shell 49): o mesmo item, com DockIcon.

@@ -15,6 +15,8 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import Gtk from 'gi://Gtk';
 
+import {SYSTEM_KEYBINDING_SCHEMAS, acceptShortcut, findCollisions, isModifierKeyName} from '../lib/shortcuts.js';
+
 /**
  * Escapa texto que vai para título ou subtítulo de uma linha.
  *
@@ -71,6 +73,44 @@ export function spinRow({title, subtitle = '', settings, key, min, max, step = 1
 
     // `Gio.Settings.bind` cobre inteiros e doubles; o tipo real vem do esquema.
     settings.bind(key, row, 'value', Gio.SettingsBindFlags.DEFAULT);
+    return row;
+}
+
+/**
+ * Opacidade de 0 a 100 %, gravada como fração (chave `d` de 0 a 1), como a
+ * opacidade do Dash to Dock.
+ *
+ * @param {object} args
+ * @param {string} args.title
+ * @param {string} [args.subtitle]
+ * @param {object} args.settings
+ * @param {string} args.key chave `d` de 0 a 1
+ * @returns {object} Adw.SpinRow
+ */
+export function percentRow({title, subtitle = '', settings, key}) {
+    const row = new Adw.SpinRow({
+        title,
+        subtitle,
+        adjustment: new Gtk.Adjustment({lower: 0, upper: 100, step_increment: 5, page_increment: 10}),
+        digits: 0,
+    });
+
+    const toPercent = () => Math.round(settings.get_double(key) * 100);
+    let updating = false;
+    row.value = toPercent();
+    row.connect('notify::value', () => {
+        if (updating)
+            return;
+        const fraction = Math.round(row.value) / 100;
+        if (Math.abs(fraction - settings.get_double(key)) > 1e-9)
+            settings.set_double(key, fraction);
+    });
+    const handler = settings.connect(`changed::${key}`, () => {
+        updating = true;
+        row.value = toPercent();
+        updating = false;
+    });
+    row.connect('destroy', () => settings.disconnect(handler));
     return row;
 }
 
@@ -220,4 +260,149 @@ export function rgbaToHex(red, green, blue) {
  */
 export function infoRow({title, subtitle}) {
     return new Adw.ActionRow({title, subtitle});
+}
+
+/**
+ * Atalhos do sistema (e de outros esquemas `as` pedidos), para o aviso de
+ * colisão do editor. Esquemas que não existem na máquina são ignorados.
+ *
+ * @param {Array<{schema?: string, settings?: object}>} [extra] nossos outros esquemas
+ * @returns {Array<{schema: string, key: string, accels: string[]}>}
+ */
+export function readKeybindings(extra = []) {
+    const source = Gio.SettingsSchemaSource.get_default();
+    const sources = SYSTEM_KEYBINDING_SCHEMAS
+        .map(id => source?.lookup(id, true))
+        .filter(Boolean)
+        .map(schema => ({schema: schema.get_id(), settings: new Gio.Settings({settings_schema: schema})}));
+
+    const bindings = [];
+    for (const {schema, settings} of [...sources, ...extra]) {
+        const settingsSchema = settings.settings_schema;
+        for (const key of settingsSchema.list_keys()) {
+            if (settingsSchema.get_key(key).get_value_type().dup_string() === 'as')
+                bindings.push({schema: schema ?? settingsSchema.get_id(), key, accels: settings.get_strv(key)});
+        }
+    }
+    return bindings;
+}
+
+/**
+ * O que fazer com uma tecla apertada durante a captura de um atalho.
+ *
+ * @param {number} keyval
+ * @param {number} keycode
+ * @param {number} state Gdk.ModifierType
+ * @returns {{action: 'cancel'|'clear'|'wait'|'invalid'|'set', accel?: string}}
+ */
+export function captureAccel(keyval, keycode, state) {
+    const mask = state & Gtk.accelerator_get_default_mod_mask();
+    const lower = Gdk.keyval_to_lower(keyval);
+    const keyName = Gdk.keyval_name(lower) ?? '';
+
+    if (mask === 0 && lower === Gdk.KEY_Escape)
+        return {action: 'cancel'};
+    if (mask === 0 && lower === Gdk.KEY_BackSpace)
+        return {action: 'clear'};
+    if (isModifierKeyName(keyName))
+        return {action: 'wait'};
+
+    const hasModifier = (mask & ~Gdk.ModifierType.SHIFT_MASK) !== 0;
+    if (!acceptShortcut(keyName, hasModifier))
+        return {action: 'invalid'};
+
+    return {action: 'set', accel: Gtk.accelerator_name_with_keycode(null, lower, keycode, mask)};
+}
+
+/**
+ * Linha de atalho editável, ligada a uma chave `as`: mostra a combinação, abre
+ * a captura no clique e oferece limpar e voltar ao padrão. Quando a combinação
+ * também é usada em outro lugar, o subtítulo avisa.
+ *
+ * @param {object} args
+ * @param {string} args.title
+ * @param {string} [args.subtitle]
+ * @param {object} args.settings
+ * @param {string} args.key chave `as`
+ * @param {Function} args._ tradução
+ * @param {Function} [args.others] devolve os atalhos a conferir (ver `readKeybindings`)
+ * @returns {object} Adw.ActionRow
+ */
+export function shortcutRow({title, subtitle = '', settings, key, _, others = () => []}) {
+    const row = new Adw.ActionRow({title, subtitle, activatable: true});
+
+    const label = new Gtk.ShortcutLabel({
+        disabled_text: _('Disabled'),
+        valign: Gtk.Align.CENTER,
+    });
+    const reset = new Gtk.Button({
+        icon_name: 'edit-undo-symbolic',
+        valign: Gtk.Align.CENTER,
+        css_classes: ['flat'],
+        tooltip_text: _('Restore default'),
+    });
+    const clear = new Gtk.Button({
+        icon_name: 'edit-clear-symbolic',
+        valign: Gtk.Align.CENTER,
+        css_classes: ['flat'],
+        tooltip_text: _('Disable shortcut'),
+    });
+    reset.connect('clicked', () => settings.reset(key));
+    clear.connect('clicked', () => settings.set_strv(key, []));
+
+    row.add_suffix(label);
+    row.add_suffix(reset);
+    row.add_suffix(clear);
+
+    const sync = () => {
+        const accels = settings.get_strv(key).filter(Boolean);
+        label.accelerator = accels[0] ?? '';
+        clear.sensitive = accels.length > 0;
+        reset.sensitive = settings.get_user_value(key) !== null;
+
+        const collision = findCollisions([{key, accels}],
+            others().filter(binding => binding.key !== key))[0];
+        row.subtitle = collision
+            ? escapeMarkup(_('Also used by “%s” (%s)').replace('%s', collision.theirs).replace('%s', collision.schema))
+            : subtitle;
+        if (collision)
+            row.add_css_class('warning');
+        else
+            row.remove_css_class('warning');
+    };
+
+    const handler = settings.connect(`changed::${key}`, sync);
+    row.connect('destroy', () => settings.disconnect(handler));
+    row.connect('activated', () => openShortcutDialog(row, title, settings, key, _));
+    sync();
+
+    return row;
+}
+
+function openShortcutDialog(parent, title, settings, key, _) {
+    const hint = _('Press the new shortcut. Esc cancels, Backspace disables.');
+    const dialog = new Adw.AlertDialog({heading: title, body: hint});
+    dialog.add_response('cancel', _('Cancel'));
+
+    const controller = new Gtk.EventControllerKey({propagation_phase: Gtk.PropagationPhase.CAPTURE});
+    controller.connect('key-pressed', (_controller, keyval, keycode, state) => {
+        const result = captureAccel(keyval, keycode, state);
+        switch (result.action) {
+        case 'wait':
+            return true;
+        case 'invalid':
+            dialog.body = _('Use Ctrl, Alt or Super with the key (function and media keys work alone).');
+            return true;
+        case 'clear':
+            settings.set_strv(key, []);
+            break;
+        case 'set':
+            settings.set_strv(key, [result.accel]);
+            break;
+        }
+        dialog.close();
+        return true;
+    });
+    dialog.add_controller(controller);
+    dialog.present(parent);
 }

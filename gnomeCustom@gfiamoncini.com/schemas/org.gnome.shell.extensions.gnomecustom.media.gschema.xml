@@ -30,6 +30,26 @@
       <range min="80" max="600"/>
       <summary>Maximum width of the track name in the top bar, in pixels</summary>
     </key>
+    <key name="show-controls" type="b">
+      <default>true</default>
+      <summary>Show playback controls in the top bar</summary>
+      <description>Previous, play or pause, and next buttons beside the track
+      name.</description>
+    </key>
+    <key name="shortcut-play-pause" type="as">
+      <default>['&lt;Control&gt;&lt;Alt&gt;&lt;Super&gt;Up']</default>
+      <summary>Shortcut to play or pause</summary>
+      <description>Acts on the player shown in the top bar or, when none is shown,
+      on the first allowed player that is open.</description>
+    </key>
+    <key name="shortcut-next" type="as">
+      <default>['&lt;Control&gt;&lt;Alt&gt;&lt;Super&gt;Right']</default>
+      <summary>Shortcut to skip to the next track</summary>
+    </key>
+    <key name="shortcut-previous" type="as">
+      <default>['&lt;Control&gt;&lt;Alt&gt;&lt;Super&gt;Left']</default>
+      <summary>Shortcut to go back to the previous track</summary>
+    </key>
     <key name="show-progress" type="b">
       <default>true</default>
       <summary>Show the elapsed time in the card</summary>

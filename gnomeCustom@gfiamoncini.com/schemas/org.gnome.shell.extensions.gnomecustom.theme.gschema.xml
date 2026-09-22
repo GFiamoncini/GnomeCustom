@@ -25,6 +25,13 @@
       <range min="16" max="96"/>
       <summary>Top bar height in pixels</summary>
     </key>
+    <key name="panel-icon-size" type="u">
+      <default>16</default>
+      <range min="10" max="32"/>
+      <summary>Size of the status icons in the top bar, in pixels</summary>
+      <description>Applies whatever the shell theme says. 16 is the GNOME size; a
+      low bar with a compact font looks balanced with 12 to 14.</description>
+    </key>
     <key name="panel-margin-top" type="d">
       <default>1.5</default>
       <range min="0" max="40"/>
@@ -61,6 +68,29 @@
       <default>0.9</default>
       <range min="0" max="1"/>
       <summary>Background opacity of the top bar</summary>
+    </key>
+    <key name="panel-custom-colors" type="b">
+      <default>false</default>
+      <summary>Choose the top bar colours yourself</summary>
+      <description>When on, the bar uses the background and border colours below
+      and ignores the wallpaper palette and the shared background colour, which
+      keep colouring menus, OSD and dock.</description>
+    </key>
+    <key name="panel-background-color" type="s">
+      <default>'#1E1E1E'</default>
+      <summary>Top bar background colour when choosing colours yourself</summary>
+      <description>Hexadecimal, “#RRGGBB”. The opacity is the background opacity key.</description>
+    </key>
+    <key name="panel-border-color" type="s">
+      <default>''</default>
+      <summary>Top bar border colour when choosing colours yourself</summary>
+      <description>Empty means a shade derived from the background colour.</description>
+    </key>
+    <key name="compact-notifications" type="b">
+      <default>false</default>
+      <summary>Compact notification cards</summary>
+      <description>Smaller icons, tighter spacing and a narrower list in the
+      notification area of the date menu.</description>
     </key>
     <key name="accent-color" type="s">
       <default>'#1C71D8'</default>
@@ -101,6 +131,97 @@
       <summary>Make panel buttons reach the screen edge</summary>
       <description>Removes the dead zone above panel buttons so they can be
       clicked by slamming the pointer into the edge.</description>
+    </key>
+    <!-- Superfícies além da barra (Fase 7). Desligadas por padrão: o baseline
+         do usuário não tematiza menus, OSD nem dock, e o motor só assume o que
+         for pedido. Todas usam a mesma cor base da barra, que é o que torna um
+         preset coerente entre elas. -->
+    <key name="style-menus" type="b">
+      <default>false</default>
+      <summary>Apply the theme colours to popup menus</summary>
+      <description>Panel menus, the logo menu, the applications menu and the
+      cards use the bar background and accent colour.</description>
+    </key>
+    <key name="style-osd" type="b">
+      <default>false</default>
+      <summary>Apply the theme colours to on-screen displays</summary>
+      <description>The volume and brightness pop-ups use the bar background,
+      and the level bar uses the accent colour.</description>
+    </key>
+    <key name="style-dock" type="b">
+      <default>false</default>
+      <summary>Apply the theme colours to the dock</summary>
+      <description>The dock background takes the bar colour (its opacity is still
+      set in the dock settings), and the running indicators take the accent.</description>
+    </key>
+    <key name="menu-radius" type="d">
+      <default>12</default>
+      <range min="0" max="30"/>
+      <summary>Corner radius of popup menus and on-screen displays</summary>
+    </key>
+    <key name="menu-background-alpha" type="d">
+      <default>0.95</default>
+      <range min="0.3" max="1"/>
+      <summary>Background opacity of popup menus and on-screen displays</summary>
+      <description>Kept above 0.3 so menu text stays readable over any window.</description>
+    </key>
+    <key name="dock-radius" type="d">
+      <default>12</default>
+      <range min="0" max="30"/>
+      <summary>Corner radius of the dock background</summary>
+    </key>
+
+    <!-- Bordas do tiling: tokens prontos para o módulo da Fase 8. Os defaults
+         são os do Forge no baseline (stylesheet.css do usuário). -->
+    <key name="tiling-border-color" type="s">
+      <default>'#9A9996'</default>
+      <summary>Colour of the focused window border in tiling mode</summary>
+      <description>Hexadecimal, “#RRGGBB”. Empty follows the accent colour.</description>
+    </key>
+    <key name="tiling-border-width" type="u">
+      <default>3</default>
+      <range min="0" max="12"/>
+      <summary>Thickness of the focused window border</summary>
+    </key>
+    <key name="tiling-border-radius" type="u">
+      <default>14</default>
+      <range min="0" max="40"/>
+      <summary>Corner radius of the windows, followed by the focus border</summary>
+      <description>The inner edge of the border is drawn with this radius, so it
+      should match how rounded the windows are; a smaller value leaves a gap at the
+      corners. GNOME apps use about 15; Chrome needs about 18.</description>
+    </key>
+
+    <key name="amoled-black" type="b">
+      <default>false</default>
+      <summary>AMOLED black</summary>
+      <description>Loads a copy of the shell theme with its dark greys turned into
+      pure black, for OLED screens. Light text and accent colours stay as they are.</description>
+    </key>
+    <key name="apply-to-apps" type="b">
+      <default>false</default>
+      <summary>Use the shell theme for applications too</summary>
+      <description>When the chosen shell theme also ships a GTK theme, it becomes the
+      theme of the applications, and its libadwaita stylesheet (if any) is linked at
+      ~/.config/gtk-4.0/gtk.css. A theme with an apps/ folder also sets the colours
+      and the window frame of VS Code and Obsidian. Turning this off or picking
+      another theme restores what was there before.</description>
+    </key>
+    <key name="app-theme-previous" type="s">
+      <default>''</default>
+      <summary>Internal: GTK theme before the shell theme was applied to applications</summary>
+    </key>
+    <key name="app-theme-applied" type="s">
+      <default>''</default>
+      <summary>Internal: GTK theme set by the extension</summary>
+    </key>
+    <key name="app-theme-css" type="s">
+      <default>''</default>
+      <summary>Internal: stylesheet linked at ~/.config/gtk-4.0/gtk.css by the extension</summary>
+    </key>
+    <key name="app-tweaks-state" type="s">
+      <default>''</default>
+      <summary>Internal: values changed in Electron apps (VS Code, Obsidian) by the extension, as JSON</summary>
     </key>
     <key name="shell-theme" type="s">
       <default>''</default>

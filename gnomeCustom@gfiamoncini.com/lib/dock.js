@@ -6,7 +6,8 @@
  *
  * O comportamento de clique reproduz os padrões do Dash to Dock que o usuário usa
  * (BASELINE-CONFIG.md §3.1: nenhuma chave de clique alterada): clique alterna
- * entre as janelas do app, Shift+clique minimiza, clique do meio abre uma janela
+ * entre as janelas do app (com uma só em foco, minimiza — como no WinDock),
+ * Shift+clique minimiza, clique do meio abre uma janela
  * nova, Ctrl+clique segue o GNOME. Adaptado do Dash to Dock (© micheleg e
  * colaboradores, GPL-2.0-or-later — reuso permitido, LICENSE-AUDIT.md §4).
  */
@@ -53,12 +54,14 @@ export function dotsCount(windows) {
  * @param {boolean} [click.shift]
  * @param {boolean} [click.ctrl]
  * @param {boolean} click.running o app tem janelas
+ * @param {number} [click.windows] quantas janelas o app tem
  * @param {boolean} click.focused o app tem o foco
  * @param {boolean} click.inOverview a visão geral está aberta
  * @returns {string} 'default' | 'new-window' | 'minimize' | 'cycle' |
  *     'activate-first' | 'app-activate'
  */
-export function decideClick({button, shift = false, ctrl = false, running, focused, inOverview}) {
+export function decideClick({button, shift = false, ctrl = false, running, windows = 1, focused,
+    inOverview}) {
     // Ctrl e app fechado: o comportamento do próprio GNOME (abrir/nova janela).
     if (ctrl || !running)
         return 'default';
@@ -71,7 +74,12 @@ export function decideClick({button, shift = false, ctrl = false, running, focus
             return 'minimize';
         if (inOverview)
             return 'app-activate';
-        return focused ? 'cycle' : 'activate-first';
+        if (!focused)
+            return 'activate-first';
+        // Como no WinDock: app em foco com uma janela minimiza (pedido do usuário,
+        // 2026-09-16 — alternar reativava a mesma janela e o clique parecia morto);
+        // com várias, alterna entre elas.
+        return windows > 1 ? 'cycle' : 'minimize';
     }
 
     return 'default';

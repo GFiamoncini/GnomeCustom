@@ -39,3 +39,31 @@ gnomeCustom@gfiamoncini.com/services/system/cover-art.js
     cache de capas com cor dominante.
     Copyright (C) 2026 NarkAgni — GPL-3.0-or-later.
     https://github.com/NarkAgni/spotify-controller
+
+gnomeCustom@gfiamoncini.com/lib/tiling/default-rules.js
+    As 28 regras de janela padrão, copiadas como dados de config/windows.json.
+gnomeCustom@gfiamoncini.com/lib/tiling/tree.js
+gnomeCustom@gfiamoncini.com/lib/tiling/controller.js
+gnomeCustom@gfiamoncini.com/lib/tiling/actions.js
+    Modelo de navegação no estilo do i3, nomes e atalhos padrão das ações,
+    fórmula de gaps, proporções de snap e flutuação, e a forma de desmaximizar
+    no GNOME 49, estudados no Forge. Código próprio.
+    Copyright (C) Forge contributors — GPL-3.0-or-later.
+    https://github.com/forge-ext/forge
+
+assets/logos/*.svg
+    Logotipos de distribuições do Logo Menu (https://github.com/Aryan20/Logomenu),
+    © Aryan Kaushik e colaboradores, pasta Resources/, commit cf988c0 (24.8).
+    Sem modificação. Licença de origem: GPL-2.0 (assets/logos/LICENSE-GPL-2.0),
+    distribuídos junto como obra separada. Cada logotipo é marca de seu projeto.
+
+Dados do clima (módulo weather)
+    Open-Meteo (https://open-meteo.com), dados sob CC BY 4.0; a atribuição aparece
+    no card. Nenhum código de terceiros: a ideia vem do OpenWeather
+    (gitlab.com/skrewball/openweather, GPL-3.0), sem reaproveitamento.
+
+themes/dracula-amoled/ (tema Dracula-AMOLED, gerado)
+    Derivado do Dracula (https://github.com/dracula/gtk), © Eliver Lara e
+    colaboradores, GPL-3.0, commit 71640b9. O gerador (build.py) baixa as fontes,
+    troca a paleta, compacta as medidas e desenha os botões das janelas; o tema
+    resultante mantém a GPL-3.0 (COPYING dentro dele).

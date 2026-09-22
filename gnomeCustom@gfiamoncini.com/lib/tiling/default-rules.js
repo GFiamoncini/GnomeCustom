@@ -1,0 +1,43 @@
+// SPDX-FileCopyrightText: 2026 Gabriel Fiamoncini
+// SPDX-FileCopyrightText: Forge contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+/**
+ * Regras de janela padrão: as 28 do Forge (`config/windows.json`, commit
+ * 46736af), copiadas como dados. São exatamente as regras que o usuário tem hoje,
+ * menos as entradas com `wmId` (BASELINE-CONFIG.md §3.2).
+ *
+ * Forge — Copyright (C) Forge contributors, GPL-3.0-or-later.
+ * https://github.com/forge-ext/forge
+ */
+
+export const DEFAULT_RULES = Object.freeze([
+    {wmClass: "org.gnome.Shell.Extensions", wmTitle: "Forge Settings", mode: "float"},
+    {wmClass: "jetbrains-toolbox", mode: "float"},
+    {wmClass: "jetbrains-goland", wmTitle: "splash", mode: "float"},
+    {wmClass: "jetbrains-webstorm", wmTitle: "splash", mode: "float"},
+    {wmClass: "jetbrains-phpstorm", wmTitle: "splash", mode: "float"},
+    {wmClass: "jetbrains-datagrip", wmTitle: "splash", mode: "float"},
+    {wmClass: "jetbrains-rubymine", wmTitle: "splash", mode: "float"},
+    {wmClass: "jetbrains-idea", wmTitle: "splash", mode: "float"},
+    {wmClass: "com.github.amezin.ddterm", mode: "float"},
+    {wmClass: "com.github.donadigo.eddy", mode: "float"},
+    {wmClass: "Conky", mode: "float"},
+    {wmClass: "Gnome-initial-setup", mode: "float"},
+    {wmClass: "org.gnome.Calculator", mode: "float"},
+    {wmClass: "gnome-terminal-server", wmTitle: "Preferences – General", mode: "float"},
+    {wmClass: "gnome-terminal-preferences", mode: "float"},
+    {wmClass: "Guake", mode: "float"},
+    {wmClass: "zoom", mode: "float"},
+    {wmClass: "firefox", wmTitle: "About Mozilla Firefox", mode: "float"},
+    {wmClass: "firefox", wmTitle: "!Mozilla Firefox", mode: "float"},
+    {wmClass: "org.mozilla.firefox.desktop", wmTitle: "About Mozilla Firefox", mode: "float"},
+    {wmClass: "org.mozilla.firefox.desktop", wmTitle: "!Mozilla Firefox", mode: "float"},
+    {wmClass: "thunderbird", wmTitle: "About Mozilla Thunderbird", mode: "float"},
+    {wmClass: "thunderbird", wmTitle: "!Mozilla Thunderbird", mode: "float"},
+    {wmClass: "org.mozilla.Thunderbird.desktop", wmTitle: "About Mozilla Thunderbird", mode: "float"},
+    {wmClass: "org.mozilla.Thunderbird.desktop", wmTitle: "!Mozilla Thunderbird", mode: "float"},
+    {wmClass: "evolution-alarm-notify", mode: "float"},
+    {wmClass: "variety", mode: "float"},
+    {wmClass: "update-manager", mode: "float"},
+]);

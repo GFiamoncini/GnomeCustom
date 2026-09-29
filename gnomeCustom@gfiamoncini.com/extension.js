@@ -27,6 +27,8 @@ import {AnimationService} from './services/shell/animation.js';
 import {BluetoothService} from './services/bluetooth/devices.js';
 import {MprisService} from './services/mpris/players.js';
 import {OpenMeteoClient} from './services/weather/openmeteo.js';
+import {ClaudeUsageService} from './services/ai/claude-usage.js';
+import {RemovableService} from './services/system/removable.js';
 import {CoverArtService} from './services/system/cover-art.js';
 import {DistroService} from './services/system/distro.js';
 import {WallpaperService} from './services/system/wallpaper.js';
@@ -42,6 +44,8 @@ import {BluetoothModule} from './modules/bluetooth/module.js';
 import {VolumeModule} from './modules/volume/module.js';
 import {MediaModule} from './modules/media/module.js';
 import {WeatherModule} from './modules/weather/module.js';
+import {AiUsageModule} from './modules/aiusage/module.js';
+import {RemovableModule} from './modules/removable/module.js';
 import {DockModule} from './modules/dock/module.js';
 import {OverviewModule} from './modules/overview/module.js';
 import {AnimationModule} from './modules/animation/module.js';
@@ -62,6 +66,8 @@ const MODULES = [
     VolumeModule,
     MediaModule,
     WeatherModule,
+    AiUsageModule,
+    RemovableModule,
     DockModule,
     OverviewModule,
     AnimationModule,
@@ -94,6 +100,8 @@ export default class GnomeCustomExtension extends Extension {
                 mpris: ({logger}) => new MprisService({logger}),
                 coverArt: ({logger}) => new CoverArtService({logger}),
                 weather: ({logger}) => new OpenMeteoClient({logger}),
+                aiUsage: ({logger}) => new ClaudeUsageService({logger}),
+                removable: ({logger}) => new RemovableService({logger}),
                 distro: ({logger}) => new DistroService({logger}),
                 wallpaper: ({logger}) => new WallpaperService({logger}),
                 appTheme: ({logger}) => new AppThemeService({logger}),

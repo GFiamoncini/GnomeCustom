@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 Gabriel Fiamoncini
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<schemalist gettext-domain="gnomecustom">
+  <schema id="org.gnome.shell.extensions.gnomecustom.removable"
+          path="/org/gnome/shell/extensions/gnomecustom/removable/">
+
+    <key name="hide-when-empty" type="b">
+      <default>true</default>
+      <summary>Hide the button when nothing is connected</summary>
+      <description>The button appears when a USB stick, memory card or external drive is mounted and goes away with the last one.</description>
+    </key>
+    <!-- Lista de valores, e não enum: veja o esquema do clima. -->
+    <key name="panel-position" type="s">
+      <choices>
+        <choice value="left"/>
+        <choice value="center"/>
+        <choice value="right"/>
+      </choices>
+      <default>'right'</default>
+      <summary>Top bar section for the removable devices button</summary>
+    </key>
+  </schema>
+</schemalist>

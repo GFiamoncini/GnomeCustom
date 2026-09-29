@@ -455,7 +455,7 @@ export class ThemePage extends Adw.PreferencesPage {
                 }));
                 group.add(switchRow({
                     title: _('Use it for applications too'),
-                    subtitle: _('When the theme also ships a GTK theme (like Dracula-AMOLED), the apps follow it, libadwaita ones included, and VS Code and Obsidian get its colours and the system window frame. Turning this off restores the previous look; apps need to be reopened'),
+                    subtitle: _('When the theme also ships a GTK theme (like Dracula-AMOLED), the apps follow it, libadwaita ones included, and VS Code, Obsidian and GitHub Desktop get its colours or the system window frame. Turning this off restores the previous look; apps need to be reopened'),
                     settings: this._settings,
                     key: 'apply-to-apps',
                 }));

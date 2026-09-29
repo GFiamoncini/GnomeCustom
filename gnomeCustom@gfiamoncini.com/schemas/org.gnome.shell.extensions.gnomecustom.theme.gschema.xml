@@ -204,7 +204,7 @@
       <description>When the chosen shell theme also ships a GTK theme, it becomes the
       theme of the applications, and its libadwaita stylesheet (if any) is linked at
       ~/.config/gtk-4.0/gtk.css. A theme with an apps/ folder also sets the colours
-      and the window frame of VS Code and Obsidian. Turning this off or picking
+      and the window frame of VS Code, Obsidian and GitHub Desktop. Turning this off or picking
       another theme restores what was there before.</description>
     </key>
     <key name="app-theme-previous" type="s">
@@ -221,7 +221,7 @@
     </key>
     <key name="app-tweaks-state" type="s">
       <default>''</default>
-      <summary>Internal: values changed in Electron apps (VS Code, Obsidian) by the extension, as JSON</summary>
+      <summary>Internal: values changed in Electron apps (VS Code, Obsidian, GitHub Desktop) by the extension, as JSON</summary>
     </key>
     <key name="shell-theme" type="s">
       <default>''</default>

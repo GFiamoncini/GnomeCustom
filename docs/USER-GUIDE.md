@@ -68,6 +68,26 @@ Mexer em qualquer opção coberta por um perfil faz o seletor mostrar **Personal
 | Visão geral | GNOME UI Tune | Visão geral |
 | Animação | Impatience | Animação: fator de velocidade |
 | Mosaico | Forge | Mosaico: gaps, regras, atalhos |
+| Cota de IA | — (novo; ideia do ai-usagebar, desenho do WinDock) | Cota de IA: contas mostradas, cota ao lado do ícone, card detalhado, intervalo, posição |
+| Dispositivos externos | — (novo; do WinDock) | Dispositivos externos: só enquanto houver algo conectado, posição |
+
+**Cota de IA:** quanto do plano do Claude já foi usado — a janela de 5 horas, a de 7 dias e
+as que houver por modelo, o mesmo número do `/usage` do Claude Code. Toda pasta `~/.claude*`
+com um login do Claude Code é uma conta (mais a que `CLAUDE_CONFIG_DIR` apontar); o card
+mostra uma embaixo da outra. A seta no rodapé alterna entre o compacto (uma linha por janela)
+e o detalhado (conta, e-mail e "zera em"). O GnomeCustom **só lê** a credencial do Claude
+Code — nunca a grava nem a registra no log. Quando ela vence, o card diz "Sessão expirada"
+até o próximo uso do Claude Code, que renova sozinho. A fonte não é uma API pública e pode
+mudar sem aviso. A cota é consultada no máximo a cada dois minutos por conta; depois de um
+`429`, o card espera o tempo pedido (ou dez minutos) mostrando os últimos números em âmbar.
+
+**Dispositivos externos:** o ícone do pen-drive aparece na barra quando um pen-drive, cartão
+de memória ou HD externo é montado, e some com o último. O card lista um **aparelho** por
+linha — um HD com duas partições aparece uma vez, com as duas ao lado — e cada linha tem
+**Abrir** (a pasta no Arquivos) e **Remover**. Remover é o mesmo "Remover com segurança" do
+Arquivos: se algum programa ainda usa o aparelho, o GNOME diz qual e pergunta; o GnomeCustom
+nunca força. Quando dá certo, o card diz que já pode desconectar. Discos internos não
+aparecem.
 
 **Animações desligadas no sistema:** no GNOME 49, com "Animações" desligado em
 Acessibilidade, quase nada anima — o fator de velocidade só vale para as poucas animações

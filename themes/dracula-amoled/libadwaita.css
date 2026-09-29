@@ -98,3 +98,38 @@ windowcontrols > button:active {
 window:backdrop windowcontrols > button > image {
   background: #3a3a3a;
 }
+
+/* Interruptores: com o destaque branco, o trilho ligado ficava branco sob a bolinha
+   branca e não dava para saber o estado (visto nas preferências do GnomeCustom,
+   2026-09-22). Desligado: trilho escuro com contorno e bolinha cinza; ligado:
+   trilho branco e bolinha preta. */
+switch {
+  background-color: #262626;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+switch:hover {
+  background-color: #333333;
+}
+
+switch > slider {
+  background: #9a9a96;
+  box-shadow: none;
+}
+
+switch:checked {
+  background-color: #f8f8f2;
+  border-color: #f8f8f2;
+}
+
+switch:checked:hover {
+  background-color: #ffffff;
+}
+
+switch:checked > slider {
+  background: #000000;
+}
+
+switch:disabled {
+  opacity: 0.5;
+}

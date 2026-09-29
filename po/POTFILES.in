@@ -39,3 +39,11 @@ gnomeCustom@gfiamoncini.com/lib/weather.js
 gnomeCustom@gfiamoncini.com/ui/weather/indicator.js
 gnomeCustom@gfiamoncini.com/prefs/pages/weather.js
 gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.weather.gschema.xml
+gnomeCustom@gfiamoncini.com/lib/ai-usage.js
+gnomeCustom@gfiamoncini.com/ui/aiusage/indicator.js
+gnomeCustom@gfiamoncini.com/prefs/pages/aiusage.js
+gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.aiusage.gschema.xml
+gnomeCustom@gfiamoncini.com/modules/removable/module.js
+gnomeCustom@gfiamoncini.com/ui/removable/indicator.js
+gnomeCustom@gfiamoncini.com/prefs/pages/removable.js
+gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.removable.gschema.xml

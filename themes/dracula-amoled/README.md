@@ -16,7 +16,7 @@ O que muda em relação ao Dracula:
 - **cantos das janelas GTK 3/4 com 15px nos quatro lados**, como no libadwaita (o
   Dracula usa 4px só em cima, e o Chrome no modo "GTK" vazava da borda do mosaico);
 - **receita para apps Electron** em `apps/`: cores pretas e moldura do sistema no
-  VS Code e no Obsidian.
+  VS Code e no Obsidian; moldura do sistema no GitHub Desktop.
 
 ## Partes
 
@@ -29,6 +29,7 @@ O que muda em relação ao Dracula:
 | `apps/vscode.json` | configurações postas num bloco marcado do `settings.json` do VS Code |
 | `apps/obsidian.json` | moldura nativa (`obsidian.json`) e cor de destaque de cada cofre |
 | `apps/obsidian.css` | snippet ligado em cada cofre do Obsidian |
+| `apps/github-desktop.json` | barra de título do sistema no GitHub Desktop (as cores dele só têm Claro/Escuro) |
 
 ## Gerar e instalar
 

@@ -48,6 +48,18 @@
       <summary>Enable the Weather module</summary>
       <description>Current weather and forecast for a location, in the top bar.</description>
     </key>
+    <key name="aiusage-enabled" type="b">
+      <default>false</default>
+      <summary>Enable the AI Usage module</summary>
+      <description>How much of the Claude plan was used, in the top bar.</description>
+    </key>
+    <!-- Ligado de fábrica, ao contrário dos outros: sem aparelho o módulo não mostra
+         nada, e o pedido é "conectou, aparece" sem passar pelas preferências. -->
+    <key name="removable-enabled" type="b">
+      <default>true</default>
+      <summary>Enable the Removable Devices module</summary>
+      <description>Safely remove USB sticks and external drives from the top bar.</description>
+    </key>
     <key name="dock-enabled" type="b">
       <default>false</default>
       <summary>Enable the Dock module</summary>

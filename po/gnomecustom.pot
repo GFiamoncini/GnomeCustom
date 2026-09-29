@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnomeCustom 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/gfiamoncini/gnomecustom/issues\n"
-"POT-Creation-Date: 2026-09-21 23:45-0300\n"
+"POT-Creation-Date: 2026-09-28 23:34-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -208,7 +208,7 @@ msgstr ""
 #: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:146
 #: gnomeCustom@gfiamoncini.com/prefs/pages/dock.js:20
 #: gnomeCustom@gfiamoncini.com/prefs/pages/dock.js:25
-#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:93
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:109
 msgid "Dock"
 msgstr ""
 
@@ -227,7 +227,7 @@ msgstr ""
 #: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:172
 #: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:25
 #: gnomeCustom@gfiamoncini.com/modules/tiling/module.js:332
-#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:117
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:133
 msgid "Tiling"
 msgstr ""
 
@@ -458,9 +458,9 @@ msgstr ""
 #: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:458
 msgid ""
 "When the theme also ships a GTK theme (like Dracula-AMOLED), the apps follow "
-"it, libadwaita ones included, and VS Code and Obsidian get its colours and "
-"the system window frame. Turning this off restores the previous look; apps "
-"need to be reopened"
+"it, libadwaita ones included, and VS Code, Obsidian and GitHub Desktop get "
+"its colours or the system window frame. Turning this off restores the "
+"previous look; apps need to be reopened"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:463
@@ -690,24 +690,32 @@ msgstr ""
 #: gnomeCustom@gfiamoncini.com/prefs/pages/bluetooth.js:29
 #: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:149
 #: gnomeCustom@gfiamoncini.com/prefs/pages/weather.js:157
+#: gnomeCustom@gfiamoncini.com/prefs/pages/aiusage.js:139
+#: gnomeCustom@gfiamoncini.com/prefs/pages/removable.js:36
 msgid "Position"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/bluetooth.js:33
 #: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:153
 #: gnomeCustom@gfiamoncini.com/prefs/pages/weather.js:161
+#: gnomeCustom@gfiamoncini.com/prefs/pages/aiusage.js:143
+#: gnomeCustom@gfiamoncini.com/prefs/pages/removable.js:40
 msgid "Left"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/bluetooth.js:34
 #: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:154
 #: gnomeCustom@gfiamoncini.com/prefs/pages/weather.js:162
+#: gnomeCustom@gfiamoncini.com/prefs/pages/aiusage.js:144
+#: gnomeCustom@gfiamoncini.com/prefs/pages/removable.js:41
 msgid "Centre"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/bluetooth.js:35
 #: gnomeCustom@gfiamoncini.com/prefs/pages/media.js:155
 #: gnomeCustom@gfiamoncini.com/prefs/pages/weather.js:163
+#: gnomeCustom@gfiamoncini.com/prefs/pages/aiusage.js:145
+#: gnomeCustom@gfiamoncini.com/prefs/pages/removable.js:42
 msgid "Right"
 msgstr ""
 
@@ -823,7 +831,7 @@ msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/overview.js:20
 #: gnomeCustom@gfiamoncini.com/prefs/pages/overview.js:25
-#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:101
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:117
 msgid "Overview"
 msgstr ""
 
@@ -867,7 +875,7 @@ msgid "GNOME leaves them out of the overview"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/animation.js:25
-#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:109
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:125
 msgid "Animation"
 msgstr ""
 
@@ -946,7 +954,7 @@ msgid "Options meant for working on the extension itself."
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/advanced.js:116
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:102
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:114
 msgid "Warn about conflicting extensions"
 msgstr ""
 
@@ -957,7 +965,7 @@ msgid ""
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/advanced.js:124
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:108
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:120
 msgid "Check cleanup on disable"
 msgstr ""
 
@@ -1101,84 +1109,100 @@ msgid "Current weather and forecast for a location, in the top bar."
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:53
-msgid "Enable the Dock module"
+msgid "Enable the AI Usage module"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:54
+msgid "How much of the Claude plan was used, in the top bar."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:60
+msgid "Enable the Removable Devices module"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:61
+msgid "Safely remove USB sticks and external drives from the top bar."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:65
+msgid "Enable the Dock module"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:66
 msgid "Turns the Dash into a permanent dock."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:58
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:70
 msgid "Enable the Overview module"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:59
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:71
 msgid "Tweaks for the overview screen."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:63
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:75
 msgid "Enable the Animation module"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:64
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:76
 msgid "Controls the speed of Shell animations."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:68
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:80
 msgid "Enable the Tiling module"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:69
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:81
 msgid "Tiling window management."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:73
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:85
 msgid "Enable the Theme module"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:74
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:86
 msgid "Theming engine for the panel, menus, dock and OSD."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:78
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:90
 msgid "Enable the Diagnostics module"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:79
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:91
 msgid "Detects extensions that conflict with enabled modules."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:85
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:97
 msgid "Logging detail level"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:86
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:98
 msgid "Messages below this level are not written to the journal."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:92
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:104
 msgid "Migration version already applied"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:93
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:105
 msgid "Used to run each configuration import only once."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:97
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:109
 msgid "Settings saved before the last import"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:98
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:110
 msgid "JSON snapshot used by “Undo last import”. Not meant to be edited."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:103
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:115
 msgid ""
 "Writes a warning when an original extension competes with an enabled module "
 "for the same feature."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:109
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:121
 msgid ""
 "On disable, checks for leftover signals, patches and timers and reports what "
 "remained. Intended for development."
@@ -1416,8 +1440,8 @@ msgid ""
 "When the chosen shell theme also ships a GTK theme, it becomes the theme of "
 "the applications, and its libadwaita stylesheet (if any) is linked at "
 "~/.config/gtk-4.0/gtk.css. A theme with an apps/ folder also sets the "
-"colours and the window frame of VS Code and Obsidian. Turning this off or "
-"picking another theme restores what was there before."
+"colours and the window frame of VS Code, Obsidian and GitHub Desktop. "
+"Turning this off or picking another theme restores what was there before."
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:212
@@ -1435,8 +1459,8 @@ msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:224
 msgid ""
-"Internal: values changed in Electron apps (VS Code, Obsidian) by the "
-"extension, as JSON"
+"Internal: values changed in Electron apps (VS Code, Obsidian, GitHub "
+"Desktop) by the extension, as JSON"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml:228
@@ -1592,6 +1616,7 @@ msgid "Top bar section for the Bluetooth button"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.bluetooth.gschema.xml:24
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.removable.gschema.xml:12
 msgid "Hide the button when nothing is connected"
 msgstr ""
 
@@ -2484,27 +2509,45 @@ msgstr ""
 msgid "Weather and forecast for your city, from Open-Meteo"
 msgstr ""
 
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:93
+#: gnomeCustom@gfiamoncini.com/prefs/pages/aiusage.js:25
+msgid "AI Usage"
+msgstr ""
+
 #: gnomeCustom@gfiamoncini.com/lib/modules-info.js:94
-msgid "Fixed dock on the primary monitor"
+msgid "How much of your Claude plan was used, with a card"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:101
+#: gnomeCustom@gfiamoncini.com/prefs/pages/removable.js:24
+msgid "Removable Devices"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/lib/modules-info.js:102
-msgid "Workspace thumbnails, hidden search and picture-in-picture windows"
+msgid "Safely remove USB sticks and external drives, from the top bar"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/lib/modules-info.js:110
-msgid "Shell animation speed"
+msgid "Fixed dock on the primary monitor"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/lib/modules-info.js:118
-msgid "Tree-based window tiling"
-msgstr ""
-
-#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:125
-msgid "Diagnostics"
+msgid "Workspace thumbnails, hidden search and picture-in-picture windows"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/lib/modules-info.js:126
+msgid "Shell animation speed"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:134
+msgid "Tree-based window tiling"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:141
+msgid "Diagnostics"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:142
 msgid "Warns about extensions that duplicate an active module"
 msgstr ""
 
@@ -2654,6 +2697,7 @@ msgid "Offline — data from %s"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/ui/weather/indicator.js:85
+#: gnomeCustom@gfiamoncini.com/ui/aiusage/indicator.js:115
 #, javascript-format
 msgid "Updated at %s"
 msgstr ""
@@ -2674,6 +2718,7 @@ msgid "Wind %s"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/ui/weather/indicator.js:129
+#: gnomeCustom@gfiamoncini.com/ui/aiusage/indicator.js:143
 msgid "Update now"
 msgstr ""
 
@@ -2740,6 +2785,8 @@ msgid "West is negative"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/weather.js:136
+#: gnomeCustom@gfiamoncini.com/prefs/pages/aiusage.js:115
+#: gnomeCustom@gfiamoncini.com/prefs/pages/removable.js:28
 msgid "Display"
 msgstr ""
 
@@ -2757,6 +2804,7 @@ msgid "Fahrenheit and mph"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/weather.js:148
+#: gnomeCustom@gfiamoncini.com/prefs/pages/aiusage.js:130
 msgid "Update every"
 msgstr ""
 
@@ -2806,9 +2854,288 @@ msgid "“metric” is °C and km/h; “imperial” is °F and mph."
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.weather.gschema.xml:39
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.aiusage.gschema.xml:28
 msgid "Minutes between updates"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.weather.gschema.xml:48
 msgid "Top bar section for the weather button"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/ai-usage.js:55
+msgid "5 hours"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/ai-usage.js:56
+msgid "7 days"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/ai-usage.js:294
+msgid "resets now"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/ai-usage.js:301
+#: gnomeCustom@gfiamoncini.com/lib/ai-usage.js:307
+#, javascript-format
+msgid "resets in %s"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/ai-usage.js:306
+#, javascript-format
+msgid "resets in %s, at %s"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/aiusage/indicator.js:110
+msgid ""
+"No Claude Code account was found on this computer. Sign in to Claude Code "
+"and the card fills itself."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/aiusage/indicator.js:117
+msgid "Show only the essentials"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/aiusage/indicator.js:117
+#: gnomeCustom@gfiamoncini.com/ui/aiusage/indicator.js:150
+msgid "Show the details"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/aiusage/indicator.js:145
+msgid "AI usage settings"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/aiusage/indicator.js:215
+#, javascript-format
+msgid "Not updated since %s"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/aiusage/indicator.js:312
+msgid "Checking…"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/aiusage/indicator.js:314
+msgid "No credentials in this folder."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/aiusage/indicator.js:316
+msgid "Session expired — use Claude Code once to renew it."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/aiusage/indicator.js:322
+#, javascript-format
+msgid "Too many requests — trying again at %s."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/aiusage/indicator.js:324
+msgid "Could not read the credentials."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/aiusage/indicator.js:326
+msgid "Could not reach the API."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/aiusage/indicator.js:328
+#, javascript-format
+msgid "The API answered %s."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/aiusage/indicator.js:330
+msgid "The answer had no usage data."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/aiusage/indicator.js:332
+msgid "Could not read the usage now."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/aiusage.js:53
+msgid "Show the AI usage in the top bar"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/aiusage.js:54
+msgid "The same switch as the AI Usage module on the General page"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/aiusage.js:68
+msgid "Accounts"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/aiusage.js:69
+msgid ""
+"Every ~/.claude* folder with a Claude Code login is an account, plus the one "
+"CLAUDE_CONFIG_DIR points to. Keep your personal and work accounts side by "
+"side with CLAUDE_CONFIG_DIR."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/aiusage.js:81
+msgid "No account found"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/aiusage.js:82
+msgid ""
+"Sign in to Claude Code on this computer; the card finds the account by "
+"itself."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/aiusage.js:118
+msgid "Usage next to the icon"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/aiusage.js:119
+msgid ""
+"The 5-hour window of the first account, in amber or red when it is running "
+"out"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/aiusage.js:124
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.aiusage.gschema.xml:22
+msgid "Detailed card"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/aiusage.js:125
+msgid ""
+"Account line and when each window resets. The arrow at the bottom of the "
+"card switches too."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/aiusage.js:131
+msgid ""
+"In minutes. Opening the card also updates it, at most every two minutes."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/aiusage.js:154
+#: gnomeCustom@gfiamoncini.com/prefs/pages/removable.js:47
+msgid "How it works"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/aiusage.js:156
+msgid "The same numbers as /usage in Claude Code"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/aiusage.js:157
+msgid ""
+"Read with the login Claude Code keeps in .credentials.json. The address is "
+"not a public API and may change without notice; if it does, the card says it "
+"could not read."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/aiusage.js:160
+msgid "Read-only"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/aiusage.js:161
+msgid ""
+"Nothing is written to the Claude Code folders and the token never goes to "
+"the log. When the login expires, using Claude Code once renews it."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.aiusage.gschema.xml:12
+msgid "Claude Code accounts shown in the card"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.aiusage.gschema.xml:13
+msgid ""
+"Configuration folder names (“.claude”, “.claude-work”). Empty shows every "
+"account found, including new ones."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.aiusage.gschema.xml:17
+msgid "Show the usage next to the icon"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.aiusage.gschema.xml:18
+msgid "The 5-hour window of the first account, coloured by how much is left."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.aiusage.gschema.xml:23
+msgid ""
+"Detailed shows the account line and when each window resets; compact puts "
+"each window on one line."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.aiusage.gschema.xml:38
+msgid "Top bar section for the AI usage button"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/modules/removable/module.js:128
+#, javascript-format
+msgid "Removing %s…"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/modules/removable/module.js:134
+#, javascript-format
+msgid "%s can be unplugged."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/modules/removable/module.js:155
+#, javascript-format
+msgid "%s is still in use. Close the program using it and try again."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/modules/removable/module.js:158
+#, javascript-format
+msgid "Could not remove %s: %s"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/removable/indicator.js:49
+#: gnomeCustom@gfiamoncini.com/ui/removable/indicator.js:103
+msgid "Remove safely"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/removable/indicator.js:71
+msgid "Nothing to remove."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/removable/indicator.js:134
+msgid "Open"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/removable/indicator.js:134
+msgid "Open in the file manager"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/removable/indicator.js:138
+msgid "Remove"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/removable/indicator.js:138
+msgid "Remove this device safely"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/removable.js:30
+msgid "Only while something is connected"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/removable.js:31
+msgid ""
+"The button appears with the first device and goes away with the last one"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/removable.js:49
+msgid "One line per device"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/removable.js:50
+msgid ""
+"An external drive with two partitions shows up once, with both next to it: "
+"the whole device is what leaves the computer. Internal disks never show up."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/removable.js:53
+msgid "Removal is asked, never forced"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/removable.js:54
+msgid ""
+"The same path as the Files app. If a program still uses the device, GNOME "
+"says which one and lets you decide."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.removable.gschema.xml:13
+msgid ""
+"The button appears when a USB stick, memory card or external drive is "
+"mounted and goes away with the last one."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.removable.gschema.xml:23
+msgid "Top bar section for the removable devices button"
 msgstr ""

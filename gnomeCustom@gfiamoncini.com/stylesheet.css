@@ -524,6 +524,260 @@
     opacity: 0.75;
 }
 
+/* ---------------------------------------------------------- aiusage */
+
+.gnomecustom-aiusage-panel {
+    spacing: 4px;
+}
+
+.gnomecustom-aiusage-panel-value {
+    font-feature-settings: "tnum";
+}
+
+.gnomecustom-aiusage-item {
+    padding: 0;
+}
+
+/* Desenho do AiUsageCard do WinDock, com as cores do tema do Shell. As larguras
+   das barras (ui/aiusage/indicator.js) contam com estes 300 px de conteúdo. */
+.gnomecustom-aiusage-card {
+    width: 300px;
+    padding: 8px 10px 4px 10px;
+    spacing: 6px;
+}
+
+.gnomecustom-aiusage-account {
+    spacing: 4px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(127, 127, 127, 0.25);
+    margin-top: 4px;
+}
+
+.gnomecustom-aiusage-account.first {
+    padding-top: 0;
+    border-top-width: 0;
+    margin-top: 0;
+}
+
+.gnomecustom-aiusage-header {
+    spacing: 9px;
+}
+
+.gnomecustom-aiusage-header-icon {
+    icon-size: 17px;
+}
+
+.gnomecustom-aiusage-title {
+    font-weight: bold;
+    font-size: 1.05em;
+}
+
+/* A cápsula do plano: o realce das barras em fundo lavado. */
+.gnomecustom-aiusage-plan {
+    font-size: 0.8em;
+    font-weight: bold;
+    color: #4cc2ff;
+    background-color: rgba(76, 194, 255, 0.16);
+    border-radius: 9px;
+    padding: 2px 8px;
+}
+
+/* Alinhadas com o nome: o robô ocupa os 26 px. */
+.gnomecustom-aiusage-line {
+    font-size: 0.85em;
+    opacity: 0.65;
+    padding: 0 0 8px 26px;
+}
+
+.gnomecustom-aiusage-gauges {
+    spacing: 13px;
+    padding-top: 4px;
+}
+
+.gnomecustom-aiusage-gauges.indented {
+    spacing: 6px;
+    padding-left: 26px;
+}
+
+.gnomecustom-aiusage-row {
+    spacing: 6px;
+}
+
+.gnomecustom-aiusage-gauge-name {
+    font-size: 0.9em;
+}
+
+.gnomecustom-aiusage-gauge-name.compact {
+    font-size: 0.85em;
+    width: 90px;
+}
+
+.gnomecustom-aiusage-detail {
+    spacing: 6px;
+}
+
+.gnomecustom-aiusage-track {
+    height: 6px;
+    border-radius: 3px;
+    background-color: rgba(127, 127, 127, 0.28);
+}
+
+.gnomecustom-aiusage-fill {
+    height: 6px;
+    border-radius: 3px;
+}
+
+.gnomecustom-aiusage-percent {
+    font-size: 0.9em;
+    font-weight: bold;
+    text-align: right;
+    font-feature-settings: "tnum";
+}
+
+.gnomecustom-aiusage-percent.compact {
+    font-size: 0.85em;
+    width: 40px;
+}
+
+/* Faixas do WinDock: azul enquanto sobra, âmbar apertando, vermelho no fim. */
+.gnomecustom-aiusage-fill.calm { background-color: #4cc2ff; }
+.gnomecustom-aiusage-fill.warning { background-color: #ffb900; }
+.gnomecustom-aiusage-fill.critical { background-color: #ff605c; }
+
+/* Na barra só âmbar e vermelho: enquanto sobra, azul lá seria ruído. */
+.gnomecustom-aiusage-percent.calm { color: #4cc2ff; }
+.gnomecustom-aiusage-percent.warning,
+.gnomecustom-aiusage-panel-value.warning { color: #ffb900; }
+.gnomecustom-aiusage-percent.critical,
+.gnomecustom-aiusage-panel-value.critical { color: #ff605c; }
+
+.gnomecustom-aiusage-reset {
+    font-size: 0.85em;
+    opacity: 0.6;
+}
+
+.gnomecustom-aiusage-stale {
+    font-size: 0.8em;
+    color: #ffb900;
+}
+
+.gnomecustom-aiusage-stale.indented,
+.gnomecustom-aiusage-message.indented {
+    padding-left: 26px;
+}
+
+.gnomecustom-aiusage-message {
+    font-size: 0.9em;
+    opacity: 0.7;
+    padding: 2px 0 4px 0;
+}
+
+.gnomecustom-aiusage-footer {
+    spacing: 2px;
+    padding-top: 4px;
+}
+
+.gnomecustom-aiusage-updated {
+    font-size: 0.8em;
+    opacity: 0.5;
+}
+
+.gnomecustom-aiusage-button {
+    padding: 5px 8px;
+    border-radius: 6px;
+}
+
+.gnomecustom-aiusage-button:hover,
+.gnomecustom-aiusage-button:focus {
+    background-color: rgba(127, 127, 127, 0.2);
+}
+
+/* ------------------------------------------------------- removíveis */
+
+/* Cartão "Remover com segurança" do WinDock, um aparelho por linha. Os 280 px de
+   lá cortavam o nome de um HD externo comum ao lado das duas ações. */
+.gnomecustom-removable-item {
+    padding: 0;
+}
+
+.gnomecustom-removable-card {
+    width: 330px;
+    padding: 8px 8px 6px 8px;
+    spacing: 8px;
+}
+
+.gnomecustom-removable-header {
+    spacing: 10px;
+    padding: 0 2px;
+}
+
+.gnomecustom-removable-header-icon {
+    icon-size: 16px;
+}
+
+.gnomecustom-removable-title {
+    font-weight: bold;
+    font-size: 1.05em;
+}
+
+.gnomecustom-removable-list {
+    spacing: 2px;
+}
+
+.gnomecustom-removable-row {
+    spacing: 2px;
+    padding: 7px 8px;
+    border-radius: 6px;
+}
+
+.gnomecustom-removable-row:hover {
+    background-color: rgba(127, 127, 127, 0.12);
+}
+
+.gnomecustom-removable-name {
+    font-size: 0.95em;
+}
+
+.gnomecustom-removable-detail {
+    font-size: 0.85em;
+    opacity: 0.6;
+}
+
+/* As ações em palavras, no azul do WinDock. */
+.gnomecustom-removable-action {
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 0.85em;
+    color: #4cc2ff;
+}
+
+.gnomecustom-removable-action:hover,
+.gnomecustom-removable-action:focus {
+    background-color: rgba(127, 127, 127, 0.2);
+}
+
+/* Cor, e não opacity: no St.Button a opacidade do CSS não apagava o rótulo. */
+.gnomecustom-removable-action.disabled {
+    color: rgba(76, 194, 255, 0.4);
+}
+
+.gnomecustom-removable-empty,
+.gnomecustom-removable-message {
+    font-size: 0.85em;
+    opacity: 0.7;
+    padding: 0 2px;
+}
+
+.gnomecustom-removable-message.ok {
+    opacity: 1;
+    color: #6ccb5f;
+}
+
+.gnomecustom-removable-message.error {
+    opacity: 1;
+    color: #ffb900;
+}
+
 /* ------------------------------------------------------------- dock */
 
 /* Modo compacto (custom-theme-shrink do Dash to Dock): tira a folga que o tema dá

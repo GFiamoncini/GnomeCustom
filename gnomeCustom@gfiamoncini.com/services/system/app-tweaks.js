@@ -10,7 +10,10 @@
  *  - `obsidian.json` — `{"app": {...}, "appearance": {...}}`: valores para o
  *                      `obsidian.json` (ex. moldura nativa) e para o
  *                      `.obsidian/appearance.json` de cada cofre;
- *  - `obsidian.css`  — snippet ligado em cada cofre.
+ *  - `obsidian.css`  — snippet ligado em cada cofre;
+ *  - `github-desktop.json` — valores para o `.title-bar-config` do GitHub Desktop
+ *                      (ex. `{"titleBarStyle": "native"}`). As cores dele não têm
+ *                      como ser trocadas: só há os temas Claro/Escuro do próprio app.
  *
  * Só mexe em apps já instalados e configurados (nenhum arquivo é criado onde não
  * havia app). Antes da primeira mudança em cada arquivo, uma cópia fica ao lado
@@ -55,6 +58,14 @@ function defaultObsidianConfigs() {
     ];
 }
 
+/** Pastas de dados do GitHub Desktop (versão Linux da shiftkey), nativa e Flatpak. */
+function defaultGithubDesktopDirs() {
+    return [
+        file(GLib.get_user_config_dir(), 'GitHub Desktop'),
+        file(GLib.get_home_dir(), '.var', 'app', 'io.github.shiftey.Desktop', 'config', 'GitHub Desktop'),
+    ];
+}
+
 function readText(target) {
     try {
         return new TextDecoder().decode(target.load_contents(null)[1]);
@@ -80,11 +91,16 @@ export class AppTweaks {
      * @param {object} options.logger
      * @param {Function} [options.vscodeFiles] () => Gio.File[] (testes)
      * @param {Function} [options.obsidianConfigs] () => Gio.File[] (testes)
+     * @param {Function} [options.githubDesktopDirs] () => Gio.File[] (testes)
      */
-    constructor({logger, vscodeFiles = defaultVscodeFiles, obsidianConfigs = defaultObsidianConfigs}) {
+    constructor({
+        logger, vscodeFiles = defaultVscodeFiles, obsidianConfigs = defaultObsidianConfigs,
+        githubDesktopDirs = defaultGithubDesktopDirs,
+    }) {
         this._logger = logger;
         this._vscodeFiles = vscodeFiles;
         this._obsidianConfigs = obsidianConfigs;
+        this._githubDesktopDirs = githubDesktopDirs;
     }
 
     /**
@@ -110,7 +126,13 @@ export class AppTweaks {
         if (obsidian || snippet !== null)
             this._applyObsidian(obsidian ?? {}, snippet, state);
         else
-            this._revertObsidian(state);
+            this._revertFiles(state, 'obsidian');
+
+        const github = readJson(apps.get_child('github-desktop.json'));
+        if (github)
+            this._applyGithubDesktop(github, state);
+        else
+            this._revertFiles(state, 'github-desktop');
 
         this._writeState(settings, state);
     }
@@ -119,7 +141,7 @@ export class AppTweaks {
     revert(settings) {
         const state = this._readState(settings);
         this._revertVscode();
-        this._revertObsidian(state);
+        this._revertFiles(state);
         this._writeState(settings, state);
     }
 
@@ -156,13 +178,12 @@ export class AppTweaks {
     // --------------------------------------------------------------- Obsidian
 
     _applyObsidian(recipe, snippet, state) {
-        state.obsidian ??= {};
         for (const config of this._obsidianConfigs()) {
             const data = readJson(config);
             if (!data)
                 continue;
             if (recipe.app)
-                this._applyJson(config, data, recipe.app, state.obsidian, JSON.stringify);
+                this._applyJson(config, data, recipe.app, state, 'obsidian', JSON.stringify);
 
             for (const path of obsidianVaults(data)) {
                 const dir = Gio.File.new_for_path(path).get_child('.obsidian');
@@ -184,41 +205,70 @@ export class AppTweaks {
                     continue;
                 current ??= {};
                 const withSnippet = snippet !== null ? obsidianSnippet(current, true) : current;
-                this._applyJson(appearance, withSnippet, recipe.appearance ?? {}, state.obsidian,
+                this._applyJson(appearance, withSnippet, recipe.appearance ?? {}, state, 'obsidian',
                     value => JSON.stringify(value, null, 2), current);
             }
         }
     }
 
+    // --------------------------------------------------------- GitHub Desktop
+
+    _applyGithubDesktop(values, state) {
+        for (const dir of this._githubDesktopDirs()) {
+            if (!dir.query_exists(null))
+                continue;
+            // Sem o arquivo, o app usa o padrão dele; a receita o cria com os valores.
+            const config = dir.get_child('.title-bar-config');
+            const data = readJson(config);
+            if (data === undefined)
+                continue;
+            this._applyJson(config, data ?? {}, values, state, 'github-desktop', JSON.stringify,
+                data ?? null);
+        }
+    }
+
+    // ------------------------------------------------------ arquivos JSON
+
     /**
-     * Grava `values` no arquivo e anota os anteriores em `store[path]`.
+     * Grava `values` no arquivo e anota os anteriores em `state.files[path]`.
      *
      * @param {object} target Gio.File
      * @param {object} data conteúdo (já com outras mudanças, se houver)
      * @param {object} values
-     * @param {object} store estado por arquivo
+     * @param {object} state
+     * @param {string} app dono do arquivo, para desfazer só os dele
      * @param {Function} serialize
-     * @param {object} [original] conteúdo lido, para saber se mudou algo
+     * @param {?object} [original] conteúdo lido, para saber se mudou algo
      */
-    _applyJson(target, data, values, store, serialize, original = data) {
+    _applyJson(target, data, values, state, app, serialize, original = data) {
         const path = target.get_path();
-        const entry = store[path] ?? {values: {}, previous: {}};
+        state.files ??= {};
+        const entry = state.files[path] ?? {app, values: {}, previous: {}};
         const {data: next, previous} = applyValues(data, values, entry.previous);
-        store[path] = {values: {...entry.values, ...values}, previous};
+        state.files[path] = {app, values: {...entry.values, ...values}, previous};
         if (JSON.stringify(next) !== JSON.stringify(original)) {
             this._write(target, `${serialize(next)}\n`);
-            this._logger.info(`Obsidian: tema aplicado em ${path}`);
+            this._logger.info(`${app}: tema aplicado em ${path}`);
         }
     }
 
-    _revertObsidian(state) {
-        for (const [path, {values, previous}] of Object.entries(state.obsidian ?? {})) {
+    /**
+     * Devolve os arquivos anotados.
+     *
+     * @param {object} state
+     * @param {string} [app] só os deste app; sem ele, todos
+     */
+    _revertFiles(state, app) {
+        for (const [path, entry] of Object.entries(state.files ?? {})) {
+            if (app && entry.app !== app)
+                continue;
+            delete state.files[path];
             const target = Gio.File.new_for_path(path);
             const data = readJson(target);
             if (!data)
                 continue;
-            let next = restoreValues(data, values, previous);
-            const isAppearance = target.get_basename() === 'appearance.json';
+            let next = restoreValues(data, entry.values, entry.previous);
+            const isAppearance = entry.app === 'obsidian' && target.get_basename() === 'appearance.json';
             if (isAppearance) {
                 next = obsidianSnippet(next, false);
                 const snippet = target.get_parent().get_child('snippets').get_child(`${OBSIDIAN_SNIPPET}.css`);
@@ -228,10 +278,9 @@ export class AppTweaks {
             }
             if (JSON.stringify(next) !== JSON.stringify(data)) {
                 this._write(target, `${isAppearance ? JSON.stringify(next, null, 2) : JSON.stringify(next)}\n`);
-                this._logger.info(`Obsidian: tema retirado de ${path}`);
+                this._logger.info(`${entry.app}: tema retirado de ${path}`);
             }
         }
-        state.obsidian = {};
     }
 
     // ------------------------------------------------------------------ comum
@@ -247,15 +296,21 @@ export class AppTweaks {
     }
 
     _readState(settings) {
+        let state;
         try {
-            return JSON.parse(settings.get_string(STATE_KEY) || '{}');
+            state = JSON.parse(settings.get_string(STATE_KEY) || '{}');
         } catch {
-            return {};
+            return {files: {}};
         }
+        // Estado gravado antes do GitHub Desktop (2026-09-22): só havia o Obsidian.
+        const files = {...state.files};
+        for (const [path, entry] of Object.entries(state.obsidian ?? {}))
+            files[path] ??= {app: 'obsidian', ...entry};
+        return {files};
     }
 
     _writeState(settings, state) {
-        const empty = Object.keys(state.obsidian ?? {}).length === 0;
+        const empty = Object.keys(state.files ?? {}).length === 0;
         settings.set_string(STATE_KEY, empty ? '' : JSON.stringify(state));
     }
 }

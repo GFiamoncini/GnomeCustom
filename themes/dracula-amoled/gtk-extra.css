@@ -32,3 +32,23 @@ window.csd.tiled-top, window.csd.tiled-left, window.csd.tiled-right, window.csd.
 .popup decoration, window.csd.popup {
   border-radius: 0;
 }
+
+/* Interruptores: mesmo desenho do libadwaita.css (bolinha preta no trilho branco). */
+switch {
+  background-color: #262626;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+switch slider {
+  background: #9a9a96;
+  box-shadow: none;
+}
+
+switch:checked {
+  background-color: #f8f8f2;
+  border-color: #f8f8f2;
+}
+
+switch:checked slider {
+  background: #000000;
+}

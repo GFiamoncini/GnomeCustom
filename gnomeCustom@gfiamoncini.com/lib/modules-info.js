@@ -88,6 +88,22 @@ export const MODULES_INFO = Object.freeze([
         implemented: true,
     },
     {
+        id: 'aiusage',
+        key: 'aiusage-enabled',
+        title: N_('AI Usage'),
+        summary: N_('How much of your Claude plan was used, with a card'),
+        phase: 10,
+        implemented: true,
+    },
+    {
+        id: 'removable',
+        key: 'removable-enabled',
+        title: N_('Removable Devices'),
+        summary: N_('Safely remove USB sticks and external drives, from the top bar'),
+        phase: 10,
+        implemented: true,
+    },
+    {
         id: 'dock',
         key: 'dock-enabled',
         title: N_('Dock'),

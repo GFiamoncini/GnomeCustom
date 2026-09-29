@@ -29,6 +29,7 @@ import {MprisService} from './services/mpris/players.js';
 import {OpenMeteoClient} from './services/weather/openmeteo.js';
 import {ClaudeUsageService} from './services/ai/claude-usage.js';
 import {RemovableService} from './services/system/removable.js';
+import {UpdatesService} from './services/system/updates.js';
 import {CoverArtService} from './services/system/cover-art.js';
 import {DistroService} from './services/system/distro.js';
 import {WallpaperService} from './services/system/wallpaper.js';
@@ -46,6 +47,7 @@ import {MediaModule} from './modules/media/module.js';
 import {WeatherModule} from './modules/weather/module.js';
 import {AiUsageModule} from './modules/aiusage/module.js';
 import {RemovableModule} from './modules/removable/module.js';
+import {UpdatesModule} from './modules/updates/module.js';
 import {DockModule} from './modules/dock/module.js';
 import {OverviewModule} from './modules/overview/module.js';
 import {AnimationModule} from './modules/animation/module.js';
@@ -68,6 +70,7 @@ const MODULES = [
     WeatherModule,
     AiUsageModule,
     RemovableModule,
+    UpdatesModule,
     DockModule,
     OverviewModule,
     AnimationModule,
@@ -102,6 +105,7 @@ export default class GnomeCustomExtension extends Extension {
                 weather: ({logger}) => new OpenMeteoClient({logger}),
                 aiUsage: ({logger}) => new ClaudeUsageService({logger}),
                 removable: ({logger}) => new RemovableService({logger}),
+                updates: ({logger}) => new UpdatesService({logger}),
                 distro: ({logger}) => new DistroService({logger}),
                 wallpaper: ({logger}) => new WallpaperService({logger}),
                 appTheme: ({logger}) => new AppThemeService({logger}),

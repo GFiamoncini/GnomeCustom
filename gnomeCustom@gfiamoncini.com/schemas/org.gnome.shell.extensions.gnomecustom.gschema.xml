@@ -60,6 +60,13 @@
       <summary>Enable the Removable Devices module</summary>
       <description>Safely remove USB sticks and external drives from the top bar.</description>
     </key>
+    <!-- Ligado de fábrica pelo mesmo motivo dos externos: sem atualização pendente
+         o módulo não mostra nada (pedido de 2026-09-29). -->
+    <key name="updates-enabled" type="b">
+      <default>true</default>
+      <summary>Enable the Updates module</summary>
+      <description>Shows pending system and Flatpak updates in the top bar.</description>
+    </key>
     <key name="dock-enabled" type="b">
       <default>false</default>
       <summary>Enable the Dock module</summary>

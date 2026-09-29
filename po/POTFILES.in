@@ -47,3 +47,7 @@ gnomeCustom@gfiamoncini.com/modules/removable/module.js
 gnomeCustom@gfiamoncini.com/ui/removable/indicator.js
 gnomeCustom@gfiamoncini.com/prefs/pages/removable.js
 gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.removable.gschema.xml
+gnomeCustom@gfiamoncini.com/modules/updates/module.js
+gnomeCustom@gfiamoncini.com/ui/updates/indicator.js
+gnomeCustom@gfiamoncini.com/prefs/pages/updates.js
+gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.updates.gschema.xml

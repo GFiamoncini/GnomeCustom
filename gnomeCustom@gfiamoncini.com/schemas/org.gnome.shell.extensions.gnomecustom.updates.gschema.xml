@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 Gabriel Fiamoncini
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<schemalist gettext-domain="gnomecustom">
+  <schema id="org.gnome.shell.extensions.gnomecustom.updates"
+          path="/org/gnome/shell/extensions/gnomecustom/updates/">
+
+    <!-- Seis horas é também o `metadata_expire` dos repositórios do Fedora: antes
+         disso, pedir ao PackageKit que atualize a lista não baixaria nada. -->
+    <key name="interval-hours" type="u">
+      <default>6</default>
+      <range min="1" max="48"/>
+      <summary>Hours between update checks</summary>
+      <description>Each check downloads the package lists again when they are older than this.</description>
+    </key>
+    <!-- Lista de valores, e não enum: veja o esquema do clima. -->
+    <key name="panel-position" type="s">
+      <choices>
+        <choice value="left"/>
+        <choice value="center"/>
+        <choice value="right"/>
+      </choices>
+      <default>'right'</default>
+      <summary>Top bar section for the updates button</summary>
+    </key>
+  </schema>
+</schemalist>

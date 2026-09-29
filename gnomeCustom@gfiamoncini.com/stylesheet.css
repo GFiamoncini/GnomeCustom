@@ -778,6 +778,143 @@
     color: #ffb900;
 }
 
+/* ------------------------------------------------------- atualizações */
+
+/* Cartão de atualizações do WinDock: sistema e Flatpak, um programa por linha. */
+.gnomecustom-updates-panel {
+    spacing: 4px;
+}
+
+.gnomecustom-updates-count {
+    font-feature-settings: "tnum";
+}
+
+.gnomecustom-updates-item {
+    padding: 0;
+}
+
+.gnomecustom-updates-card {
+    width: 330px;
+    padding: 8px 8px 6px 8px;
+    spacing: 8px;
+}
+
+.gnomecustom-updates-header {
+    spacing: 10px;
+    padding: 0 2px;
+}
+
+.gnomecustom-updates-header-icon {
+    icon-size: 16px;
+}
+
+.gnomecustom-updates-title {
+    font-weight: bold;
+    font-size: 1.05em;
+}
+
+.gnomecustom-updates-when {
+    font-size: 0.85em;
+    opacity: 0.6;
+}
+
+.gnomecustom-updates-list {
+    spacing: 1px;
+}
+
+.gnomecustom-updates-section {
+    padding: 6px 8px 2px 8px;
+}
+
+.gnomecustom-updates-section-title,
+.gnomecustom-updates-section-count {
+    font-size: 0.85em;
+    font-weight: bold;
+    opacity: 0.7;
+}
+
+.gnomecustom-updates-row {
+    spacing: 12px;
+    padding: 3px 8px;
+    border-radius: 6px;
+}
+
+.gnomecustom-updates-name {
+    font-size: 0.95em;
+}
+
+.gnomecustom-updates-section {
+    spacing: 10px;
+}
+
+.gnomecustom-updates-section-security {
+    font-size: 0.85em;
+    color: #ffb900;
+}
+
+/* Segurança em âmbar, a cor de aviso do resto da extensão. */
+.gnomecustom-updates-name.security {
+    color: #ffb900;
+}
+
+.gnomecustom-updates-detail {
+    font-size: 0.85em;
+    opacity: 0.6;
+    font-feature-settings: "tnum";
+}
+
+.gnomecustom-updates-more,
+.gnomecustom-updates-empty,
+.gnomecustom-updates-restart,
+.gnomecustom-updates-message {
+    font-size: 0.85em;
+    opacity: 0.7;
+    padding: 0 8px;
+}
+
+.gnomecustom-updates-empty {
+    padding: 4px 2px;
+}
+
+.gnomecustom-updates-restart {
+    opacity: 1;
+    color: #4cc2ff;
+    padding: 0 2px;
+}
+
+.gnomecustom-updates-message {
+    padding: 0 2px;
+}
+
+.gnomecustom-updates-message.error {
+    opacity: 1;
+    color: #ffb900;
+}
+
+.gnomecustom-updates-actions {
+    spacing: 4px;
+}
+
+.gnomecustom-updates-action {
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.85em;
+    color: #4cc2ff;
+}
+
+.gnomecustom-updates-action:hover,
+.gnomecustom-updates-action:focus {
+    background-color: rgba(127, 127, 127, 0.2);
+}
+
+.gnomecustom-updates-action.primary {
+    font-weight: bold;
+}
+
+.gnomecustom-updates-action.disabled {
+    color: rgba(76, 194, 255, 0.4);
+}
+
 /* ------------------------------------------------------------- dock */
 
 /* Modo compacto (custom-theme-shrink do Dash to Dock): tira a folga que o tema dá

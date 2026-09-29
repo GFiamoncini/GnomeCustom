@@ -104,6 +104,14 @@ export const MODULES_INFO = Object.freeze([
         implemented: true,
     },
     {
+        id: 'updates',
+        key: 'updates-enabled',
+        title: N_('Updates'),
+        summary: N_('Pending system and Flatpak updates, from the top bar'),
+        phase: 10,
+        implemented: true,
+    },
+    {
         id: 'dock',
         key: 'dock-enabled',
         title: N_('Dock'),

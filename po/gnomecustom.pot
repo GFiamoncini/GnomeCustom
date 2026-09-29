@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnomeCustom 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/gfiamoncini/gnomecustom/issues\n"
-"POT-Creation-Date: 2026-09-28 23:34-0300\n"
+"POT-Creation-Date: 2026-09-29 00:28-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -208,7 +208,7 @@ msgstr ""
 #: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:146
 #: gnomeCustom@gfiamoncini.com/prefs/pages/dock.js:20
 #: gnomeCustom@gfiamoncini.com/prefs/pages/dock.js:25
-#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:109
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:117
 msgid "Dock"
 msgstr ""
 
@@ -227,7 +227,7 @@ msgstr ""
 #: gnomeCustom@gfiamoncini.com/prefs/pages/theme.js:172
 #: gnomeCustom@gfiamoncini.com/prefs/pages/tiling.js:25
 #: gnomeCustom@gfiamoncini.com/modules/tiling/module.js:332
-#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:133
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:141
 msgid "Tiling"
 msgstr ""
 
@@ -692,6 +692,7 @@ msgstr ""
 #: gnomeCustom@gfiamoncini.com/prefs/pages/weather.js:157
 #: gnomeCustom@gfiamoncini.com/prefs/pages/aiusage.js:139
 #: gnomeCustom@gfiamoncini.com/prefs/pages/removable.js:36
+#: gnomeCustom@gfiamoncini.com/prefs/pages/updates.js:41
 msgid "Position"
 msgstr ""
 
@@ -700,6 +701,7 @@ msgstr ""
 #: gnomeCustom@gfiamoncini.com/prefs/pages/weather.js:161
 #: gnomeCustom@gfiamoncini.com/prefs/pages/aiusage.js:143
 #: gnomeCustom@gfiamoncini.com/prefs/pages/removable.js:40
+#: gnomeCustom@gfiamoncini.com/prefs/pages/updates.js:45
 msgid "Left"
 msgstr ""
 
@@ -708,6 +710,7 @@ msgstr ""
 #: gnomeCustom@gfiamoncini.com/prefs/pages/weather.js:162
 #: gnomeCustom@gfiamoncini.com/prefs/pages/aiusage.js:144
 #: gnomeCustom@gfiamoncini.com/prefs/pages/removable.js:41
+#: gnomeCustom@gfiamoncini.com/prefs/pages/updates.js:46
 msgid "Centre"
 msgstr ""
 
@@ -716,6 +719,7 @@ msgstr ""
 #: gnomeCustom@gfiamoncini.com/prefs/pages/weather.js:163
 #: gnomeCustom@gfiamoncini.com/prefs/pages/aiusage.js:145
 #: gnomeCustom@gfiamoncini.com/prefs/pages/removable.js:42
+#: gnomeCustom@gfiamoncini.com/prefs/pages/updates.js:47
 msgid "Right"
 msgstr ""
 
@@ -831,7 +835,7 @@ msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/overview.js:20
 #: gnomeCustom@gfiamoncini.com/prefs/pages/overview.js:25
-#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:117
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:125
 msgid "Overview"
 msgstr ""
 
@@ -875,7 +879,7 @@ msgid "GNOME leaves them out of the overview"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/animation.js:25
-#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:125
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:133
 msgid "Animation"
 msgstr ""
 
@@ -954,7 +958,7 @@ msgid "Options meant for working on the extension itself."
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/advanced.js:116
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:114
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:121
 msgid "Warn about conflicting extensions"
 msgstr ""
 
@@ -965,7 +969,7 @@ msgid ""
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/advanced.js:124
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:120
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:127
 msgid "Check cleanup on disable"
 msgstr ""
 
@@ -1124,85 +1128,93 @@ msgstr ""
 msgid "Safely remove USB sticks and external drives from the top bar."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:65
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:67
+msgid "Enable the Updates module"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:68
+msgid "Shows pending system and Flatpak updates in the top bar."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:72
 msgid "Enable the Dock module"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:66
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:73
 msgid "Turns the Dash into a permanent dock."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:70
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:77
 msgid "Enable the Overview module"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:71
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:78
 msgid "Tweaks for the overview screen."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:75
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:82
 msgid "Enable the Animation module"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:76
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:83
 msgid "Controls the speed of Shell animations."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:80
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:87
 msgid "Enable the Tiling module"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:81
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:88
 msgid "Tiling window management."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:85
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:92
 msgid "Enable the Theme module"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:86
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:93
 msgid "Theming engine for the panel, menus, dock and OSD."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:90
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:97
 msgid "Enable the Diagnostics module"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:91
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:98
 msgid "Detects extensions that conflict with enabled modules."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:97
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:104
 msgid "Logging detail level"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:98
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:105
 msgid "Messages below this level are not written to the journal."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:104
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:111
 msgid "Migration version already applied"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:105
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:112
 msgid "Used to run each configuration import only once."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:109
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:116
 msgid "Settings saved before the last import"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:110
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:117
 msgid "JSON snapshot used by “Undo last import”. Not meant to be edited."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:115
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:122
 msgid ""
 "Writes a warning when an original extension competes with an enabled module "
 "for the same feature."
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:121
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml:128
 msgid ""
 "On disable, checks for leftover signals, patches and timers and reports what "
 "remained. Intended for development."
@@ -2527,27 +2539,38 @@ msgstr ""
 msgid "Safely remove USB sticks and external drives, from the top bar"
 msgstr ""
 
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:109
+#: gnomeCustom@gfiamoncini.com/ui/updates/indicator.js:85
+#: gnomeCustom@gfiamoncini.com/ui/updates/indicator.js:137
+#: gnomeCustom@gfiamoncini.com/prefs/pages/updates.js:23
+msgid "Updates"
+msgstr ""
+
 #: gnomeCustom@gfiamoncini.com/lib/modules-info.js:110
-msgid "Fixed dock on the primary monitor"
+msgid "Pending system and Flatpak updates, from the top bar"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/lib/modules-info.js:118
-msgid "Workspace thumbnails, hidden search and picture-in-picture windows"
+msgid "Fixed dock on the primary monitor"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/lib/modules-info.js:126
-msgid "Shell animation speed"
+msgid "Workspace thumbnails, hidden search and picture-in-picture windows"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/lib/modules-info.js:134
-msgid "Tree-based window tiling"
-msgstr ""
-
-#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:141
-msgid "Diagnostics"
+msgid "Shell animation speed"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/lib/modules-info.js:142
+msgid "Tree-based window tiling"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:149
+msgid "Diagnostics"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/modules-info.js:150
 msgid "Warns about extensions that duplicate an active module"
 msgstr ""
 
@@ -2787,6 +2810,7 @@ msgstr ""
 #: gnomeCustom@gfiamoncini.com/prefs/pages/weather.js:136
 #: gnomeCustom@gfiamoncini.com/prefs/pages/aiusage.js:115
 #: gnomeCustom@gfiamoncini.com/prefs/pages/removable.js:28
+#: gnomeCustom@gfiamoncini.com/prefs/pages/updates.js:39
 msgid "Display"
 msgstr ""
 
@@ -2910,6 +2934,7 @@ msgid "Not updated since %s"
 msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/ui/aiusage/indicator.js:312
+#: gnomeCustom@gfiamoncini.com/ui/updates/indicator.js:87
 msgid "Checking…"
 msgstr ""
 
@@ -3004,6 +3029,7 @@ msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/prefs/pages/aiusage.js:154
 #: gnomeCustom@gfiamoncini.com/prefs/pages/removable.js:47
+#: gnomeCustom@gfiamoncini.com/prefs/pages/updates.js:52
 msgid "How it works"
 msgstr ""
 
@@ -3138,4 +3164,134 @@ msgstr ""
 
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.removable.gschema.xml:23
 msgid "Top bar section for the removable devices button"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/modules/updates/module.js:129
+msgid "Could not check for updates. Is the computer online?"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/modules/updates/module.js:131
+#, javascript-format
+msgid "Could not check the system updates: %s"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/modules/updates/module.js:133
+#, javascript-format
+msgid "Could not check the Flatpak updates: %s"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/modules/updates/module.js:202
+#, javascript-format
+msgid "Could not open GNOME Software: %s"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/updates/indicator.js:84
+#, javascript-format
+msgid "Updates available: %d"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/updates/indicator.js:91
+msgid "Looking for updates…"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/updates/indicator.js:91
+msgid "Everything is up to date."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/updates/indicator.js:94
+msgid "System"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/updates/indicator.js:95
+msgid "Flatpak"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/updates/indicator.js:114
+#, javascript-format
+msgid "Checked at %s"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/updates/indicator.js:152
+msgid "Updates downloaded: restart the computer to install them."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/updates/indicator.js:160
+msgid "Check now"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/updates/indicator.js:160
+msgid "Look for new updates now"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/updates/indicator.js:162
+msgid "Update"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/updates/indicator.js:162
+msgid "Open GNOME Software to install the updates"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/updates/indicator.js:189
+#, javascript-format
+msgid "%d security"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/ui/updates/indicator.js:208
+#, javascript-format
+msgid "and %d more"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/updates.js:27
+msgid "Checking"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/updates.js:29
+msgid "Check every"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/updates.js:30
+msgid "In hours. The card also has a \"Check now\" button."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/updates.js:54
+msgid "Only while there is something to update"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/updates.js:55
+msgid ""
+"The button appears with the first pending update, system or Flatpak, and "
+"goes away once everything is installed."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/updates.js:58
+msgid "GNOME Software installs"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/updates.js:59
+msgid ""
+"\"Update\" opens GNOME Software on the Updates page; the password, the "
+"download and the restart stay with it. Nothing is installed from the top bar."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/updates.js:62
+msgid "Light on the network"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/prefs/pages/updates.js:63
+msgid ""
+"The package lists are downloaded again only when they are older than the "
+"repositories allow (6 hours on Fedora)."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.updates.gschema.xml:15
+msgid "Hours between update checks"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.updates.gschema.xml:16
+msgid ""
+"Each check downloads the package lists again when they are older than this."
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.updates.gschema.xml:26
+msgid "Top bar section for the updates button"
 msgstr ""

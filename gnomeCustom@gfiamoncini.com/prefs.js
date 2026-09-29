@@ -23,6 +23,7 @@ import {MediaPage} from './prefs/pages/media.js';
 import {WeatherPage} from './prefs/pages/weather.js';
 import {AiUsagePage} from './prefs/pages/aiusage.js';
 import {RemovablePage} from './prefs/pages/removable.js';
+import {UpdatesPage} from './prefs/pages/updates.js';
 import {DockPage} from './prefs/pages/dock.js';
 import {OverviewPage} from './prefs/pages/overview.js';
 import {AnimationPage} from './prefs/pages/animation.js';
@@ -55,6 +56,7 @@ export default class GnomeCustomPreferences extends ExtensionPreferences {
             new WeatherPage(child('weather'), _, {baseSettings: settings}),
             new AiUsagePage(child('aiusage'), _, {baseSettings: settings}),
             new RemovablePage(child('removable'), _),
+            new UpdatesPage(child('updates'), _),
             new DockPage(child('dock'), _),
             new OverviewPage(child('overview'), _),
             new AnimationPage(child('animation'), _),

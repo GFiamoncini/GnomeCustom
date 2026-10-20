@@ -25,6 +25,12 @@
       <description>When off, the button stays in the top bar with the Bluetooth
       icon, so the card can turn the radio on and connect paired devices.</description>
     </key>
+    <key name="show-battery" type="b">
+      <default>true</default>
+      <summary>Show the battery percentage in the top bar</summary>
+      <description>When off, only the icon of each connected device is shown; a
+      low battery still turns it red, and the card keeps the percentage.</description>
+    </key>
     <key name="hidden-devices" type="as">
       <default>[]</default>
       <summary>Devices left out of the card</summary>
@@ -36,6 +42,13 @@
       <summary>Low battery percentage</summary>
       <description>At or below this battery level a device is shown in red. 0 turns
       the warning off.</description>
+    </key>
+    <!-- O cartão nasce compacto, como os do WinDock (pedido de 2026-10-07); a seta
+         do rodapé alterna e grava aqui. -->
+    <key name="expanded" type="b">
+      <default>false</default>
+      <summary>Show the detailed card</summary>
+      <description>Off shows only the connected devices; on lists every paired one.</description>
     </key>
   </schema>
 </schemalist>

@@ -24,6 +24,7 @@ import {WeatherPage} from './prefs/pages/weather.js';
 import {AiUsagePage} from './prefs/pages/aiusage.js';
 import {RemovablePage} from './prefs/pages/removable.js';
 import {UpdatesPage} from './prefs/pages/updates.js';
+import {SysmonPage} from './prefs/pages/sysmon.js';
 import {DockPage} from './prefs/pages/dock.js';
 import {OverviewPage} from './prefs/pages/overview.js';
 import {AnimationPage} from './prefs/pages/animation.js';
@@ -48,7 +49,7 @@ export default class GnomeCustomPreferences extends ExtensionPreferences {
         // Menu lateral no lugar das abas: com doze páginas os títulos eram cortados.
         buildSidebarWindow(window, [
             new GeneralPage(settings, _, {openSettings, isEnabled}),
-            new ThemePage(child('theme'), _),
+            new ThemePage(child('theme'), _, {volumeSettings: child('volume')}),
             new PanelPage(child('panel'), _),
             new MenuPage(child('menu'), _),
             new BluetoothPage(child('bluetooth'), _),
@@ -57,6 +58,7 @@ export default class GnomeCustomPreferences extends ExtensionPreferences {
             new AiUsagePage(child('aiusage'), _, {baseSettings: settings}),
             new RemovablePage(child('removable'), _),
             new UpdatesPage(child('updates'), _),
+            new SysmonPage(child('sysmon'), _),
             new DockPage(child('dock'), _),
             new OverviewPage(child('overview'), _),
             new AnimationPage(child('animation'), _),

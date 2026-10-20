@@ -11,12 +11,25 @@
  *
  * Cor, espessura e cantos vêm dos tokens `tiling` do Theme Engine; a posição, de
  * `borderRect` (fora do quadro, ocupando o gap).
+ *
+ * Enquanto um menu da janela está aberto, a borda some: os popovers do GTK 4 são
+ * superfícies à parte que o Mutter só prende ao monitor, e por isso passam por
+ * cima da borda quando o botão fica perto da beirada da janela.
  */
 
+import Meta from 'gi://Meta';
 import St from 'gi://St';
 
 import {SignalTracker} from '../../core/signals.js';
 import {borderRadius, borderRect} from '../../lib/tiling/geometry.js';
+
+// Janelas de menu: popovers do GTK 4 (xdg_popup) e menus de apps X11.
+const MENU_TYPES = new Set([
+    Meta.WindowType.DROPDOWN_MENU,
+    Meta.WindowType.POPUP_MENU,
+    Meta.WindowType.MENU,
+    Meta.WindowType.COMBO,
+]);
 
 export class FocusBorder {
     /** @param {object} options @param {object} options.logger */
@@ -36,6 +49,10 @@ export class FocusBorder {
         this._gap = 0;
         this._color = 'transparent';
         this._radius = 0;
+        this._menus = new Set();
+
+        this._signals.connect(global.display, 'window-created',
+            (_display, window) => this._trackMenu(window));
     }
 
     /** @param {{border: string, width: number, radius: number}} tokens */
@@ -63,7 +80,7 @@ export class FocusBorder {
             ];
         }
         this._gap = gap;
-        this._actor.visible = this._width > 0;
+        this._actor.visible = this._width > 0 && this._menus.size === 0;
         this._sync();
     }
 
@@ -71,6 +88,34 @@ export class FocusBorder {
         this._unfollow();
         this._window = null;
         this._actor.visible = false;
+    }
+
+    /** Esconde a borda enquanto um menu da janela focada estiver aberto. */
+    _trackMenu(window) {
+        if (!this._window || !MENU_TYPES.has(window.get_window_type()))
+            return;
+        // Menus de outras janelas não interessam; sem dono conhecido, vale o foco.
+        const owner = window.get_transient_for();
+        if (owner && !this._ownedBy(owner))
+            return;
+
+        this._menus.add(window);
+        this._actor.visible = false;
+        const token = this._signals.connect(window, 'unmanaged', () => {
+            this._signals.disconnect(token);
+            this._menus.delete(window);
+            if (this._menus.size === 0 && this._window)
+                this.show(this._window, this._gap);
+        });
+    }
+
+    /** A janela é a focada ou um menu dela (submenus apontam para o menu-pai). */
+    _ownedBy(window) {
+        for (let w = window; w; w = w.get_transient_for()) {
+            if (w === this._window || this._menus.has(w))
+                return true;
+        }
+        return false;
     }
 
     _sync() {

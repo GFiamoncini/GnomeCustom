@@ -20,13 +20,14 @@ export class ThemePage extends Adw.PreferencesPage {
      * @param {object} settings Gio.Settings de `…gnomecustom.theme`
      * @param {Function} _ função de tradução
      */
-    constructor(settings, _) {
+    constructor(settings, _, {volumeSettings = null} = {}) {
         super({
             title: _('Theme'),
             icon_name: 'applications-graphics-symbolic',
         });
 
         this._settings = settings;
+        this._volumeSettings = volumeSettings;
         this._ = _;
 
         this._addPresetGroup();
@@ -112,6 +113,38 @@ export class ThemePage extends Adw.PreferencesPage {
             subtitle: _('Volume and brightness pop-ups; the level bar takes the accent'),
             settings: this._settings,
             key: 'style-osd',
+        }));
+        // Do módulo de volume, mas é aqui que se procura a aparência do OSD.
+        if (this._volumeSettings) {
+            group.add(switchRow({
+                title: _('On-screen display below the top bar'),
+                subtitle: _('Volume and brightness show up right under the bar, without the shadow, instead of near the bottom of the screen'),
+                settings: this._volumeSettings,
+                key: 'below-bar',
+            }));
+            group.add(stringChoiceRow({
+                title: _('On-screen display side'),
+                subtitle: _('Where the volume and brightness pop-ups sit across the screen'),
+                settings: this._volumeSettings,
+                key: 'align',
+                options: [
+                    ['start', _('Left')],
+                    ['center', _('Center')],
+                    ['end', _('Right')],
+                ],
+            }));
+            group.add(switchRow({
+                title: _('Compact on-screen display'),
+                subtitle: _('Smaller volume and brightness pop-ups'),
+                settings: this._volumeSettings,
+                key: 'compact',
+            }));
+        }
+        group.add(switchRow({
+            title: _('Compact menus'),
+            subtitle: _('Smaller text, days and spacing in the date menu, the quick settings and the pop-up menus'),
+            settings: this._settings,
+            key: 'menus-compact',
         }));
         group.add(switchRow({
             title: _('Compact notifications'),
@@ -217,6 +250,18 @@ export class ThemePage extends Adw.PreferencesPage {
                 ['floating', _('Floating')],
             ],
         }));
+        group.add(switchRow({
+            title: _('Islands'),
+            subtitle: _('The strip goes away and the left, centre and right parts become separate pills. Needs the floating style and a bar colour.'),
+            settings: this._settings,
+            key: 'panel-islands',
+        }));
+        group.add(switchRow({
+            title: _('Compact cards'),
+            subtitle: _('Text, icons and spacing of the cards opened from the bar about 15% smaller. Nothing else changes.'),
+            settings: this._settings,
+            key: 'cards-compact',
+        }));
         group.add(spinRow({
             title: _('Height'),
             subtitle: _('In pixels'),
@@ -242,6 +287,14 @@ export class ThemePage extends Adw.PreferencesPage {
             key: 'panel-icon-size',
             min: 10,
             max: 32,
+        }));
+        group.add(spinRow({
+            title: _('Space around each icon'),
+            subtitle: _('Padding on each side of a top bar button, in pixels; -1 keeps the shell theme (12 in GNOME)'),
+            settings: this._settings,
+            key: 'panel-button-padding',
+            min: -1,
+            max: 16,
         }));
         group.add(spinRow({
             title: _('Space above'),

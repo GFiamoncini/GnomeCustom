@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 Gabriel Fiamoncini
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<schemalist gettext-domain="gnomecustom">
+  <schema id="org.gnome.shell.extensions.gnomecustom.sysmon"
+          path="/org/gnome/shell/extensions/gnomecustom/sysmon/">
+
+    <!-- 2 s: o gráfico de 60 leituras cobre dois minutos, e a barra não pisca
+         a cada segundo. -->
+    <key name="interval-seconds" type="u">
+      <default>2</default>
+      <range min="1" max="10"/>
+      <summary>Seconds between readings</summary>
+      <description>The graphs keep the last 60 readings.</description>
+    </key>
+    <!-- Lista de valores, e não enum: veja o esquema do clima. -->
+    <key name="panel-position" type="s">
+      <choices>
+        <choice value="left"/>
+        <choice value="center"/>
+        <choice value="right"/>
+      </choices>
+      <default>'right'</default>
+      <summary>Top bar section for the system monitor button</summary>
+    </key>
+  </schema>
+</schemalist>

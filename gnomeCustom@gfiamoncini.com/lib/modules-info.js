@@ -112,6 +112,22 @@ export const MODULES_INFO = Object.freeze([
         implemented: true,
     },
     {
+        id: 'sysmon',
+        key: 'sysmon-enabled',
+        title: N_('System Monitor'),
+        summary: N_('Processor and memory in the top bar, with graphs in the card'),
+        phase: 10,
+        implemented: true,
+    },
+    {
+        id: 'calendar',
+        key: 'calendar-enabled',
+        title: N_('Calendar'),
+        summary: N_('Brazilian national holidays in the clock menu calendar'),
+        phase: 10,
+        implemented: true,
+    },
+    {
         id: 'dock',
         key: 'dock-enabled',
         title: N_('Dock'),

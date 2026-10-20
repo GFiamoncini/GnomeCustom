@@ -31,6 +31,7 @@ import {
     State, WINDOW_NAMES, describeAccount, describeReset, formatClock, formatPercent,
     panelPercent, planLabel, severity,
 } from '../../lib/ai-usage.js';
+import {scaled} from '../common/card-scale.js';
 
 /** Larguras das barras, em px lógicos; o card tem largura fixa (stylesheet). */
 const COMPACT_BAR = 132;
@@ -67,11 +68,12 @@ export class AiUsageIndicator extends PanelMenu.Button {
         this._gicon = new Gio.FileIcon({file: iconFile()});
 
         const box = new St.BoxLayout({style_class: 'gnomecustom-aiusage-panel'});
-        box.add_child(new St.Icon({
+        this._panelIcon = new St.Icon({
             gicon: this._gicon,
-            style_class: 'system-status-icon',
+            style_class: 'system-status-icon gnomecustom-aiusage-panel-icon',
             y_align: Clutter.ActorAlign.CENTER,
-        }));
+        });
+        box.add_child(this._panelIcon);
         this._panelLabel = new St.Label({
             text: '',
             visible: false,
@@ -103,6 +105,7 @@ export class AiUsageIndicator extends PanelMenu.Button {
         this._panelLabel.visible = showPercent && percent !== null;
         this._panelLabel.text = percent === null ? '' : formatPercent(percent);
         this._setSeverity(this._panelLabel, percent);
+        this._setSeverity(this._panelIcon, percent);
 
         this._accounts.destroy_all_children();
         if (accounts.length === 0) {
@@ -146,7 +149,7 @@ export class AiUsageIndicator extends PanelMenu.Button {
             this.menu.close();
             this._callbacks.onSettings?.();
         }));
-        this._expandIcon = new St.Icon({icon_name: 'pan-down-symbolic', icon_size: 14});
+        this._expandIcon = new St.Icon({icon_name: 'pan-down-symbolic', icon_size: scaled(14)});
         this._expandButton = this._iconButton(null, _('Show the details'),
             () => this._callbacks.onToggleExpanded?.(), this._expandIcon);
         footer.add_child(this._expandButton);
@@ -261,6 +264,7 @@ export class AiUsageIndicator extends PanelMenu.Button {
 
     /** Trilho por baixo, preenchimento por cima, com a largura da porcentagem. */
     _bar(percent, width) {
+        width = scaled(width);
         // BoxLayout, e não St.Bin: o Bin centraliza o filho e o preenchimento
         // ficava no meio do trilho.
         const track = new St.BoxLayout({
@@ -349,7 +353,7 @@ export class AiUsageIndicator extends PanelMenu.Button {
             can_focus: true,
             y_align: Clutter.ActorAlign.CENTER,
             accessible_name: accessibleName,
-            child: icon ?? new St.Icon({icon_name: iconName, icon_size: 14}),
+            child: icon ?? new St.Icon({icon_name: iconName, icon_size: scaled(14)}),
         });
         button.connect('clicked', onClick);
         return button;

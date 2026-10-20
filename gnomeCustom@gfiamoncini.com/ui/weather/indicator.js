@@ -19,7 +19,10 @@ import St from 'gi://St';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 
+import {Expander} from '../common/expander.js';
+
 import {WEEKDAYS, formatHour, formatTemperature, windDirection} from '../../lib/weather.js';
+import {scaled} from '../common/card-scale.js';
 
 export class WeatherIndicator extends PanelMenu.Button {
     static {
@@ -31,12 +34,13 @@ export class WeatherIndicator extends PanelMenu.Button {
      * @param {Function} options.gettext
      * @param {Function} options.onRefresh pedido de atualização pelo botão do card
      * @param {Function} options.onSettings abrir as preferências
+     * @param {Function} options.onToggleExpanded a seta do rodapé: compacto ou detalhado
      */
-    constructor({gettext, onRefresh, onSettings}) {
+    constructor({gettext, onRefresh, onSettings, onToggleExpanded}) {
         super(0.5, 'GnomeCustom Weather', false);
 
         this._ = gettext;
-        this._callbacks = {onRefresh, onSettings};
+        this._callbacks = {onRefresh, onSettings, onToggleExpanded};
 
         const box = new St.BoxLayout({style_class: 'gnomecustom-weather-panel'});
         this._panelIcon = new St.Icon({
@@ -72,7 +76,7 @@ export class WeatherIndicator extends PanelMenu.Button {
      * @param {object} [state]
      * @param {?string} [state.error] a última atualização falhou (os dados são os anteriores)
      */
-    showForecast(locationName, forecast, {error = null} = {}) {
+    showForecast(locationName, forecast, {error = null, expanded = true} = {}) {
         const _ = this._;
         const {current, hourly, daily, units} = forecast;
 
@@ -102,6 +106,12 @@ export class WeatherIndicator extends PanelMenu.Button {
 
         this._daily.destroy_all_children();
         daily.forEach((day, index) => this._daily.add_child(this._dayRow(day, index === 0)));
+
+        // Compacto: agora e as próximas horas; os dias e o crédito, na seta.
+        this._expanded = expanded;
+        this._expander.set(expanded);
+        this._daily.visible = expanded;
+        this._footer.visible = expanded;
     }
 
     _buildCard() {
@@ -159,8 +169,11 @@ export class WeatherIndicator extends PanelMenu.Button {
             style_class: 'gnomecustom-weather-footer',
         });
 
-        this._forecastParts = [this._now, this._details, this._hourly, this._daily];
-        for (const child of [header, this._message, ...this._forecastParts, this._footer])
+        this._expander = new Expander({gettext: _, onToggle: () => this._callbacks.onToggleExpanded?.()});
+
+        this._forecastParts = [this._now, this._details, this._hourly, this._daily, this._expander.button];
+        for (const child of [header, this._message, this._now, this._details, this._hourly, this._daily,
+            this._footer, this._expander.button])
             card.add_child(child);
 
         item.add_child(card);
@@ -184,7 +197,7 @@ export class WeatherIndicator extends PanelMenu.Button {
             can_focus: true,
             y_align: Clutter.ActorAlign.START,
             accessible_name: accessibleName,
-            child: new St.Icon({icon_name: iconName, icon_size: 14}),
+            child: new St.Icon({icon_name: iconName, icon_size: scaled(14)}),
         });
         button.connect('clicked', onClick);
         return button;
@@ -195,7 +208,7 @@ export class WeatherIndicator extends PanelMenu.Button {
             style_class: 'gnomecustom-weather-hour'});
         cell.add_child(new St.Label({text: formatHour(hour.hour),
             style_class: 'gnomecustom-weather-hour-time', x_align: Clutter.ActorAlign.CENTER}));
-        cell.add_child(new St.Icon({icon_name: hour.icon, icon_size: 18,
+        cell.add_child(new St.Icon({icon_name: hour.icon, icon_size: scaled(18),
             x_align: Clutter.ActorAlign.CENTER}));
         cell.add_child(new St.Label({text: formatTemperature(hour.temperature),
             style_class: 'gnomecustom-weather-hour-temp', x_align: Clutter.ActorAlign.CENTER}));
@@ -216,7 +229,7 @@ export class WeatherIndicator extends PanelMenu.Button {
             style_class: 'gnomecustom-weather-day-name',
             y_align: Clutter.ActorAlign.CENTER,
         }));
-        row.add_child(new St.Icon({icon_name: day.icon, icon_size: 16,
+        row.add_child(new St.Icon({icon_name: day.icon, icon_size: scaled(16),
             y_align: Clutter.ActorAlign.CENTER}));
         row.add_child(new St.Label({
             text: _(day.description),

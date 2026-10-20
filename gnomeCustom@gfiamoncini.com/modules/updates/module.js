@@ -64,6 +64,7 @@ export class UpdatesModule extends Module {
 
         this.signals.connectSetting(this._settings, 'panel-position', () => this._recreate());
         this.signals.connectSetting(this._settings, 'interval-hours', () => this._schedule());
+        this.signals.connectSetting(this._settings, 'expanded', () => this._render());
 
         this._unsubscribe = this._updates.onChanged(sources => this._check({refresh: false, sources}));
         this._schedule(FIRST_CHECK_MS);
@@ -87,6 +88,8 @@ export class UpdatesModule extends Module {
             gettext: this.ctx.gettext,
             onCheck: () => this._check({refresh: true}),
             onUpdate: () => this._openSoftware(),
+            onToggleExpanded: () => this._settings.set_boolean('expanded',
+                !this._settings.get_boolean('expanded')),
             onClosed: () => {
                 this._message = null;
                 this._render();
@@ -94,7 +97,7 @@ export class UpdatesModule extends Module {
         });
         this._panel.add(ROLE, this._indicator, {
             box: this._settings.get_string('panel-position'),
-            position: 0,
+            slot: this.constructor.id,
         });
         this._render();
     }
@@ -118,6 +121,7 @@ export class UpdatesModule extends Module {
             checking: this._checking,
             checkedAt: this._checkedAt,
             message: this._message ?? this._errorMessage(),
+            expanded: this._settings.get_boolean('expanded'),
         });
         // Com o card aberto o botão fica, mesmo sem pendência: é nele que está o
         // "tudo em dia" de quem acabou de pedir "Verificar agora".

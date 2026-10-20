@@ -44,6 +44,12 @@ export class BluetoothPage extends Adw.PreferencesPage {
         this.add(panel);
 
         const battery = new Adw.PreferencesGroup({title: _('Battery')});
+        battery.add(switchRow({
+            title: _('Battery percentage in the top bar'),
+            subtitle: _('When off, only the icon of each device is shown; the card keeps the percentage'),
+            settings,
+            key: 'show-battery',
+        }));
         battery.add(spinRow({
             title: _('Low battery at or below'),
             subtitle: _('In percent; the device turns red. 0 turns the warning off'),

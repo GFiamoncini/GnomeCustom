@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 Gabriel Fiamoncini
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<schemalist gettext-domain="gnomecustom">
+  <schema id="org.gnome.shell.extensions.gnomecustom.volume"
+          path="/org/gnome/shell/extensions/gnomecustom/volume/">
+
+    <key name="below-bar" type="b">
+      <default>true</default>
+      <summary>Show the volume display right below the top bar</summary>
+      <description>When off it stays near the bottom of the screen, where
+      GNOME puts it. Also applies to the brightness display, which is the same
+      window.</description>
+    </key>
+    <key name="align" type="s">
+      <choices>
+        <choice value="start"/>
+        <choice value="center"/>
+        <choice value="end"/>
+      </choices>
+      <default>'end'</default>
+      <summary>Side of the screen where the volume display shows up</summary>
+    </key>
+    <key name="compact" type="b">
+      <default>true</default>
+      <summary>Smaller volume display</summary>
+    </key>
+  </schema>
+</schemalist>

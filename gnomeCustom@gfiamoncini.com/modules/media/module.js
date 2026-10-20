@@ -16,13 +16,15 @@
 import Shell from 'gi://Shell';
 
 import {Module} from '../../core/module.js';
-import {MEDIA_ACTIONS, canInvoke, pickControlTarget, pickPlayer} from '../../lib/mpris.js';
+import {
+    MEDIA_ACTIONS, VOLUME_ACTIONS, canInvoke, pickControlTarget, pickPlayer, stepVolume, streamBelongsTo,
+} from '../../lib/mpris.js';
 import {MediaIndicator} from '../../ui/media/indicator.js';
 
 const ROLE = 'gnomecustom-media';
 
 /** Chaves que só mudam a aparência do botão ou do card. */
-const APPEARANCE_KEYS = ['panel-max-width', 'show-controls', 'show-progress', 'ambient-background'];
+const APPEARANCE_KEYS = ['panel-max-width', 'scroll-title', 'show-controls', 'show-progress', 'ambient-background'];
 
 export class MediaModule extends Module {
     static get id() {
@@ -34,7 +36,7 @@ export class MediaModule extends Module {
     }
 
     static get requires() {
-        return ['panel', 'mpris', 'coverArt', 'keybindings'];
+        return ['panel', 'mpris', 'coverArt', 'keybindings', 'quickSettings', 'osd'];
     }
 
     enable() {
@@ -42,6 +44,8 @@ export class MediaModule extends Module {
         this._mpris = this.service('mpris');
         this._coverArt = this.service('coverArt');
         this._keybindings = this.service('keybindings');
+        this._sound = this.service('quickSettings');
+        this._osd = this.service('osd');
         this._settings = this.settings.child('media');
 
         this._createIndicator();
@@ -60,12 +64,17 @@ export class MediaModule extends Module {
                 modes: Shell.ActionMode.NORMAL | Shell.ActionMode.OVERVIEW | Shell.ActionMode.POPUP,
             });
         }
+        for (const {key, delta} of VOLUME_ACTIONS) {
+            this._keybindings.add(key, this._settings, () => this._changeVolume(delta), {
+                modes: Shell.ActionMode.NORMAL | Shell.ActionMode.OVERVIEW | Shell.ActionMode.POPUP,
+            });
+        }
     }
 
     disable() {
         this._unsubscribe?.();
         this._unsubscribe = null;
-        for (const {key} of MEDIA_ACTIONS)
+        for (const {key} of [...MEDIA_ACTIONS, ...VOLUME_ACTIONS])
             this._keybindings.remove(key);
         this._removeIndicator();
 
@@ -73,6 +82,8 @@ export class MediaModule extends Module {
         this._mpris = null;
         this._coverArt = null;
         this._keybindings = null;
+        this._sound = null;
+        this._osd = null;
         this._settings = null;
         this._player = null;
     }
@@ -91,7 +102,7 @@ export class MediaModule extends Module {
 
         this._panel.add(ROLE, this._indicator, {
             box: this._settings.get_string('panel-position'),
-            position: 0,
+            slot: this.constructor.id,
         });
     }
 
@@ -151,6 +162,29 @@ export class MediaModule extends Module {
         }
         this.log.debug(`${method} (${origin}) → ${target.busName}`);
         this._mpris.control(target.busName, method);
+    }
+
+    /**
+     * Volume **da música**, e não do computador (pedido do usuário, 2026-10-07):
+     * mexe no fluxo de áudio do reprodutor, pelo mixer do Shell. A propriedade
+     * `Volume` do MPRIS não serve: o Spotify a publica e ignora quem a grava.
+     */
+    _changeVolume(delta) {
+        const target = pickControlTarget(this._mpris.players, this._settings.get_strv('allowed-players'));
+        if (!target) {
+            this.log.debug('volume da música ignorado: nenhum player');
+            return;
+        }
+        const level = this._sound.changeAppVolume(
+            stream => streamBelongsTo(target, stream), current => stepVolume(current, delta));
+        if (level === null) {
+            // Parado há um tempo, o reprodutor fecha o fluxo: não há o que ajustar.
+            this.log.debug(`volume da música ignorado: ${target.busName} sem fluxo de áudio`);
+            return;
+        }
+        this.log.debug(`volume de ${target.busName}: ${Math.round(level * 100)}%`);
+        const icon = level === 0 ? 'muted' : level < 0.34 ? 'low' : level < 0.67 ? 'medium' : 'high';
+        this._osd.show({iconName: `audio-volume-${icon}-symbolic`, label: target.identity, level});
     }
 
     _seek(position) {

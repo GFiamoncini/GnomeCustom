@@ -22,6 +22,7 @@ import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 
 import {countPending, panelCount, visibleItems} from '../../lib/updates.js';
+import {Expander} from '../common/expander.js';
 
 const ICON = 'software-update-available-symbolic';
 
@@ -36,17 +37,18 @@ export class UpdatesIndicator extends PanelMenu.Button {
      * @param {Function} options.onCheck buscar agora, indo à rede
      * @param {Function} options.onUpdate abrir o GNOME Software
      * @param {Function} options.onClosed o card fechou
+     * @param {Function} options.onToggleExpanded a seta do rodapé: compacto ou detalhado
      */
-    constructor({gettext, onCheck, onUpdate, onClosed}) {
+    constructor({gettext, onCheck, onUpdate, onClosed, onToggleExpanded}) {
         super(0.5, 'GnomeCustom Updates', false);
 
         this._ = gettext;
-        this._callbacks = {onCheck, onUpdate, onClosed};
+        this._callbacks = {onCheck, onUpdate, onClosed, onToggleExpanded};
 
         const box = new St.BoxLayout({style_class: 'gnomecustom-updates-panel'});
         box.add_child(new St.Icon({
             icon_name: ICON,
-            style_class: 'system-status-icon',
+            style_class: 'system-status-icon gnomecustom-updates-panel-icon',
             y_align: Clutter.ActorAlign.CENTER,
         }));
         this._count = new St.Label({
@@ -74,7 +76,7 @@ export class UpdatesIndicator extends PanelMenu.Button {
      * @param {?number} view.checkedAt ms da última busca na rede
      * @param {?{kind: string, text: string}} view.message
      */
-    update(state, {checking = false, checkedAt = null, message = null} = {}) {
+    update(state, {checking = false, checkedAt = null, message = null, expanded = true} = {}) {
         const _ = this._;
         const total = countPending(state);
 
@@ -85,6 +87,11 @@ export class UpdatesIndicator extends PanelMenu.Button {
             : _('Updates');
 
         this._when.text = checking ? _('Checking…') : this._checkedText(checkedAt);
+
+        // Compacto: quantas são, por origem; os pacotes um a um, na seta.
+        this._expanded = expanded;
+        this._expander.set(expanded);
+        this._expander.button.visible = total > 0;
 
         this._list.destroy_all_children();
         if (total === 0) {
@@ -162,8 +169,10 @@ export class UpdatesIndicator extends PanelMenu.Button {
         this._updateButton = this._action(_('Update'), _('Open GNOME Software to install the updates'),
             () => this._callbacks.onUpdate?.());
         this._updateButton.add_style_class_name('primary');
+        this._expander = new Expander({gettext: _, onToggle: () => this._callbacks.onToggleExpanded?.()});
         actions.add_child(this._checkButton);
         actions.add_child(this._updateButton);
+        actions.add_child(this._expander.button);
         card.add_child(actions);
 
         item.add_child(card);
@@ -191,6 +200,9 @@ export class UpdatesIndicator extends PanelMenu.Button {
         }
         header.add_child(this._label(String(items.length), 'gnomecustom-updates-section-count'));
         this._list.add_child(header);
+
+        if (!this._expanded)
+            return;
 
         const {shown, hidden} = visibleItems(items);
         for (const item of shown) {

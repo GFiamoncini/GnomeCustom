@@ -6,17 +6,20 @@
  * regras ficam em `lib/updates.js`.
  *
  * **Nada aqui bloqueia o Shell.** O PackageKit é chamado pelas versões
- * assíncronas da PackageKitGlib; o Flatpak, pelo comando `flatpak` num processo
- * à parte, porque a biblioteca dele só tem a busca de atualizações síncrona e
- * ela vai à rede — dentro do Shell, isso congelaria a barra.
+ * assíncronas da PackageKitGlib; o Flatpak, por `helpers/flatpak-updates.js` num
+ * `gjs` à parte, porque a biblioteca dele só tem a busca de atualizações
+ * síncrona e ela vai à rede — dentro do Shell, isso congelaria a barra. (O
+ * comando `flatpak remote-ls --updates` não serve: ver o comentário do auxiliar.)
  *
  * **Duas profundidades de busca** (a lição do WinDock):
  *
  * - `refresh: true` baixa as listas de pacotes de novo quando elas passaram do
- *   prazo (o `metadata_expire` do dnf; o PackageKit decide) e pergunta ao
- *   servidor do Flatpak. É a única que acha atualização nova;
+ *   prazo (o `metadata_expire` do dnf; o PackageKit decide). É a única que
+ *   acha atualização nova do sistema;
  * - `refresh: false` relê só o que está guardado. Serve depois de o GNOME
- *   Software atualizar: confirma o que saiu da lista, sem ir à rede.
+ *   Software atualizar: confirma o que saiu da lista. No Flatpak a conta é a
+ *   mesma nas duas (a biblioteca decide se o resumo guardado ainda vale), mas
+ *   sem rede esta fica calada em vez de acusar erro.
  *
  * **Quem avisa que algo mudou:** o sinal `UpdatesChanged` do PackageKit, e o
  * arquivo `.changed` que o Flatpak toca a cada instalação ou atualização.
@@ -37,8 +40,16 @@ const PK_PATH = '/org/freedesktop/PackageKit';
 /** Rajadas de avisos (uma atualização toca o `.changed` várias vezes) viram uma. */
 const CHANGED_DELAY_MS = 3 * 1000;
 
-/** O `flatpak` que passa disto é encerrado: um servidor mudo não prende o card. */
+/** A busca que passa disto é encerrada: um servidor mudo não prende o card. */
 const FLATPAK_TIMEOUT_MS = 2 * 60 * 1000;
+
+const FLATPAK_HELPER = GLib.build_filenamev([
+    GLib.path_get_dirname(GLib.filename_from_uri(import.meta.url)[0]),
+    '..', '..', 'helpers', 'flatpak-updates.js',
+]);
+
+/** Código de saída do auxiliar quando a libflatpak não está instalada. */
+const FLATPAK_MISSING = 3;
 
 /** Existe enquanto uma atualização baixada espera o reinício (pk-offline). */
 const OFFLINE_UPDATE = '/system-update';
@@ -186,17 +197,13 @@ export class UpdatesService {
     // ------------------------------------------------------------ flatpak
 
     async _flatpakUpdates(refresh) {
-        const argv = ['flatpak', 'remote-ls', '--updates', '--columns=application,name,version,branch'];
-        if (!refresh)
-            argv.splice(3, 0, '--cached');
-
         let proc;
         try {
-            proc = Gio.Subprocess.new(argv,
+            proc = Gio.Subprocess.new(['gjs', '-m', FLATPAK_HELPER],
                 Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_PIPE);
         } catch (e) {
             if (e.matches?.(GLib.SpawnError, GLib.SpawnError.NOENT))
-                return [];   // Flatpak não instalado
+                return [];   // sem o `gjs` de linha de comando não há como perguntar
             throw e;
         }
 
@@ -215,8 +222,17 @@ export class UpdatesService {
                     }
                 });
             });
-            if (!proc.get_successful())
-                throw new Error(stderr.trim().split('\n').pop() || `flatpak terminou com ${proc.get_exit_status()}`);
+            if (proc.get_if_exited() && proc.get_exit_status() === FLATPAK_MISSING)
+                return [];   // Flatpak não instalado
+            if (!proc.get_successful()) {
+                const reason = stderr.trim().split('\n').pop() || 'a busca do Flatpak foi interrompida';
+                if (!refresh) {
+                    // Releitura depois de uma mudança local: sem resposta, vale a lista que já havia.
+                    this._logger.info(`Flatpak não relido: ${reason}`);
+                    return null;
+                }
+                throw new Error(reason);
+            }
             return parseFlatpakList(stdout);
         } finally {
             GLib.source_remove(timeout);

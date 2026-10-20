@@ -46,9 +46,25 @@
       <default>['&lt;Control&gt;&lt;Alt&gt;&lt;Super&gt;Right']</default>
       <summary>Shortcut to skip to the next track</summary>
     </key>
+    <key name="shortcut-volume-up" type="as">
+      <default>['&lt;Control&gt;&lt;Alt&gt;&lt;Super&gt;Page_Up']</default>
+      <summary>Shortcut to raise the volume of the music only</summary>
+      <description>Changes the volume of the player shown in the top bar, not
+      the volume of the computer.</description>
+    </key>
+    <key name="shortcut-volume-down" type="as">
+      <default>['&lt;Control&gt;&lt;Alt&gt;&lt;Super&gt;Page_Down']</default>
+      <summary>Shortcut to lower the volume of the music only</summary>
+    </key>
     <key name="shortcut-previous" type="as">
       <default>['&lt;Control&gt;&lt;Alt&gt;&lt;Super&gt;Left']</default>
       <summary>Shortcut to go back to the previous track</summary>
+    </key>
+    <key name="scroll-title" type="b">
+      <default>true</default>
+      <summary>Scroll the track name when it does not fit</summary>
+      <description>While playing, a long name slides past instead of ending in
+      an ellipsis. Needs animations enabled.</description>
     </key>
     <key name="show-progress" type="b">
       <default>true</default>

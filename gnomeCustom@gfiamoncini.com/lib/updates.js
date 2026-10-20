@@ -63,8 +63,8 @@ export function systemPackages(entries) {
 }
 
 /**
- * A saída de `flatpak remote-ls --updates --columns=application,name,version,branch`:
- * uma linha por ref, colunas separadas por tabulação. A mesma ref instalada no
+ * A saída de `helpers/flatpak-updates.js` (id, nome, versão, ramo): uma linha
+ * por ref, colunas separadas por tabulação. A mesma ref instalada no
  * sistema e no usuário aparece uma vez.
  *
  * @param {string} text

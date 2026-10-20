@@ -37,5 +37,18 @@
       <range min="16" max="64"/>
       <summary>Icon size in the applications menu</summary>
     </key>
+    <key name="keyboard-uppercase" type="b">
+      <default>true</default>
+      <summary>Keyboard layout in capital letters</summary>
+      <description>Shows “BR” instead of “br” in the keyboard layout indicator
+      of the top bar and in its menu.</description>
+    </key>
+    <key name="button-order" type="as">
+      <default>['sysmon', 'updates', 'removable', 'aiusage', 'weather', 'media', 'bluetooth']</default>
+      <summary>Order of the GnomeCustom buttons in the top bar</summary>
+      <description>Module ids from left to right. The section of the bar (left,
+      center or right) is chosen on the page of each module; this list decides
+      who comes first among the buttons that share a section.</description>
+    </key>
   </schema>
 </schemalist>

@@ -6,7 +6,7 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 
-import {MEDIA_ACTIONS, MPRIS_PREFIX, playerIdFromBusName, toggleAllowed} from '../../lib/mpris.js';
+import {MEDIA_ACTIONS, VOLUME_ACTIONS, MPRIS_PREFIX, playerIdFromBusName, toggleAllowed} from '../../lib/mpris.js';
 import {switchRow, spinRow, enumRow, escapeMarkup, readKeybindings, shortcutRow} from '../widgets.js';
 
 export class MediaPage extends Adw.PreferencesPage {
@@ -165,6 +165,12 @@ export class MediaPage extends Adw.PreferencesPage {
             step: 10,
         }));
         group.add(switchRow({
+            title: _('Scroll the track name'),
+            subtitle: _('While playing, a name that does not fit slides past instead of ending in an ellipsis'),
+            settings: this._settings,
+            key: 'scroll-title',
+        }));
+        group.add(switchRow({
             title: _('Playback controls'),
             subtitle: _('Previous, play or pause, and next beside the track name'),
             settings: this._settings,
@@ -188,7 +194,7 @@ export class MediaPage extends Adw.PreferencesPage {
             extra.push({settings: tiling});
         const others = () => readKeybindings(extra);
 
-        for (const {key, title} of MEDIA_ACTIONS)
+        for (const {key, title} of [...MEDIA_ACTIONS, ...VOLUME_ACTIONS])
             group.add(shortcutRow({title: _(title), settings: this._settings, key, _, others}));
 
         this.add(group);

@@ -67,6 +67,19 @@
       <summary>Enable the Updates module</summary>
       <description>Shows pending system and Flatpak updates in the top bar.</description>
     </key>
+    <!-- Pedido de 2026-10-07, pelo que o WinDock tem. -->
+    <key name="sysmon-enabled" type="b">
+      <default>true</default>
+      <summary>Enable the System Monitor module</summary>
+      <description>Shows processor and memory usage in the top bar, and graphs in the card.</description>
+    </key>
+    <!-- Ligado de fábrica: só pinta os feriados no calendário que já existe
+         (pedido de 2026-10-07). -->
+    <key name="calendar-enabled" type="b">
+      <default>true</default>
+      <summary>Enable the Calendar module</summary>
+      <description>Marks the Brazilian national holidays in the clock menu calendar.</description>
+    </key>
     <key name="dock-enabled" type="b">
       <default>false</default>
       <summary>Enable the Dock module</summary>

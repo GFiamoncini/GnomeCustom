@@ -53,6 +53,8 @@ export function generateStylesheet(tokens) {
         blocks.push(dockBlocks(dock));
     if (tokens.notifications?.compact)
         blocks.push(compactNotificationBlocks());
+    if (tokens.menus?.compact)
+        blocks.push(compactMenuBlocks());
 
     return `${blocks.filter(Boolean).join('\n\n')}\n`;
 }
@@ -196,9 +198,10 @@ function panelBlock(panel) {
         ? `border-radius: ${panel.radius}px !important;`
         : `border-radius: 0 0 ${panel.radius}px ${panel.radius}px !important;`);
 
+    const surface = [];
     if (panel.background) {
-        rules.push(`background-color: ${panel.background} !important;`);
-        rules.push(panel.borderWidth > 0 && panel.border
+        surface.push(`background-color: ${panel.background} !important;`);
+        surface.push(panel.borderWidth > 0 && panel.border
             ? `border: ${panel.borderWidth}px solid ${panel.border} !important;`
             : 'border: none !important;');
     }
@@ -206,7 +209,27 @@ function panelBlock(panel) {
     if (panel.foreground)
         rules.push(`color: ${panel.foreground} !important;`);
 
-    return block('#panel', rules);
+    if (!panel.islands)
+        return block('#panel', [...rules, ...surface]);
+
+    // Em ilhas (do WinDock, pedido de 2026-10-07): a faixa fica transparente e o
+    // fundo e a borda descem para os três trechos da barra. O vão entre o centro
+    // e os lados é o que sobrar da tela; `islandGap` só vale quando eles se
+    // encostam.
+    rules.push('background-color: transparent !important;');
+    rules.push('border: none !important;');
+    rules.push('box-shadow: none !important;');
+    const half = panel.islandGap / 2;
+    return [
+        block('#panel', rules),
+        block('#panel #panelLeft, #panel #panelCenter, #panel #panelRight', [
+            ...surface,
+            `border-radius: ${panel.radius}px !important;`,
+        ]),
+        block('#panel #panelLeft', [`margin-right: ${half}px !important;`]),
+        block('#panel #panelCenter', [`margin: 0 ${half}px !important;`]),
+        block('#panel #panelRight', [`margin-left: ${half}px !important;`]),
+    ].join('\n\n');
 }
 
 /**
@@ -239,6 +262,111 @@ function compactNotificationBlocks() {
     ].join('\n\n');
 }
 
+/** Os itens que só embrulham um cartão nosso: sem respiro, com ou sem menus compactos. */
+const CARD_ITEMS = ['media', 'bt', 'weather', 'aiusage', 'removable', 'updates', 'sysmon']
+    .map(name => `.gnomecustom-${name}-item`).join(', ');
+
+/**
+ * Menus do Shell compactos (pedido do usuário, 2026-10-11): o menu da data com o
+ * calendário, os ajustes rápidos e os itens de menu pop-up.
+ *
+ * A letra encolhe na raiz do menu da data e dos ajustes rápidos, e o que está em
+ * `em` vai junto; o resto são as medidas em px do tema do GNOME, por volta de
+ * 30% menores. Os itens de menu pop-up só perdem respiro: a letra deles fica,
+ * porque os nossos cartões moram em itens assim e têm interruptor próprio
+ * (`cards-compact`).
+ *
+ * Os seletores do dia aparecem nas duas formas: `.calendar .calendar-day` é a
+ * do GNOME, `.calendar-day-base` a dos temas derivados de folhas antigas.
+ */
+function compactMenuBlocks() {
+    return [
+        block('.datemenu-popover, .quick-settings', ['font-size: 0.9em !important;']),
+
+        // Menu da data.
+        block('.datemenu-calendar-column', ['spacing: 4px !important;']),
+        block('.datemenu-calendar-column .datemenu-displays-box', ['spacing: 4px !important;']),
+        block('.datemenu-today-button', ['padding: 6px !important;']),
+        block('.datemenu-today-button .date-label', ['font-size: 1.2em !important;']),
+        block('.calendar, .world-clocks-button, .weather-button, .events-button', [
+            'padding: 6px !important;',
+            'margin: 2px !important;',
+        ]),
+        block('.calendar .calendar-month-header .calendar-month-label, .calendar-month-label', [
+            'padding: 4px 0 !important;',
+        ]),
+        block('.calendar .calendar-month-header .pager-button', [
+            'width: 2.1em !important;',
+            'height: 2.1em !important;',
+        ]),
+        block('.calendar .calendar-day, .calendar-day-base, .calendar-day', [
+            'font-size: 0.8em !important;',
+            'width: 2.5em !important;',
+            'height: 2.5em !important;',
+            'margin: 1px !important;',
+            'padding: 0 !important;',
+        ]),
+        block('.calendar .calendar-day-heading, .calendar-day-heading', [
+            'font-size: 0.75em !important;',
+            'margin: 2px !important;',
+            'padding: 2px 4px !important;',
+        ]),
+        block('.calendar .calendar-week-number, .calendar-week-number', [
+            'font-size: 0.75em !important;',
+            'margin: 3px !important;',
+        ]),
+        block('.events-button .events-box .events-list, .weather-button .weather-box, ' +
+            '.weather-button .weather-box .weather-header-box', ['spacing: 4px !important;']),
+        block('.weather-button .weather-box .weather-grid, .world-clocks-button .world-clocks-grid', [
+            'spacing-rows: 3px !important;',
+            'spacing-columns: 8px !important;',
+        ]),
+        block('.weather-button .weather-box .weather-grid .weather-forecast-time', [
+            'padding-top: 3px !important;',
+            'padding-bottom: 3px !important;',
+        ]),
+        block('.message-list-controls', [
+            'padding: 6px 8px !important;',
+            'spacing: 4px !important;',
+        ]),
+
+        // Ajustes rápidos.
+        block('.quick-settings', ['padding: 12px !important;']),
+        block('.quick-settings-grid', [
+            'spacing-rows: 8px !important;',
+            'spacing-columns: 8px !important;',
+        ]),
+        block('.quick-toggle, .quick-toggle-has-menu', ['min-height: 2.8em !important;']),
+        block('.quick-toggle > StBoxLayout', ['spacing: 6px !important;']),
+        block('.quick-settings .icon-button', ['padding: 7px !important;']),
+        // Captura, configurações, bloqueio e desligar esticavam até a altura da
+        // pílula da bateria, e o redondo do tema virava oval (29 × 36 px, pedido
+        // de 2026-10-20). Quadrados da altura da linha, ficam círculos.
+        block('.quick-settings-system-item .icon-button', [
+            'width: 2.8em !important;',
+            'height: 2.8em !important;',
+            'padding: 0 !important;',
+            'border-radius: 999px !important;',
+        ]),
+        block('.quick-slider .icon-button, .quick-slider .slider-bin', ['padding: 4px !important;']),
+        block('.quick-toggle-menu', ['padding: 8px !important;']),
+        block('.quick-toggle-menu .header', ['padding-bottom: 8px !important;']),
+        block('.quick-toggle-menu .header .icon', ['padding: 6px !important;']),
+
+        // Menus pop-up em geral.
+        block('.popup-menu-content', ['padding: 4px !important;']),
+        block('.popup-menu-item', [
+            'padding: 5px 9px !important;',
+            'spacing: 5px !important;',
+        ]),
+        block(CARD_ITEMS, ['padding: 0 !important;']),
+        block('.popup-separator-menu-item', [
+            'padding-top: 2px !important;',
+            'padding-bottom: 2px !important;',
+        ]),
+    ].join('\n\n');
+}
+
 /**
  * Regras dos botões do painel.
  *
@@ -246,6 +374,16 @@ function compactNotificationBlocks() {
  * realmente assumiu a cor da barra. Sem isso o painel continua inteiramente com
  * as cores do tema do usuário, e nós mexemos apenas na geometria.
  */
+/**
+ * Tamanho do texto da barra para um tamanho de ícone, em px com uma casa.
+ *
+ * @param {number} iconSize
+ * @returns {number}
+ */
+export function panelFontSize(iconSize) {
+    return Math.round(iconSize * 11 / 12 * 10) / 10;
+}
+
 function buttonBlock(panel, accent) {
     const out = [];
     const stylingColors = Boolean(panel.background);
@@ -269,6 +407,57 @@ function buttonBlock(panel, accent) {
     out.push(block('#panel .panel-button .system-status-icon, #panel .gnomecustom-media-control-icon', [
         `icon-size: ${panel.iconSize}px !important;`,
     ]));
+    // O texto acompanha os ícones, na proporção do GNOME (11 pt para 16 px):
+    // percentuais, sigla do teclado e relógio ficam todos do mesmo tamanho
+    // (pedido do usuário, 2026-10-11). O relógio e a sigla têm regra própria em
+    // alguns temas, por isso são citados.
+    const text = panelFontSize(panel.iconSize);
+    out.push(block('#panel .panel-button, #panel .panel-button .clock, ' +
+        '#panel .panel-button .clock-display, #panel .panel-button .panel-status-indicators-box StLabel', [
+        `font-size: ${text}px !important;`,
+    ]));
+    // A mini capa da faixa: 18 px ao lado de ícones de 16.
+    const thumb = panel.iconSize + 2;
+    out.push(block('#panel .gnomecustom-media-thumb', [
+        `width: ${thumb}px !important;`,
+        `height: ${thumb}px !important;`,
+    ]));
+    out.push(block('#panel .gnomecustom-media-thumb-icon', [
+        `icon-size: ${Math.max(8, panel.iconSize - 4)}px !important;`,
+    ]));
+
+    if (panel.buttonPadding !== null) {
+        // O tema dá 12 px de cada lado a cada botão: 24 px de vão entre dois
+        // ícones. `-minimum-hpadding` é o que vale quando a barra aperta, e não
+        // pode ficar acima do natural.
+        const pad = panel.buttonPadding;
+        out.push(block('#panel .panel-button', [
+            `-natural-hpadding: ${pad}px !important;`,
+            `-minimum-hpadding: ${Math.min(pad, 6)}px !important;`,
+        ]));
+        // Os nossos botões com vários itens (um aparelho ao lado do outro, a capa
+        // e o nome da faixa) acompanham, senão ficam folgados ao lado dos demais.
+        if (pad < 8) {
+            // Os ícones do menu rápido dividem um botão só, e o vão entre eles é o
+            // respiro de cada ícone (3 px de cada lado no tema, mais margem).
+            out.push(block('#panel .panel-button .system-status-icon', [
+                `padding: 0 ${Math.min(3, Math.ceil(pad / 2))}px !important;`,
+                'margin: 0 !important;',
+            ]));
+            out.push(block('#panel .gnomecustom-bt-panel', [`spacing: ${Math.max(4, pad)}px !important;`]));
+            out.push(block('#panel .gnomecustom-media-panel', [`spacing: ${Math.max(4, pad)}px !important;`]));
+            // O logotipo colorido não tem a classe dos ícones de status e o nome
+            // "Aplicações" é texto puro: lado a lado na mesma ilha, só os 2 × pad
+            // dos botões os separavam e ficavam colados (pedido de 2026-10-20).
+            // Respiro só nos lados que se encaram; 3 px de cada lado ficou largo.
+            out.push(block('#panel .panel-button.gnomecustom-logo-button StIcon', [
+                'padding: 0 1px 0 0 !important;',
+            ]));
+            out.push(block('#panel .panel-button.gnomecustom-apps-button .panel-button-label', [
+                'padding: 0 0 0 1px !important;',
+            ]));
+        }
+    }
 
     if (panel.buttonHover || stylingColors) {
         // Temas como o Orchis realçam com `box-shadow: inset` — no relógio, no filho

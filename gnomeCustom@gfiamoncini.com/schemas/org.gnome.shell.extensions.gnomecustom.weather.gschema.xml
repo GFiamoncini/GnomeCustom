@@ -47,5 +47,12 @@
       <default>'right'</default>
       <summary>Top bar section for the weather button</summary>
     </key>
+    <!-- O cartão nasce compacto, como os do WinDock (pedido de 2026-10-07); a seta
+         do rodapé alterna e grava aqui. -->
+    <key name="expanded" type="b">
+      <default>false</default>
+      <summary>Show the detailed card</summary>
+      <description>Off shows the current weather and the next hours; on adds the next days.</description>
+    </key>
   </schema>
 </schemalist>

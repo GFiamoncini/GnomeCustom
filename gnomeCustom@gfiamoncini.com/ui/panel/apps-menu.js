@@ -54,6 +54,7 @@ export class AppsMenuButton extends PanelMenu.Button {
      */
     constructor({settings, apps, logger, gettext}) {
         super(0.5, 'GnomeCustom Applications', false);
+        this.add_style_class_name('gnomecustom-apps-button');
 
         this._settings = settings;
         this._apps = apps;

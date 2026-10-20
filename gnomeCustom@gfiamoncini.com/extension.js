@@ -29,6 +29,8 @@ import {MprisService} from './services/mpris/players.js';
 import {OpenMeteoClient} from './services/weather/openmeteo.js';
 import {ClaudeUsageService} from './services/ai/claude-usage.js';
 import {RemovableService} from './services/system/removable.js';
+import {UpdatesService} from './services/system/updates.js';
+import {SysStatsService} from './services/system/sysstats.js';
 import {CoverArtService} from './services/system/cover-art.js';
 import {DistroService} from './services/system/distro.js';
 import {WallpaperService} from './services/system/wallpaper.js';
@@ -36,6 +38,7 @@ import {AppThemeService} from './services/system/app-theme.js';
 import {StyleService} from './services/theme/style.js';
 import {WindowsService} from './services/shell/windows.js';
 import {QuickSettingsService} from './services/shell/quick-settings.js';
+import {ShellCalendarService} from './services/shell/calendar.js';
 
 import {ThemeModule} from './modules/theme/module.js';
 import {PanelModule} from './modules/panel/module.js';
@@ -46,6 +49,9 @@ import {MediaModule} from './modules/media/module.js';
 import {WeatherModule} from './modules/weather/module.js';
 import {AiUsageModule} from './modules/aiusage/module.js';
 import {RemovableModule} from './modules/removable/module.js';
+import {UpdatesModule} from './modules/updates/module.js';
+import {CalendarModule} from './modules/calendar/module.js';
+import {SysmonModule} from './modules/sysmon/module.js';
 import {DockModule} from './modules/dock/module.js';
 import {OverviewModule} from './modules/overview/module.js';
 import {AnimationModule} from './modules/animation/module.js';
@@ -68,6 +74,9 @@ const MODULES = [
     WeatherModule,
     AiUsageModule,
     RemovableModule,
+    UpdatesModule,
+    SysmonModule,
+    CalendarModule,
     DockModule,
     OverviewModule,
     AnimationModule,
@@ -87,7 +96,10 @@ export default class GnomeCustomExtension extends Extension {
                     logger,
                     selfUuid: this.uuid,
                 }),
-                panel: ({logger}) => new ShellPanelService({logger}),
+                panel: ({logger}) => new ShellPanelService({
+                    logger,
+                    settings: this.getSettings(`${this.metadata['settings-schema']}.panel`),
+                }),
                 shellTheme: ({logger}) => new ShellThemeService({logger}),
                 apps: ({logger}) => new AppsService({logger}),
                 session: ({logger}) => new SessionService({logger}),
@@ -102,12 +114,15 @@ export default class GnomeCustomExtension extends Extension {
                 weather: ({logger}) => new OpenMeteoClient({logger}),
                 aiUsage: ({logger}) => new ClaudeUsageService({logger}),
                 removable: ({logger}) => new RemovableService({logger}),
+                updates: ({logger}) => new UpdatesService({logger}),
+                sysStats: ({logger}) => new SysStatsService({logger}),
                 distro: ({logger}) => new DistroService({logger}),
                 wallpaper: ({logger}) => new WallpaperService({logger}),
                 appTheme: ({logger}) => new AppThemeService({logger}),
                 style: ({logger}) => new StyleService({logger}),
                 windows: ({logger}) => new WindowsService({logger}),
                 quickSettings: ({logger}) => new QuickSettingsService({logger}),
+                calendar: ({logger}) => new ShellCalendarService({logger}),
             },
             modules: MODULES,
         });

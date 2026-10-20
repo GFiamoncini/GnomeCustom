@@ -143,6 +143,11 @@ export function buildSidebarWindow(window, pages, _) {
     window.add_breakpoint(breakpoint);
 
     window.search_enabled = false;
+    // O diálogo do Shell confere `visible_page` depois de montar a janela e, sem
+    // ela, troca o título por "Erro da extensão" e loga "did not provide any UI".
+    // As páginas de verdade moram na pilha acima; esta, vazia, só existe para
+    // ele e fica escondida atrás do `set_content`.
+    window.add(new Adw.PreferencesPage({title: 'GnomeCustom'}));
     window.set_content(split);
     select(rows[0]);
 

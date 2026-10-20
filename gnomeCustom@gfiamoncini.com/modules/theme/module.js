@@ -13,9 +13,13 @@
  * sendo as do tema instalado.
  */
 
+import GLib from 'gi://GLib';
+
 import {Module} from '../../core/module.js';
 import {buildTokens, SETTINGS_KEYS} from '../../theme/engine/tokens.js';
 import {generateStylesheet} from '../../theme/engine/stylesheet.js';
+import {compactCss, COMPACT_SCALE} from '../../lib/compact-cards.js';
+import {setCardScale} from '../../ui/common/card-scale.js';
 
 /** Chaves que, ao mudar, exigem regerar a folha: a lista única do engine. */
 const STYLE_KEYS = Object.keys(SETTINGS_KEYS);
@@ -71,6 +75,7 @@ export class ThemeModule extends Module {
             this.log.error('falha ao remover a folha de estilo', e));
         this._theme?.restoreUserTheme();
         this._style?.clear();
+        setCardScale(1);
         this._appTheme = null;   // o tema dos apps fica: ver _syncAppTheme
 
         this._theme = null;
@@ -96,8 +101,13 @@ export class ThemeModule extends Module {
     }
 
     _rebuild() {
-        const tokens = buildTokens(this._readConfig());
-        const css = generateStylesheet(tokens);
+        const config = this._readConfig();
+        const tokens = buildTokens(config);
+        // Os cartões compactos não dependem de nenhuma superfície estar estilizada.
+        const compact = Boolean(config.cardsCompact);
+        setCardScale(compact ? COMPACT_SCALE : 1);
+        const css = [generateStylesheet(tokens), compact ? this._compactCards() : '']
+            .filter(Boolean).join('\n\n');
 
         // Quem não se estiliza por CSS (o dock) recebe os tokens direto.
         this._style?.publish(tokens);
@@ -166,6 +176,21 @@ export class ThemeModule extends Module {
      * `get_value().recursiveUnpack()` serve a todos os tipos do esquema (enum
      * volta como o nick), então a leitura segue a lista única sem casos à parte.
      */
+    /** A versão compacta das regras de cartão da `stylesheet.css`, lida uma vez. */
+    _compactCards() {
+        if (this._compactCss === undefined) {
+            try {
+                const path = GLib.build_filenamev([this.ctx.extension.path, 'stylesheet.css']);
+                const [, bytes] = GLib.file_get_contents(path);
+                this._compactCss = compactCss(new TextDecoder().decode(bytes));
+            } catch (e) {
+                this.log.warn(`cartões compactos indisponíveis: ${e.message}`);
+                this._compactCss = '';
+            }
+        }
+        return this._compactCss;
+    }
+
     _readConfig() {
         const config = {};
         for (const [key, name] of Object.entries(SETTINGS_KEYS))

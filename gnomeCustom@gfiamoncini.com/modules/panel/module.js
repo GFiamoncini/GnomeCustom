@@ -37,6 +37,8 @@ export class PanelModule extends Module {
             () => this._syncAppsMenu(), {fireNow: true});
         this.signals.connectSetting(this._settings, 'show-activities',
             () => this._syncActivities(), {fireNow: true});
+        this.signals.connectSetting(this._settings, 'keyboard-uppercase',
+            () => this._syncKeyboard(), {fireNow: true});
         this.signals.connectSetting(this._settings, 'apps-menu-icon-size',
             () => this._button?.invalidate());
         this.signals.connectSetting(this._settings, 'apps-menu-layout',
@@ -47,6 +49,8 @@ export class PanelModule extends Module {
     }
 
     disable() {
+        this._undoKeyboard?.();
+        this._undoKeyboard = null;
         this._unsubscribeApps?.();
         this._unsubscribeApps = null;
 
@@ -96,6 +100,13 @@ export class PanelModule extends Module {
         this._keybindings.remove(SHORTCUT_KEY);
         this._panel.remove(ROLE);
         this._button = null;
+    }
+
+    _syncKeyboard() {
+        this._undoKeyboard?.();
+        this._undoKeyboard = this._settings.get_boolean('keyboard-uppercase')
+            ? this._panel.uppercaseKeyboardLabels()
+            : null;
     }
 
     _syncActivities() {

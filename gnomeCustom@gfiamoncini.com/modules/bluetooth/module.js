@@ -44,7 +44,7 @@ export class BluetoothModule extends Module {
         this._createIndicator();
 
         this.signals.connectSetting(this._settings, 'panel-position', () => this._recreate());
-        for (const key of ['low-battery-threshold', 'hidden-devices', 'hide-when-disconnected'])
+        for (const key of ['low-battery-threshold', 'hidden-devices', 'hide-when-disconnected', 'show-battery', 'expanded'])
             this.signals.connectSetting(this._settings, key, () => this._sync());
 
         this._unsubscribe = this._bluetooth.onChanged(() => this._sync());
@@ -71,11 +71,13 @@ export class BluetoothModule extends Module {
             onHide: address => this._setHidden(address, true),
             onShowHidden: () => this._settings.set_strv('hidden-devices', []),
             onSettings: () => this._apps.launchSettingsPanel('bluetooth'),
+            onToggleExpanded: () => this._settings.set_boolean('expanded',
+                !this._settings.get_boolean('expanded')),
         });
 
         this._panel.add(ROLE, this._indicator, {
             box: this._settings.get_string('panel-position'),
-            position: 0,
+            slot: this.constructor.id,
         });
     }
 
@@ -108,7 +110,9 @@ export class BluetoothModule extends Module {
             powerBusy: this._powerBusy,
             hiddenCount,
             threshold: this._settings.get_uint('low-battery-threshold'),
+            showBattery: this._settings.get_boolean('show-battery'),
             pending: this._pending,
+            expanded: this._settings.get_boolean('expanded'),
         });
 
         const anyConnected = devices.some(device => device.connected);

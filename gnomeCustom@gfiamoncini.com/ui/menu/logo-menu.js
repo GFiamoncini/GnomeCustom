@@ -38,6 +38,7 @@ export class LogoMenuButton extends PanelMenu.Button {
      */
     constructor({settings, distro, apps, session, logger, gettext}) {
         super(0.5, 'GnomeCustom Logo Menu', false);
+        this.add_style_class_name('gnomecustom-logo-button');
 
         this._settings = settings;
         this._distro = distro;

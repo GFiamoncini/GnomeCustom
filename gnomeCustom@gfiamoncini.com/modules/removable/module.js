@@ -80,7 +80,7 @@ export class RemovableModule extends Module {
         });
         this._panel.add(ROLE, this._indicator, {
             box: this._settings.get_string('panel-position'),
-            position: 0,
+            slot: this.constructor.id,
         });
     }
 

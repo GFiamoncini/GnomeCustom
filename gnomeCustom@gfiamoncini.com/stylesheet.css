@@ -90,6 +90,31 @@
     text-align: right;
 }
 
+/* Desenho do WinDock: sem a sombra em volta. O lugar (logo abaixo da barra) é
+   posto em linha por `services/shell/osd.js`, que sabe a altura da barra. */
+.osd-window.gnomecustom-osd-flat {
+    box-shadow: none;
+}
+
+.osd-window.gnomecustom-osd-compact {
+    padding: 4px 12px;
+    spacing: 8px;
+    font-size: 0.9em;
+    min-height: 0;
+}
+
+.osd-window.gnomecustom-osd-compact StIcon {
+    icon-size: 20px;
+}
+
+.osd-window.gnomecustom-osd-compact .level {
+    min-width: 120px;
+}
+
+.osd-window.gnomecustom-osd-compact .gnomecustom-osd-number {
+    font-size: 15px;
+}
+
 /* ------------------------------------------------------------ mídia */
 
 .gnomecustom-media-panel {
@@ -644,11 +669,15 @@
 .gnomecustom-aiusage-fill.warning { background-color: #ffb900; }
 .gnomecustom-aiusage-fill.critical { background-color: #ff605c; }
 
-/* Na barra só âmbar e vermelho: enquanto sobra, azul lá seria ruído. */
-.gnomecustom-aiusage-percent.calm { color: #4cc2ff; }
+/* Na barra o número só muda em âmbar e vermelho; o robô tem a cor do uso desde
+   o azul, como no WinDock (pedido do usuário, 2026-10-11). */
+.gnomecustom-aiusage-percent.calm,
+.gnomecustom-aiusage-panel-icon.calm { color: #4cc2ff; }
 .gnomecustom-aiusage-percent.warning,
+.gnomecustom-aiusage-panel-icon.warning,
 .gnomecustom-aiusage-panel-value.warning { color: #ffb900; }
 .gnomecustom-aiusage-percent.critical,
+.gnomecustom-aiusage-panel-icon.critical,
 .gnomecustom-aiusage-panel-value.critical { color: #ff605c; }
 
 .gnomecustom-aiusage-reset {
@@ -778,6 +807,149 @@
     color: #ffb900;
 }
 
+/* ------------------------------------------------------- atualizações */
+
+/* Cartão de atualizações do WinDock: sistema e Flatpak, um programa por linha. */
+.gnomecustom-updates-panel {
+    spacing: 4px;
+}
+
+/* O azul de realce do WinDock: o botão só existe com pendência. */
+.gnomecustom-updates-panel-icon,
+.gnomecustom-updates-count {
+    color: #4cc2ff;
+}
+
+.gnomecustom-updates-count {
+    font-feature-settings: "tnum";
+}
+
+.gnomecustom-updates-item {
+    padding: 0;
+}
+
+.gnomecustom-updates-card {
+    width: 330px;
+    padding: 8px 8px 6px 8px;
+    spacing: 8px;
+}
+
+.gnomecustom-updates-header {
+    spacing: 10px;
+    padding: 0 2px;
+}
+
+.gnomecustom-updates-header-icon {
+    icon-size: 16px;
+}
+
+.gnomecustom-updates-title {
+    font-weight: bold;
+    font-size: 1.05em;
+}
+
+.gnomecustom-updates-when {
+    font-size: 0.85em;
+    opacity: 0.6;
+}
+
+.gnomecustom-updates-list {
+    spacing: 1px;
+}
+
+.gnomecustom-updates-section {
+    padding: 6px 8px 2px 8px;
+}
+
+.gnomecustom-updates-section-title,
+.gnomecustom-updates-section-count {
+    font-size: 0.85em;
+    font-weight: bold;
+    opacity: 0.7;
+}
+
+.gnomecustom-updates-row {
+    spacing: 12px;
+    padding: 3px 8px;
+    border-radius: 6px;
+}
+
+.gnomecustom-updates-name {
+    font-size: 0.95em;
+}
+
+.gnomecustom-updates-section {
+    spacing: 10px;
+}
+
+.gnomecustom-updates-section-security {
+    font-size: 0.85em;
+    color: #ffb900;
+}
+
+/* Segurança em âmbar, a cor de aviso do resto da extensão. */
+.gnomecustom-updates-name.security {
+    color: #ffb900;
+}
+
+.gnomecustom-updates-detail {
+    font-size: 0.85em;
+    opacity: 0.6;
+    font-feature-settings: "tnum";
+}
+
+.gnomecustom-updates-more,
+.gnomecustom-updates-empty,
+.gnomecustom-updates-restart,
+.gnomecustom-updates-message {
+    font-size: 0.85em;
+    opacity: 0.7;
+    padding: 0 8px;
+}
+
+.gnomecustom-updates-empty {
+    padding: 4px 2px;
+}
+
+.gnomecustom-updates-restart {
+    opacity: 1;
+    color: #4cc2ff;
+    padding: 0 2px;
+}
+
+.gnomecustom-updates-message {
+    padding: 0 2px;
+}
+
+.gnomecustom-updates-message.error {
+    opacity: 1;
+    color: #ffb900;
+}
+
+.gnomecustom-updates-actions {
+    spacing: 4px;
+}
+
+.gnomecustom-updates-action {
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.85em;
+    color: #4cc2ff;
+}
+
+.gnomecustom-updates-action:hover,
+.gnomecustom-updates-action:focus {
+    background-color: rgba(127, 127, 127, 0.2);
+}
+
+.gnomecustom-updates-action.primary {
+    font-weight: bold;
+}
+
+.gnomecustom-updates-action.disabled {
+    color: rgba(76, 194, 255, 0.4);
+}
+
 /* ------------------------------------------------------------- dock */
 
 /* Modo compacto (custom-theme-shrink do Dash to Dock): tira a folga que o tema dá
@@ -823,4 +995,128 @@
 
 .gnomecustom-dock-dots.focused .gnomecustom-dock-dot {
     background-color: #ffffff;
+}
+
+/* ------------------------------------------------------- calendário */
+
+/* Feriado: o dia em vermelho, como no WinDock. Hoje e o dia escolhido têm fundo
+   próprio do tema, e o número continua legível sobre ele. */
+.calendar .calendar-day.gnomecustom-holiday {
+    color: #ff6b6b;
+}
+
+.calendar .calendar-day.calendar-other-month.gnomecustom-holiday {
+    color: rgba(255, 107, 107, 0.5);
+}
+
+.gnomecustom-holiday-note {
+    font-size: 0.9em;
+    color: #ff6b6b;
+    padding: 2px 12px 6px 12px;
+}
+
+/* ------------------------------------------- seta dos cartões compactos */
+
+.gnomecustom-expander {
+    padding: 4px 6px;
+    border-radius: 6px;
+    opacity: 0.7;
+}
+
+.gnomecustom-expander:hover,
+.gnomecustom-expander:focus {
+    opacity: 1;
+    background-color: rgba(127, 127, 127, 0.2);
+}
+
+/* ---------------------------------------------- processador e memória */
+
+.gnomecustom-sysmon-panel {
+    spacing: 6px;
+}
+
+.gnomecustom-sysmon-panel-item {
+    spacing: 2px;
+}
+
+.gnomecustom-sysmon-panel-value {
+    font-feature-settings: "tnum";
+    min-width: 2.2em;
+}
+
+/* Na barra os ícones têm a cor da série, as mesmas do cartão (pedido do usuário,
+   2026-10-11); no alerta, ícone e número mudam juntos. */
+.gnomecustom-sysmon-panel-icon.cpu { color: #f4a261; }
+.gnomecustom-sysmon-panel-icon.memory { color: #b08ae8; }
+
+.gnomecustom-sysmon-panel-item.warning,
+.gnomecustom-sysmon-panel-item.warning .gnomecustom-sysmon-panel-icon {
+    color: #ffb900;
+}
+
+.gnomecustom-sysmon-panel-item.critical,
+.gnomecustom-sysmon-panel-item.critical .gnomecustom-sysmon-panel-icon {
+    color: #ff6b6b;
+}
+
+.gnomecustom-sysmon-item {
+    padding: 0;
+}
+
+.gnomecustom-sysmon-card {
+    padding: 8px 10px 6px 10px;
+    spacing: 10px;
+    min-width: 300px;
+}
+
+.gnomecustom-sysmon-header {
+    spacing: 8px;
+}
+
+.gnomecustom-sysmon-title {
+    font-weight: bold;
+}
+
+.gnomecustom-sysmon-link {
+    font-size: 0.85em;
+    padding: 3px 8px;
+    border-radius: 6px;
+    opacity: 0.7;
+}
+
+.gnomecustom-sysmon-link:hover,
+.gnomecustom-sysmon-link:focus {
+    opacity: 1;
+    background-color: rgba(127, 127, 127, 0.2);
+}
+
+.gnomecustom-sysmon-section {
+    spacing: 2px;
+}
+
+.gnomecustom-sysmon-section-head {
+    spacing: 6px;
+}
+
+.gnomecustom-sysmon-section-icon {
+    icon-size: 14px;
+}
+
+/* As cores dos gráficos (SERIES_COLORS em ui/sysmon/indicator.js). */
+.gnomecustom-sysmon-section-icon.cpu { color: #f4a261; }
+.gnomecustom-sysmon-section-icon.memory { color: #b08ae8; }
+.gnomecustom-sysmon-section-icon.down { color: #7fd18b; }
+
+.gnomecustom-sysmon-section-value {
+    font-feature-settings: "tnum";
+}
+
+.gnomecustom-sysmon-section-detail {
+    font-size: 0.85em;
+    opacity: 0.6;
+}
+
+.gnomecustom-sysmon-graph {
+    height: 40px;
+    margin-top: 2px;
 }

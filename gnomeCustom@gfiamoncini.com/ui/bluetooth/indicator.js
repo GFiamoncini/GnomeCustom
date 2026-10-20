@@ -29,7 +29,10 @@ import St from 'gi://St';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 
+import {Expander} from '../common/expander.js';
+
 import {deviceStatus, isLowBattery} from '../../lib/bluetooth.js';
+import {scaled} from '../common/card-scale.js';
 
 const FALLBACK_ICON = 'bluetooth-active-symbolic';
 
@@ -46,12 +49,13 @@ export class BluetoothIndicator extends PanelMenu.Button {
      * @param {Function} options.onHide (address) => void
      * @param {Function} options.onShowHidden () => void
      * @param {Function} options.onSettings () => void
+     * @param {Function} options.onToggleExpanded a seta do rodapé: compacto ou detalhado
      */
-    constructor({gettext, onToggle, onPower, onHide, onShowHidden, onSettings}) {
+    constructor({gettext, onToggle, onPower, onHide, onShowHidden, onSettings, onToggleExpanded}) {
         super(0.5, 'GnomeCustom Bluetooth', false);
 
         this._ = gettext;
-        this._callbacks = {onToggle, onPower, onHide, onShowHidden, onSettings};
+        this._callbacks = {onToggle, onPower, onHide, onShowHidden, onSettings, onToggleExpanded};
 
         this._panelBox = new St.BoxLayout({style_class: 'gnomecustom-bt-panel'});
         this.add_child(this._panelBox);
@@ -66,14 +70,17 @@ export class BluetoothIndicator extends PanelMenu.Button {
      * @param {number} [state.hiddenCount] dispositivos escondidos
      * @param {number} state.threshold limite de bateria baixa; 0 desliga
      * @param {Set<string>} state.pending caminhos com conexão em andamento
+     * @param {boolean} [state.showBattery] a porcentagem ao lado do ícone, na barra
      */
-    update({devices, powered, powerBusy = false, hiddenCount = 0, threshold, pending}) {
+    update({devices, powered, powerBusy = false, hiddenCount = 0, threshold, pending, expanded = true,
+        showBattery = true}) {
         const _ = this._;
 
         this._panelBox.destroy_all_children();
         const connected = devices.filter(device => device.connected);
         for (const device of connected)
-            this._panelBox.add_child(this._panelItem(device, isLowBattery(device.battery, threshold)));
+            this._panelBox.add_child(this._panelItem(device, isLowBattery(device.battery, threshold),
+                showBattery));
         if (connected.length === 0) {
             this._panelBox.add_child(new St.Icon({
                 icon_name: powered ? 'bluetooth-active-symbolic' : 'bluetooth-disabled-symbolic',
@@ -94,12 +101,19 @@ export class BluetoothIndicator extends PanelMenu.Button {
         } else if (devices.length === 0) {
             this._list.add_child(this._message(_('No paired devices')));
         } else {
-            for (const device of devices) {
+            // Compacto: só quem está conectado. Sem ninguém conectado a lista
+            // inteira fica, porque é dela que se conecta alguém.
+            const shown = expanded || connected.length === 0 ? devices : connected;
+            for (const device of shown) {
                 this._list.add_child(this._row(device,
                     isLowBattery(device.battery, threshold), pending.has(device.path)));
             }
         }
 
+        this._expander.set(expanded);
+        this._expander.button.visible = Boolean(powered) && connected.length > 0 &&
+            (connected.length < devices.length || hiddenCount > 0);
+        this._links.visible = expanded || !this._expander.button.visible;
         this._showHidden.visible = hiddenCount > 0;
         this._showHidden.label = _('Show hidden devices (%d)').replace('%d', String(hiddenCount));
     }
@@ -146,12 +160,16 @@ export class BluetoothIndicator extends PanelMenu.Button {
         this._list = new St.BoxLayout({vertical: true, style_class: 'gnomecustom-bt-list'});
 
         const footer = new St.BoxLayout({vertical: true, style_class: 'gnomecustom-bt-footer'});
+        this._links = new St.BoxLayout({vertical: true, x_expand: true});
         this._showHidden = this._link('', () => this._callbacks.onShowHidden?.());
-        footer.add_child(this._showHidden);
-        footer.add_child(this._link(_('Bluetooth settings'), () => {
+        this._links.add_child(this._showHidden);
+        this._links.add_child(this._link(_('Bluetooth settings'), () => {
             this.menu.close();
             this._callbacks.onSettings?.();
         }));
+        this._expander = new Expander({gettext: _, onToggle: () => this._callbacks.onToggleExpanded?.()});
+        footer.add_child(this._links);
+        footer.add_child(this._expander.button);
 
         card.add_child(header);
         card.add_child(this._list);
@@ -175,7 +193,7 @@ export class BluetoothIndicator extends PanelMenu.Button {
         return new St.Label({text, style_class: 'gnomecustom-bt-message'});
     }
 
-    _panelItem(device, low) {
+    _panelItem(device, low, showBattery) {
         const box = new St.BoxLayout({style_class: 'gnomecustom-bt-panel-item'});
         if (low)
             box.add_style_class_name('low');
@@ -186,7 +204,7 @@ export class BluetoothIndicator extends PanelMenu.Button {
             style_class: 'system-status-icon',
             y_align: Clutter.ActorAlign.CENTER,
         }));
-        if (device.battery !== null) {
+        if (showBattery && device.battery !== null) {
             box.add_child(new St.Label({
                 text: `${device.battery}%`,
                 style_class: 'gnomecustom-bt-panel-value',
@@ -262,7 +280,7 @@ export class BluetoothIndicator extends PanelMenu.Button {
             y_align: Clutter.ActorAlign.CENTER,
             opacity: 0,
             accessible_name: _('Hide this device from the card'),
-            child: new St.Icon({icon_name: 'window-close-symbolic', icon_size: 12}),
+            child: new St.Icon({icon_name: 'window-close-symbolic', icon_size: scaled(12)}),
         });
         hide.connect('clicked', () => this._callbacks.onHide?.(device.address));
         const syncHide = () => {

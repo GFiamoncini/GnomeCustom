@@ -15,6 +15,7 @@ gnomeCustom@gfiamoncini.com/ui/bluetooth/indicator.js
 gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.gschema.xml
 gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.theme.gschema.xml
 gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.panel.gschema.xml
+gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.volume.gschema.xml
 gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.menu.gschema.xml
 gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.bluetooth.gschema.xml
 gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.media.gschema.xml
@@ -47,3 +48,12 @@ gnomeCustom@gfiamoncini.com/modules/removable/module.js
 gnomeCustom@gfiamoncini.com/ui/removable/indicator.js
 gnomeCustom@gfiamoncini.com/prefs/pages/removable.js
 gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.removable.gschema.xml
+gnomeCustom@gfiamoncini.com/modules/updates/module.js
+gnomeCustom@gfiamoncini.com/ui/updates/indicator.js
+gnomeCustom@gfiamoncini.com/prefs/pages/updates.js
+gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.updates.gschema.xml
+gnomeCustom@gfiamoncini.com/modules/calendar/module.js
+gnomeCustom@gfiamoncini.com/ui/common/expander.js
+gnomeCustom@gfiamoncini.com/ui/sysmon/indicator.js
+gnomeCustom@gfiamoncini.com/prefs/pages/sysmon.js
+gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.sysmon.gschema.xml

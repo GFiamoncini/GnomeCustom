@@ -53,6 +53,7 @@ export class WeatherModule extends Module {
             });
         }
         this.signals.connectSetting(this._settings, 'location-name', () => this._render());
+        this.signals.connectSetting(this._settings, 'expanded', () => this._render());
         this.signals.connectSetting(this._settings, 'refresh-minutes', () => this._schedule());
 
         this._refresh();
@@ -73,10 +74,12 @@ export class WeatherModule extends Module {
             gettext: this.ctx.gettext,
             onRefresh: () => this._refresh(),
             onSettings: () => this.ctx.extension.openPreferences(),
+            onToggleExpanded: () => this._settings.set_boolean('expanded',
+                !this._settings.get_boolean('expanded')),
         });
         this._panel.add(ROLE, this._indicator, {
             box: this._settings.get_string('panel-position'),
-            position: 0,
+            slot: this.constructor.id,
         });
         this._render();
     }
@@ -109,7 +112,8 @@ export class WeatherModule extends Module {
         if (!hasLocation(location.latitude, location.longitude))
             this._indicator.showNoLocation();
         else if (this._forecast)
-            this._indicator.showForecast(location.name, this._forecast, {error});
+            this._indicator.showForecast(location.name, this._forecast,
+                {error, expanded: this._settings.get_boolean('expanded')});
     }
 
     async _refresh() {

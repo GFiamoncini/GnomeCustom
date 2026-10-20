@@ -8,6 +8,9 @@
  * usa da OSD Volume Number — número à esquerda, ícone escondido, menu do painel
  * intocado. Vale para todo OSD com barra de nível, como no original.
  *
+ * O clique do meio no alto-falante da barra liga e desliga o mudo sem abrir o
+ * menu, como no WinDock (pedido do usuário, 2026-10-07).
+ *
  * O patch fica no escopo do módulo, então é revertido e contado na verificação
  * de limpeza; o acesso à estrutura interna da janela fica no serviço `osd`.
  */
@@ -39,27 +42,42 @@ export class VolumeModule extends Module {
     }
 
     static get requires() {
-        return ['osd'];
+        return ['osd', 'quickSettings'];
     }
 
     enable() {
         const osd = this.service('osd');
         const log = this.log;
         const options = {styleClass: STYLE_CLASS, format: formatLevel};
+        const settings = this.settings.child('volume');
         this._osd = osd;
 
         this.patcher.override(osd.windowPrototype, 'show', original => function (...args) {
             // Uma falha aqui não pode impedir o OSD de aparecer.
             try {
                 osd.showNumber(this, options);
+                osd.place(this, {
+                    belowBar: settings.get_boolean('below-bar'),
+                    compact: settings.get_boolean('compact'),
+                    align: settings.get_string('align'),
+                });
             } catch (e) {
                 log.error('falha ao exibir o número no OSD', e);
             }
             return original.apply(this, args);
         }, {api: 'OsdWindow.show'});
+
+        const quick = this.service('quickSettings');
+        this._undoMiddleClick = quick.onVolumeMiddleClick(() => {
+            const muted = quick.toggleOutputMute();
+            log.debug(`clique do meio no alto-falante: ${muted === null ? 'sem saída de som' : `mudo ${muted}`}`);
+        });
     }
 
     disable() {
+        this._undoMiddleClick?.();
+        this._undoMiddleClick = null;
+        this._osd?.restorePlacement();
         this._osd?.restoreAll();
         this._osd = null;
     }

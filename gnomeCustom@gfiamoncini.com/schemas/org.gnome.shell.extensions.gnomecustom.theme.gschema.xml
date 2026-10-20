@@ -32,6 +32,37 @@
       <description>Applies whatever the shell theme says. 16 is the GNOME size; a
       low bar with a compact font looks balanced with 12 to 14.</description>
     </key>
+    <!-- -1 deixa o respiro do tema (12 px no GNOME, isto é, 24 px entre dois
+         ícones). Pedido em 2026-10-07: os ícones estavam espaçados demais; no
+         WinDock a opção equivalente é "Ícones compactos". 5 de fábrica é o
+         respiro dos compactos de lá. -->
+    <key name="panel-button-padding" type="i">
+      <default>5</default>
+      <range min="-1" max="16"/>
+      <summary>Horizontal padding of each top bar button, in pixels</summary>
+      <description>-1 keeps what the shell theme says (12 in GNOME). Smaller
+      values bring the icons closer together.</description>
+    </key>
+    <!-- Do WinDock ("Barra em ilhas"), pedido em 2026-10-07. -->
+    <key name="panel-islands" type="b">
+      <default>false</default>
+      <summary>Draw the top bar as islands</summary>
+      <description>The strip goes away and the left, centre and right parts
+      become separate pills with the bar background. Needs the floating style
+      and a bar colour.</description>
+    </key>
+    <key name="panel-island-gap" type="u">
+      <default>6</default>
+      <range min="0" max="60"/>
+      <summary>Smallest gap between two islands, in pixels</summary>
+    </key>
+    <key name="cards-compact" type="b">
+      <default>false</default>
+      <summary>Compact cards</summary>
+      <description>Text, icons and spacing of the GnomeCustom cards (media,
+      Bluetooth, weather, AI usage, external devices, updates, system) about
+      15% smaller. Nothing else in the Shell changes.</description>
+    </key>
     <key name="panel-margin-top" type="d">
       <default>1.5</default>
       <range min="0" max="40"/>
@@ -85,6 +116,13 @@
       <default>''</default>
       <summary>Top bar border colour when choosing colours yourself</summary>
       <description>Empty means a shade derived from the background colour.</description>
+    </key>
+    <key name="menus-compact" type="b">
+      <default>false</default>
+      <summary>Compact menus</summary>
+      <description>Smaller text, days and spacing in the menus of the Shell: the
+      date menu with its calendar, the quick settings and the pop-up menus. The
+      GnomeCustom cards have a switch of their own.</description>
     </key>
     <key name="compact-notifications" type="b">
       <default>false</default>

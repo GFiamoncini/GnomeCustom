@@ -50,6 +50,10 @@ export const SETTINGS_KEYS = Object.freeze({
     'panel-style': 'panelStyle',
     'panel-height': 'panelHeight',
     'panel-icon-size': 'panelIconSize',
+    'panel-button-padding': 'panelButtonPadding',
+    'panel-islands': 'panelIslands',
+    'panel-island-gap': 'panelIslandGap',
+    'cards-compact': 'cardsCompact',
     'panel-margin-top': 'marginTop',
     'panel-margin-bottom': 'marginBottom',
     'panel-margin-sides': 'marginSides',
@@ -71,6 +75,7 @@ export const SETTINGS_KEYS = Object.freeze({
     'style-osd': 'styleOsd',
     'style-dock': 'styleDock',
     'compact-notifications': 'compactNotifications',
+    'menus-compact': 'menusCompact',
     'amoled-black': 'amoledBlack',
     'menu-radius': 'menuRadius',
     'menu-background-alpha': 'menuBackgroundAlpha',
@@ -85,6 +90,10 @@ export const DEFAULT_CONFIG = Object.freeze({
     panelStyle: 'floating',
     panelHeight: 29,
     panelIconSize: 16,
+    panelButtonPadding: 5,
+    panelIslands: false,
+    panelIslandGap: 6,
+    cardsCompact: false,
     marginTop: 1.5,
     marginBottom: 2.1,
     marginSides: 4.5,
@@ -106,6 +115,7 @@ export const DEFAULT_CONFIG = Object.freeze({
     styleOsd: false,
     styleDock: false,
     compactNotifications: false,
+    menusCompact: false,
     amoledBlack: false,
     menuRadius: 12,
     menuBackgroundAlpha: 0.95,
@@ -141,8 +151,9 @@ export function buildTokens(config = {}) {
     return {
         /** Há alguma superfície a estilizar; falso significa CSS vazio. */
         enabled: panelEnabled || menu.enabled || osd.enabled || dock.enabled ||
-            Boolean(cfg.compactNotifications),
+            Boolean(cfg.compactNotifications) || Boolean(cfg.menusCompact),
         notifications: {compact: Boolean(cfg.compactNotifications)},
+        menus: {compact: Boolean(cfg.menusCompact)},
         accent: {
             rgb: accent,
             hex: toHex(accent),
@@ -155,6 +166,18 @@ export function buildTokens(config = {}) {
             floating,
             height: Math.round(cfg.panelHeight),
             iconSize: Math.min(32, Math.max(10, Math.round(cfg.panelIconSize))),
+            /**
+             * A barra em ilhas: a faixa some e cada trecho (esquerda, centro,
+             * direita) vira uma pílula com o fundo da barra. Só com a barra
+             * flutuante e um fundo resolvido — sem cor nossa não há o que mover
+             * da faixa para as pílulas.
+             */
+            islands: Boolean(cfg.panelIslands) && floating && Boolean(panelBackground),
+            islandGap: Math.min(60, Math.max(0, Math.round(cfg.panelIslandGap))),
+            /** Respiro lateral de cada botão; null deixa o do tema. */
+            buttonPadding: cfg.panelButtonPadding >= 0
+                ? Math.min(16, Math.round(cfg.panelButtonPadding))
+                : null,
             margin: floating
                 ? {
                     top: round(cfg.marginTop),

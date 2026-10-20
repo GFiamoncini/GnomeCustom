@@ -45,9 +45,18 @@ const Migration = await import(`${EXT}/lib/migration/importers.js`);
 const Profiles = await import(`${EXT}/lib/profiles.js`);
 const {parseOsRelease} = await import(`${EXT}/services/system/distro.js`);
 const {VolumeModule, formatLevel} = await import(`${EXT}/modules/volume/module.js`);
+const Holidays = await import(`${EXT}/lib/holidays.js`);
+const Sysmon = await import(`${EXT}/lib/sysmon.js`);
+const {TRANSLATABLE_NAMES: CalendarNames, formatHolidays} = await import(`${EXT}/modules/calendar/module.js`);
 const Mpris = await import(`${EXT}/lib/mpris.js`);
 const LogosLib = await import(`${EXT}/lib/logos.js`);
 const Weather = await import(`${EXT}/lib/weather.js`);
+const Ai = await import(`${EXT}/lib/ai-usage.js`);
+const {ClaudeUsageService} = await import(`${EXT}/services/ai/claude-usage.js`);
+const Removable = await import(`${EXT}/lib/removable.js`);
+const Updates = await import(`${EXT}/lib/updates.js`);
+const PanelOrder = await import(`${EXT}/lib/panel-order.js`);
+const CompactCards = await import(`${EXT}/lib/compact-cards.js`);
 const {AppThemeService} = await import(`${EXT}/services/system/app-theme.js`);
 const {AppTweaks} = await import(`${EXT}/services/system/app-tweaks.js`);
 const Tweaks = await import(`${EXT}/lib/app-tweaks.js`);
@@ -946,6 +955,39 @@ test('stylesheet: tamanho dos ícones da barra vale sobre o tema, dentro da faix
         'ícone de 13 px ausente');
     assert(css(16).includes('icon-size: 16px !important;'), 'padrão do GNOME');
     assert(css(2).includes('icon-size: 10px !important;'), 'limite inferior');
+    // O texto acompanha: 11 pt (14,7 px) para 16 px, e a mesma proporção abaixo.
+    assert(css(16).includes('font-size: 14.7px !important;'), 'texto de fábrica');
+    assert(css(12).includes('font-size: 11px !important;'), 'texto com ícones de 12');
+    assert(css(12).includes('#panel .gnomecustom-media-thumb {\n    width: 14px !important;'), 'mini capa');
+});
+
+test('stylesheet: respiro dos botões da barra só quando pedido, e os nossos acompanham', () => {
+    const css = pad => generateStylesheet(buildTokens({palette: ['#602011'], panelButtonPadding: pad}));
+    assert(!css(-1).includes('-natural-hpadding'), '-1 deixa o tema decidir');
+    assert(css(4).includes('-natural-hpadding: 4px !important;\n    -minimum-hpadding: 4px !important;'), 'respiro de 4');
+    assert(css(10).includes('-natural-hpadding: 10px !important;\n    -minimum-hpadding: 6px !important;'),
+        'o mínimo não passa de 6');
+    assert(css(40).includes('-natural-hpadding: 16px'), 'limite superior');
+    assert(css(2).includes('#panel .gnomecustom-bt-panel {\n    spacing: 4px !important;'), 'bluetooth acompanha');
+    assert(!css(10).includes('gnomecustom-bt-panel'), 'respiro largo não mexe nos nossos');
+});
+
+test('stylesheet: barra em ilhas move o fundo da faixa para os três trechos', () => {
+    const css = config => generateStylesheet(buildTokens({palette: ['#602011'], ...config}));
+    const strip = css({});
+    assert(!strip.includes('#panelLeft'), 'desligado, a faixa continua inteira');
+
+    const islands = css({panelIslands: true, panelIslandGap: 8});
+    const panel = islands.match(/#panel \{[^}]*\}/)[0];
+    assert(panel.includes('background-color: transparent !important;'), `a faixa deveria sumir: ${panel}`);
+    assert(panel.includes('border: none !important;'), 'a borda da faixa deveria sumir');
+    const pills = islands.match(/#panel #panelLeft, #panel #panelCenter, #panel #panelRight \{[^}]*\}/)?.[0] ?? '';
+    assert(/background-color: rgba\(/.test(pills), `as ilhas levam o fundo: ${pills}`);
+    assert(islands.includes('#panel #panelCenter {\n    margin: 0 4px !important;'), 'meio vão de cada lado');
+
+    assert(!css({panelIslands: true, panelStyle: 'attached'}).includes('#panelLeft'), 'só na barra flutuante');
+    assert(!generateStylesheet(buildTokens({panelIslands: true, paletteFromWallpaper: false})).includes('#panelLeft'),
+        'sem cor resolvida não há ilhas');
 });
 
 test('stylesheet: notificações compactas só quando pedidas, mesmo sem outra superfície', () => {
@@ -956,6 +998,19 @@ test('stylesheet: notificações compactas só quando pedidas, mesmo sem outra s
     assert(alone.includes('.message .message-box .message-icon {\n    icon-size: 32px !important;'), 'ícone menor');
     assert(alone.includes('.message-list {\n    width: 26em !important;'), 'lista mais estreita');
     assert(!alone.includes('#panel'), 'sem barra estilizada, só as notificações');
+});
+
+test('stylesheet: menus compactos só quando pedidos, e os cartões seguem sem respiro', () => {
+    const off = generateStylesheet(buildTokens({palette: ['#602011']}));
+    assert(!off.includes('.datemenu-popover'), 'desligado não mexe nos menus');
+
+    const alone = generateStylesheet(buildTokens({panelStyle: 'none', menusCompact: true}));
+    assert(alone.includes('.datemenu-popover, .quick-settings {\n    font-size: 0.9em !important;'), 'letra menor na raiz');
+    assert(alone.includes('.calendar .calendar-day, .calendar-day-base, .calendar-day {'), 'dia nas duas formas de seletor');
+    assert(alone.includes('.popup-menu-item {\n    padding: 5px 9px !important;'), 'item de menu com menos respiro');
+    assert(alone.indexOf('.gnomecustom-sysmon-item {\n    padding: 0 !important;') > alone.indexOf('.popup-menu-item {'),
+        'o item que embrulha um cartão continua sem respiro');
+    assert(!alone.includes('#panel'), 'sem barra estilizada, só os menus');
 });
 
 test('stylesheet: usa !important para vencer o tema do usuário', () => {
@@ -1168,8 +1223,10 @@ test('fase 7: SETTINGS_KEYS, PRESET_KEYS e o esquema concordam', () => {
     const notInPresets = Object.keys(SETTINGS_KEYS)
         .filter(key => !Presets.PRESET_KEYS.includes(key));
     // A paleta é cache; notificações compactas são densidade, não aparência: um
-    // preset não deve ligá-las nem desligá-las (2026-09-16).
-    assertEqual(notInPresets, ['palette', 'compact-notifications', 'amoled-black'], 'fora dos presets:');
+    // preset não deve ligá-las nem desligá-las (2026-09-16). O respiro dos botões
+    // é densidade do mesmo jeito (2026-10-07).
+    assertEqual(notInPresets, ['panel-button-padding', 'panel-islands', 'panel-island-gap', 'cards-compact', 'palette', 'compact-notifications', 'menus-compact', 'amoled-black'],
+        'fora dos presets:');
 
     // Toda chave de estilo do esquema é conhecida pelo engine, exceto as que decidem
     // qual tema é carregado (Shell e apps) e o estado interno do tema dos apps.
@@ -2697,6 +2754,9 @@ test('apps Electron: receita do tema aplicada nos arquivos e desfeita por inteir
     write(apps.get_child('vscode.json'), '{"window.titleBarStyle": "native"}');
     write(apps.get_child('obsidian.json'), '{"app": {"frame": "native"}, "appearance": {"accentColor": "#f8f8f2"}}');
     write(apps.get_child('obsidian.css'), '.theme-dark { --background-primary: #000; }');
+    write(apps.get_child('github-desktop.json'), '{"titleBarStyle": "native"}');
+    const github = root.get_child('GitHub Desktop').get_child('.title-bar-config');
+    write(github, '{"titleBarStyle":"custom"}');
 
     const code = root.get_child('Code').get_child('settings.json');
     const codeText = '{\n    "editor.fontSize": 13\n}\n';
@@ -2712,6 +2772,7 @@ test('apps Electron: receita do tema aplicada nos arquivos e desfeita por inteir
         logger: new Logger({level: 'silent', sink: new FakeSink()}),
         vscodeFiles: () => [code, root.get_child('Nao').get_child('settings.json')],
         obsidianConfigs: () => [obsidian],
+        githubDesktopDirs: () => [github.get_parent(), root.get_child('SemGitHub')],
     });
 
     tweaks.apply(root.get_child('Tema'), settings);
@@ -2723,6 +2784,8 @@ test('apps Electron: receita do tema aplicada nos arquivos e desfeita por inteir
     assertEqual([look.accentColor, look.enabledCssSnippets], ['#f8f8f2', ['meu', Tweaks.OBSIDIAN_SNIPPET]]);
     const snippet = vault.get_child('.obsidian').get_child('snippets').get_child(`${Tweaks.OBSIDIAN_SNIPPET}.css`);
     assert(snippet.query_exists(null), 'snippet no cofre');
+    assertEqual(JSON.parse(read(github)).titleBarStyle, 'native', 'GitHub Desktop com moldura nativa:');
+    assert(!root.get_child('SemGitHub').query_exists(null), 'GitHub Desktop ausente não ganha pasta');
     assert(settings.values['app-tweaks-state'], 'estado guardado');
 
     tweaks.apply(root.get_child('Tema'), settings);   // de novo: nada muda
@@ -2733,12 +2796,435 @@ test('apps Electron: receita do tema aplicada nos arquivos e desfeita por inteir
     assertEqual(JSON.parse(read(obsidian)).frame, undefined, 'moldura devolvida');
     assertEqual(JSON.parse(read(appearance)), {accentColor: '#6d6d6f', enabledCssSnippets: ['meu']}, 'cofre como era');
     assert(!snippet.query_exists(null), 'snippet removido');
+    assertEqual(JSON.parse(read(github)).titleBarStyle, 'custom', 'GitHub Desktop como era:');
     assertEqual(settings.values['app-tweaks-state'], '', 'estado limpo:');
+
+    // Estado gravado pela versão anterior (só Obsidian, em "obsidian"): ainda é desfeito.
+    tweaks.apply(root.get_child('Tema'), settings);
+    const state = JSON.parse(settings.values['app-tweaks-state']);
+    const legacy = {};
+    for (const [path, {app, ...entry}] of Object.entries(state.files))
+        if (app === 'obsidian')
+            legacy[path] = entry;
+    settings.values['app-tweaks-state'] = JSON.stringify({obsidian: legacy});
+    tweaks.revert(settings);
+    assertEqual(JSON.parse(read(obsidian)).frame, undefined, 'estado antigo desfeito:');
 
     // Tema sem receita: desfaz como o revert.
     tweaks.apply(root.get_child('Tema'), settings);
     tweaks.apply(root.get_child('SemReceita'), settings);
     assertEqual(read(code), codeText, 'tema sem apps/ desfaz');
+});
+
+// Resposta no formato do /api/oauth/usage (valores inventados, estrutura real).
+const AI_USAGE_RESPONSE = {
+    five_hour: {utilization: 42.4, resets_at: '2026-09-24T18:00:00.000Z'},
+    seven_day: {utilization: 71, resets_at: '2026-09-28T09:00:00+00:00'},
+    seven_day_sonnet: {utilization: 12, resets_at: null},
+    seven_day_opus: null,
+    extra_usage: {is_enabled: false},
+    limits: [
+        {kind: 'weekly_all', percent: 99, resets_at: '2026-09-28T09:00:00Z'},
+        {kind: 'weekly_scoped', percent: 130, resets_at: '2026-09-28T09:00:00Z',
+            scope: {model: {display_name: 'Fable'}}},
+        {kind: 'weekly_scoped', percent: 5},
+        {kind: 'mystery', percent: 1},
+    ],
+};
+
+test('cota de IA: resposta vira medidores, a janela curta primeiro, sem repetidos', () => {
+    const gauges = Ai.parseUsage(AI_USAGE_RESPONSE);
+    assertEqual(gauges.map(g => [g.window, g.model, Math.round(g.percent)]), [
+        ['session', null, 42],
+        ['weekly', null, 71],          // o weekly_all de `limits` é o mesmo: descartado
+        ['weekly', 'Sonnet', 12],
+        ['weekly', 'Fable', 100],      // limitado a 100
+    ]);
+    assertEqual(gauges[0].resetsAt, Date.parse('2026-09-24T18:00:00Z'));
+    assertEqual(gauges[2].resetsAt, null, 'sem data:');
+    assertEqual(gauges[3].name, '7 days · Fable');
+    assertEqual(Ai.parseUsage(null), []);
+    assertEqual(Ai.parseUsage({five_hour: {utilization: null}}), [], 'janela sem número:');
+});
+
+test('cota de IA: credenciais — ausente, vencida (com folga de 1 min) e válida', () => {
+    const now = Date.parse('2026-09-24T12:00:00Z');
+    assertEqual(Ai.parseCredentials({}, now).state, Ai.State.NO_CREDENTIALS);
+    assertEqual(Ai.parseCredentials({claudeAiOauth: {accessToken: '  '}}, now).state, Ai.State.NO_CREDENTIALS);
+
+    const expiring = Ai.parseCredentials({claudeAiOauth: {accessToken: 't', expiresAt: now + 30_000,
+        subscriptionType: 'max'}}, now);
+    assertEqual([expiring.state, expiring.token, expiring.plan], [Ai.State.EXPIRED, null, 'max']);
+
+    const ok = Ai.parseCredentials({claudeAiOauth: {accessToken: 't', expiresAt: now + 3_600_000}}, now);
+    assertEqual([ok.state, ok.token, ok.plan], [Ai.State.OK, 't', null]);
+});
+
+test('cota de IA: conta — título, linha e organização pessoal repetida', () => {
+    const personal = {id: '.claude', name: 'Gabriel', email: 'g@x.com',
+        organization: "g@x.com's Organization", role: 'admin'};
+    assertEqual(Ai.describeAccount(personal), {title: 'Gabriel', line: 'g@x.com'});
+
+    const work = {id: '.claude-bm', name: null, email: 'g@bm.com', organization: 'BM Soft', role: 'user'};
+    assertEqual(Ai.describeAccount(work), {title: 'g@bm.com', line: 'BM Soft · user'});
+
+    assertEqual(Ai.describeAccount({id: '.claude-x'}).title, '.claude-x', 'sem identidade:');
+    assertEqual(Ai.parseIdentity({oauthAccount: {fullName: 'Gabriel F', emailAddress: 'g@x.com'}}).name,
+        'Gabriel F', 'sem displayName usa o nome completo:');
+    assertEqual(Ai.planLabel('team_premium'), 'Team Premium');
+    assertEqual(Ai.planLabel(null), '');
+});
+
+test('cota de IA: "zera em" — hoje com a hora, depois só o prazo', () => {
+    const now = new Date(2026, 8, 24, 10, 0).getTime();
+    const at = (d, h, m = 0) => new Date(2026, 8, d, h, m).getTime();
+
+    assertEqual(Ai.describeReset(null, now), null);
+    assertEqual(Ai.describeReset(now - 1, now).message, 'resets now');
+    assertEqual(Ai.describeReset(at(24, 12, 5), now), {message: 'resets in %s, at %s', args: ['2h05', '12:05']});
+    assertEqual(Ai.describeReset(at(24, 10, 20), now).args, ['20 min', '10:20']);
+    assertEqual(Ai.describeReset(at(25, 2), now), {message: 'resets in %s', args: ['16h00']});
+    assertEqual(Ai.describeReset(at(27, 13), now).args, ['3d 3h']);
+});
+
+test('cota de IA: faixas, valor da barra, ordem e escolha das contas, Retry-After', () => {
+    assertEqual([0, 69.9, 70, 89, 90, 100].map(Ai.severity),
+        ['calm', 'calm', 'warning', 'warning', 'critical', 'critical']);
+
+    const gauge = (window, percent) => ({window, percent});
+    assertEqual(Ai.panelPercent([{gauges: []}, {gauges: [gauge('weekly', 80), gauge('session', 30)]}]), 30,
+        'a janela de 5 horas da primeira conta que a tiver:');
+    assertEqual(Ai.panelPercent([{gauges: [gauge('weekly', 80), gauge('other', 95)]}]), 95, 'sem 5 horas, a maior:');
+    assertEqual(Ai.panelPercent([{gauges: []}]), null);
+
+    assertEqual(Ai.sortAccountIds(['.claude-z', '.claude-bm', '.claude', '.claude-bm']),
+        ['.claude', '.claude-bm', '.claude-z']);
+    const profiles = [{id: '.claude'}, {id: '.claude-bm'}];
+    assertEqual(Ai.chooseProfiles(profiles, []), profiles, 'vazio é todas:');
+    assertEqual(Ai.chooseProfiles(profiles, ['.CLAUDE-BM']).map(p => p.id), ['.claude-bm']);
+
+    const now = Date.parse('2026-09-24T12:00:00Z');
+    assertEqual(Ai.retryAfterSeconds('120', now), 120);
+    assertEqual(Ai.retryAfterSeconds('Thu, 24 Sep 2026 12:05:00 GMT', now), 300);
+    assertEqual(Ai.retryAfterSeconds(null, now), Ai.BACKOFF_SECONDS, 'sem cabeçalho:');
+    assertEqual(Ai.retryAfterSeconds('999999', now), Ai.BACKOFF_SECONDS, 'absurdo:');
+});
+
+test('externos: só aparelho externo, agrupado por aparelho, e como ele sai', () => {
+    const mount = (driveId, name, extra = {}) => ({
+        driveId, driveName: `Disco ${driveId}`, removable: false, canEject: false, canStop: false,
+        name, uri: `file:///run/media/gf/${name}`, size: null, ...extra,
+    });
+    const devices = Removable.groupDevices([
+        // A partição de dados desta máquina: disco interno montado pelo fstab.
+        mount('/dev/sda', 'Dados', {size: 1e12}),
+        mount('/dev/sdc', 'FOTOS', {removable: true, size: 500e9}),
+        mount('/dev/sdc', 'BACKUP', {removable: true, size: 1500e9}),
+        mount('/dev/sdb', 'KINGSTON', {canEject: true, driveName: 'Kingston DataTraveler'}),
+        mount(null, 'rede', {removable: true}),
+    ]);
+
+    assertEqual(devices.map(d => d.id), ['/dev/sdc', '/dev/sdb'], 'em ordem de nome, sem o interno:');
+    assertEqual(devices[0].mounts, ['BACKUP', 'FOTOS'], 'as duas partições no mesmo aparelho:');
+    assertEqual(devices[0].size, 2000e9, 'tamanho somado:');
+    assertEqual(devices[1].size, null, 'tamanho ainda não lido:');
+
+    const size = bytes => `${bytes / 1e9} GB`;
+    assertEqual(Removable.describeDevice(devices[0], size), 'BACKUP, FOTOS  ·  2000 GB');
+    assertEqual(Removable.describeDevice({name: 'X', mounts: ['X'], size: null}, size), '',
+        'montagem com o nome do aparelho não se repete:');
+
+    assert(Removable.isExternal({canStop: true}), 'HD que se desliga é externo');
+    assert(!Removable.isExternal({}), 'nada disso é interno');
+    assertEqual(Removable.removalMethod({canEject: true, canStop: true}), 'eject');
+    assertEqual(Removable.removalMethod({canStop: true}), 'stop');
+    assertEqual(Removable.removalMethod({removable: true}), 'unmount');
+
+    assertEqual(Removable.summarize([]), 'nenhum');
+    assertEqual(Removable.summarize(devices.slice(1)), 'Kingston DataTraveler (KINGSTON)');
+});
+
+test('sistema: processador, memória e rede a partir do /proc, e o gráfico', () => {
+    const before = Sysmon.parseCpuStat('cpu  100 0 50 800 50 0 0 0 0 0\ncpu0 1 2 3 4\n');
+    const after = Sysmon.parseCpuStat('cpu  160 0 70 900 70 0 0 0 0 0\n');
+    assertEqual(before, {total: 1000, idle: 850}, 'primeira leitura:');
+    assertEqual(Sysmon.cpuPercent(before, after), 40, 'uso entre as duas:');
+    assertEqual(Sysmon.cpuPercent(null, after), null, 'sem leitura anterior:');
+    assertEqual(Sysmon.cpuPercent(after, after), null, 'sem tempo decorrido:');
+    assertEqual(Sysmon.parseCpuStat('nada aqui'), null, 'texto sem a linha cpu:');
+
+    const memory = Sysmon.parseMeminfo(
+        'MemTotal:       16000000 kB\nMemFree:         1000000 kB\nMemAvailable:   12000000 kB\n' +
+        'SwapTotal:       8000000 kB\nSwapFree:        6000000 kB\n');
+    assertEqual(memory.percent, 25, 'o cache não conta como usado:');
+    assertEqual(memory.used, 4000000 * 1024, 'usado em bytes:');
+    assertEqual(memory.swapUsed, 2000000 * 1024, 'swap usada:');
+    assertEqual(Sysmon.parseMeminfo(''), null, 'sem MemTotal:');
+
+    const dev = [
+        'Inter-|   Receive                                                |  Transmit',
+        ' face |bytes    packets errs drop fifo frame compressed multicast|bytes    packets errs drop fifo colls carrier compressed',
+        '    lo:    9999      10    0    0    0     0          0         0     9999      10    0    0    0     0       0          0',
+        'wlp2s0:    1000      10    0    0    0     0          0         0      400      10    0    0    0     0       0          0',
+        'docker0:   5000      10    0    0    0     0          0         0     5000      10    0    0    0     0       0          0',
+        'enp3s0:     500       5    0    0    0     0          0         0      100       5    0    0    0     0       0          0',
+    ].join('\n');
+    const net = Sysmon.parseNetDev(dev);
+    assertEqual(net, {rx: 1500, tx: 500}, 'laço local e ponte de fora:');
+    assertEqual(Sysmon.netRate(net, {rx: 3500, tx: 1500}, 2), {down: 1000, up: 500}, 'velocidade:');
+    assertEqual(Sysmon.netRate({rx: 9000, tx: 9000}, net, 2), {down: 0, up: 0}, 'contador que voltou atrás:');
+    assertEqual(Sysmon.netRate(net, net, 0), null, 'sem tempo decorrido:');
+
+    const history = [];
+    for (let i = 0; i < 70; i++)
+        Sysmon.pushSample(history, i);
+    assertEqual(history.length, Sysmon.HISTORY_SIZE, 'o histórico tem teto:');
+    assertEqual(history[0], 10, 'as mais antigas saem:');
+
+    assertEqual(Sysmon.formatPercent(36.6), '37%', 'porcentagem:');
+    assertEqual(Sysmon.formatPercent(null), '–', 'sem leitura:');
+    assertEqual(Sysmon.formatBytes(7.4 * 1024 ** 3, ','), '7,4 GiB', 'bytes com vírgula:');
+    assertEqual(Sysmon.formatBytes(512), '512 B', 'bytes puros:');
+    assertEqual(Sysmon.formatRate(1.25 * 1024 ** 2), '1.3 MiB/s', 'velocidade com ponto:');
+    assertEqual([Sysmon.severity(10), Sysmon.severity(75), Sysmon.severity(95)],
+        ['calm', 'warning', 'critical'], 'faixas de cor:');
+
+    assertEqual(Sysmon.sparklinePoints([0, 50, 100], 59, 10, {max: 100}),
+        [[57, 10], [58, 5], [59, 0]], 'poucas amostras encostam à direita:');
+    assertEqual(Sysmon.sparklinePoints([5, 10], 59, 10).map(p => p[1]), [5, 0], 'sem teto, o maior valor é o topo:');
+    assertEqual(Sysmon.sparklinePoints([], 59, 10), [], 'sem amostras:');
+});
+
+test('feriados: fixos, móveis pela Páscoa, e o mês em linhas', () => {
+    assertEqual(Holidays.easter(2026), {month: 4, day: 5}, 'Páscoa de 2026:');
+    assertEqual(Holidays.easter(2027), {month: 3, day: 28}, 'Páscoa de 2027:');
+    assertEqual(Holidays.easter(2038), {month: 4, day: 25}, 'Páscoa mais tardia:');
+
+    assertEqual(Holidays.holidayOf(new Date(2026, 8, 7)), 'Independence Day', '7 de setembro:');
+    assertEqual(Holidays.holidayOf(new Date(2026, 8, 8)), null, 'dia comum:');
+    assertEqual(Holidays.holidayOf(new Date(2026, 3, 3)), 'Good Friday', 'Sexta-feira Santa de 2026:');
+    assertEqual(Holidays.holidayOf(new Date(2026, 5, 4)), 'Corpus Christi', 'Corpus Christi de 2026:');
+    assertEqual(Holidays.holidayOf(new Date(2026, 1, 18)), null, 'quarta de cinzas é dia útil:');
+
+    assertEqual(Holidays.monthHolidays(2026, 1), [{days: [16, 17], name: 'Carnival'}],
+        'Carnaval de 2026 numa entrada só:');
+    assertEqual(Holidays.monthHolidays(2026, 10).map(h => h.days[0]), [2, 15, 20], 'novembro:');
+    assertEqual(Holidays.monthHolidays(2026, 7), [], 'agosto não tem feriado nacional:');
+
+    // Todo nome que a lib devolve está marcado para tradução no módulo.
+    assertEqual([...Holidays.HOLIDAY_NAMES].sort(), [...CalendarNames].sort(), 'nomes traduzíveis:');
+    assertEqual(formatHolidays(Holidays.monthHolidays(2026, 1), m => m.toUpperCase()), '16–17 · CARNIVAL',
+        'linha do Carnaval:');
+});
+
+test('cartões compactos: só as regras de cartão, medidas menores e letra pela raiz', () => {
+    const {compactCss, scalePx} = CompactCards;
+    assertEqual([scalePx(0), scalePx(1), scalePx(2), scalePx(8), scalePx(300), scalePx(-4)], [0, 1, 2, 7, 255, -3]);
+
+    const css = compactCss(`
+        /* comentário com { chaves } */
+        .gnomecustom-bt-card { width: 300px; padding: 8px 8px 4px 8px; color: red; }
+        .gnomecustom-bt-panel { spacing: 6px; }
+        .gnomecustom-bt-panel-item.low StIcon { padding: 4px; }
+        .gnomecustom-media-thumb { width: 20px; }
+        .gnomecustom-media-card { width: 280px; font-size: 1.1em; }
+        .gnomecustom-apps-item { padding: 6px; }
+        .gnomecustom-bt-row,
+        .gnomecustom-bt-panel:hover { border-radius: 10px; border: 1px solid white; }
+        .gnomecustom-weather-title { font-size: 1.05em; font-weight: bold; }
+        .gnomecustom-aiusage-account { padding-top: 10px; }
+        .gnomecustom-aiusage-account.first { padding-top: 0; }
+    `);
+    assert(/account\.first \{\s*padding-top: 0 !important;/.test(css), 'a exceção que não muda é regravada, para não perder do !important:');
+    assert(css.includes('width: 255px !important;') && css.includes('padding: 7px 7px 3px 7px !important;'), css);
+    assert(!css.includes('color: red'), 'o que não muda não é repetido');
+    assert(!css.includes('-panel') && !css.includes('media-thumb') && !css.includes('apps-item'), 'a barra e os menus ficam de fora');
+    assert(css.includes('.gnomecustom-bt-card {') && css.includes('font-size: 0.9em !important;'), 'a raiz ganha a letra menor');
+    assert(css.includes('font-size: 0.99em !important;'), 'raiz que já tinha letra: multiplicada');
+    assert(css.includes('.gnomecustom-bt-row {') && css.includes('border-radius: 9px'), 'seletor composto perde só a parte da barra');
+    assert(!css.includes('1px solid'), 'borda de 1 px continua 1 px e não é repetida');
+    assert(css.includes('.gnomecustom-weather-title {\n    font-size: 1.05em !important;'),
+        'letra fora da raiz: mesmo valor (herda a escala da raiz)');
+    assertEqual(compactCss(''), '');
+
+    // Na folha de verdade: todo cartão tem raiz, e nada da barra escapa.
+    const real = compactCss(readText('gnomeCustom@gfiamoncini.com', 'stylesheet.css'));
+    for (const card of ['media', 'bt', 'weather', 'aiusage', 'removable', 'updates', 'sysmon'])
+        assert(new RegExp(`\\.gnomecustom-${card}-card \\{[^}]*font-size`).test(real), `raiz do cartão ${card}`);
+    assert(!/-panel/.test(real), 'regra da barra na folha compacta');
+});
+
+test('volume da música: o fluxo certo e passos exatos', () => {
+    const {streamBelongsTo, stepVolume, VOLUME_ACTIONS, MEDIA_ACTIONS} = Mpris;
+    const spotify = {id: 'spotify', identity: 'Spotify', desktopEntry: 'spotify'};
+    assert(streamBelongsTo(spotify, {name: 'Spotify', appId: null}), 'pelo nome');
+    assert(streamBelongsTo(spotify, {name: 'audio stream', appId: 'com.spotify.Client'}), 'pelo id do app');
+    assert(streamBelongsTo({id: 'firefox.instance_1_23', identity: 'Mozilla Firefox'}, {name: 'Firefox'}), 'sufixo de instância');
+    assert(!streamBelongsTo(spotify, {name: 'Firefox', appId: 'org.mozilla.firefox'}), 'outro app');
+    assert(!streamBelongsTo(spotify, {name: '', appId: ''}) && !streamBelongsTo({}, {name: 'Spotify'}), 'vazios');
+
+    assertEqual(stepVolume(0.3, 0.05), 0.35);
+    assertEqual(stepVolume(0.98, 0.05), 1);
+    assertEqual(stepVolume(0.02, -0.05), 0);
+    assertEqual(stepVolume(NaN, 0.05), 0.05);
+
+    const xml = readText('gnomeCustom@gfiamoncini.com', 'schemas', 'org.gnome.shell.extensions.gnomecustom.media.gschema.xml');
+    for (const {key} of [...MEDIA_ACTIONS, ...VOLUME_ACTIONS])
+        assert(xml.includes(`name="${key}"`), `chave ${key} no esquema`);
+});
+
+test('ordem dos botões: lista gravada, botões novos no fim, e trocar de lugar', () => {
+    const {DEFAULT_ORDER, normalizeOrder, sortByOrder, moveItem} = PanelOrder;
+    assertEqual(normalizeOrder([]), [...DEFAULT_ORDER], 'vazia vira a de fábrica:');
+    assertEqual(normalizeOrder(['media', 'media', 'xyz', 'sysmon']).slice(0, 3), ['media', 'sysmon', 'updates'],
+        'sem repetido nem desconhecido, e o resto atrás:');
+    assertEqual(normalizeOrder(['media']).length, DEFAULT_ORDER.length);
+
+    assertEqual(sortByOrder(['bluetooth', 'sysmon', 'media'], ['media', 'bluetooth']),
+        ['media', 'bluetooth', 'sysmon'], 'só os presentes, na ordem da lista:');
+    assertEqual(sortByOrder(['novo', 'media'], ['media']), ['media', 'novo'], 'id que a lista não conhece vai para o fim:');
+    assertEqual(sortByOrder([], ['media']), []);
+
+    assertEqual(moveItem(['a', 'b', 'c'], 'c', -1), ['a', 'c', 'b']);
+    assertEqual(moveItem(['a', 'b', 'c'], 'a', 1), ['b', 'a', 'c']);
+    assertEqual(moveItem(['a', 'b', 'c'], 'a', -1), ['a', 'b', 'c'], 'o primeiro não sobe:');
+    assertEqual(moveItem(['a', 'b', 'c'], 'z', 1), ['a', 'b', 'c']);
+
+    // Todo botão da lista é um módulo de verdade, e a chave nasce igual à lista.
+    const ids = MODULES_INFO.map(info => info.id);
+    for (const id of DEFAULT_ORDER)
+        assert(ids.includes(id), `'${id}' não é um módulo`);
+    const xml = readText('gnomeCustom@gfiamoncini.com', 'schemas', 'org.gnome.shell.extensions.gnomecustom.panel.gschema.xml');
+    const inSchema = [...xml.match(/name="button-order"[\s\S]*?<default>([^<]*)<\/default>/)[1].matchAll(/'([^']+)'/g)]
+        .map(m => m[1]);
+    assertEqual(inSchema, [...DEFAULT_ORDER], 'esquema e lib:');
+});
+
+test('atualizações: pacotes por nome, Flatpak pela saída do comando, e quando buscar', () => {
+    const system = Updates.systemPackages([
+        {name: 'python3-urllib3', version: '2.8.0-1.fc44', info: 'security'},
+        {name: 'glibc', version: '2.43-2.fc44', info: 'bugfix'},
+        {name: 'glibc', version: '2.43-2.fc44', info: 'bugfix'},   // i686 + x86_64
+        {name: 'ibus-typing-booster', version: '2.31.1-1.fc44', info: 'enhancement'},
+        {name: '', version: '1'},
+    ]);
+    assertEqual(system.map(p => p.name), ['python3-urllib3', 'glibc', 'ibus-typing-booster'],
+        'segurança primeiro, uma vez por nome:');
+    assert(system[0].security && !system[1].security, 'só o de segurança destacado');
+
+    const flatpak = Updates.parseFlatpakList([
+        'org.qbittorrent.qBittorrent\tqBittorrent\t5.2.3\tstable',
+        'org.fedoraproject.Platform.GL.default\tMesa\t\tf44',
+        'org.fedoraproject.Platform.CL.default\tMesa\t\tf44',
+        'org.qbittorrent.qBittorrent\tqBittorrent\t5.2.3\tstable',   // sistema e usuário
+        'Looking for updates…',
+        '',
+    ].join('\n'));
+    assertEqual(flatpak.map(r => r.name), ['Mesa (CL.default)', 'Mesa (GL.default)', 'qBittorrent'],
+        'nomes repetidos ganham o fim do id:');
+    assertEqual(flatpak.map(r => r.version), ['f44', 'f44', '5.2.3'], 'sem versão, o ramo:');
+    assertEqual(Updates.parseFlatpakList(''), []);
+
+    assertEqual(Updates.countPending({system, flatpak}), 6);
+    assertEqual(Updates.countPending({}), 0);
+    assertEqual(Updates.panelCount(0), '');
+    assertEqual(Updates.panelCount(7), '7');
+    assertEqual(Updates.panelCount(120), '99+');
+    assertEqual(Updates.summarize({system, flatpak}), 'dnf 3 (1 de segurança), flatpak 3');
+    assertEqual(Updates.summarize({system: [], flatpak: []}), 'nenhuma');
+
+    const nine = Array.from({length: 9}, (_, i) => i);
+    assertEqual(Updates.visibleItems(nine, 8), {shown: nine, hidden: 0}, 'esconder um só não vale:');
+    assertEqual(Updates.visibleItems([...nine, 9], 8).hidden, 2);
+
+    const hour = 60 * 60 * 1000;
+    const now = Date.parse('2026-09-29T12:00:00Z');
+    assertEqual(Updates.nextCheckDelay(null, 6, now, 60000), 60000, 'nunca buscou:');
+    assertEqual(Updates.nextCheckDelay(now - hour, 6, now), 5 * hour, 'conta da última:');
+    assertEqual(Updates.nextCheckDelay(now - 5 * hour, 2, now, 60000), 60000,
+        'intervalo menor que o tempo passado: busca já');
+});
+
+test('cota de IA: serviço acha as contas, lê sem escrever, guarda a leitura e respeita o 429', async () => {
+    GLib.unsetenv('CLAUDE_CONFIG_DIR');
+    const home = Gio.File.new_for_path(GLib.dir_make_tmp('gnomecustom-aiusage-XXXXXX'));
+    const write = (path, value) => {
+        const file = home.resolve_relative_path(path);
+        if (!file.get_parent().query_exists(null))
+            file.get_parent().make_directory_with_parents(null);
+        file.replace_contents(new TextEncoder().encode(JSON.stringify(value)), null, false,
+            Gio.FileCreateFlags.NONE, null);
+    };
+    let now = Date.parse('2026-09-24T12:00:00Z');
+    const creds = (token, plan) => ({claudeAiOauth: {accessToken: token, expiresAt: now + 3_600_000,
+        subscriptionType: plan}});
+
+    // Padrão: identidade no home. Alternativa: identidade dentro da pasta.
+    write('.claude/.credentials.json', creds('tok-pessoal', 'max'));
+    write('.claude.json', {oauthAccount: {displayName: 'Gabriel', emailAddress: 'g@x.com'}});
+    write('.claude-bm/.credentials.json', creds('tok-empresa', 'team'));
+    write('.claude-bm/.claude.json', {oauthAccount: {emailAddress: 'g@bm.com', organizationName: 'BM Soft'}});
+    write('.claude-sem-login/settings.json', {});
+    const personalCredentials = () => new TextDecoder().decode(
+        home.resolve_relative_path('.claude/.credentials.json').load_contents(null)[1]);
+    const before = personalCredentials();
+
+    const service = new ClaudeUsageService({
+        logger: new Logger({level: 'silent', sink: new FakeSink()}),
+        home: home.get_path(),
+        now: () => now,
+    });
+    const calls = [];
+    let answer = {status: 200, body: JSON.stringify(AI_USAGE_RESPONSE)};
+    service._get = async token => {
+        calls.push(token);
+        return answer;
+    };
+
+    const profiles = service.profiles();
+    assertEqual(profiles.map(p => [p.id, p.name ?? p.email, p.organization]),
+        [['.claude', 'Gabriel', null], ['.claude-bm', 'g@bm.com', 'BM Soft']], 'contas:');
+
+    let accounts = await service.read();
+    assertEqual(accounts.map(a => [a.state, a.plan, a.gauges.length]), [['ok', 'max', 4], ['ok', 'team', 4]]);
+    assertEqual(calls.length, 2, 'uma consulta por conta:');
+
+    // Reabrir o card logo depois não pergunta de novo.
+    now += 60_000;
+    accounts = await service.read(['.claude-bm']);
+    assertEqual([accounts.length, calls.length], [1, 2], 'leitura ainda valendo:');
+
+    // Passados os 2 minutos, um 429 mantém os números, com a hora e o castigo.
+    now += 2 * 60_000;
+    answer = {status: 429, retryAfter: '600', body: ''};
+    accounts = await service.read();
+    assertEqual(accounts.map(a => [a.state, a.gauges.length, a.error?.kind, a.since !== null]),
+        [['ok', 4, 'rate-limited', true], ['ok', 4, 'rate-limited', true]]);
+    assertEqual(accounts[0].error.until, now + 600_000);
+    assertEqual(calls.length, 4);
+
+    // Durante o castigo, nem com "atualizar agora" se pergunta.
+    now += 60_000;
+    answer = {status: 200, body: JSON.stringify(AI_USAGE_RESPONSE)};
+    await service.read([], {force: true});
+    assertEqual(calls.length, 4, 'castigo respeitado:');
+
+    // 401 é sessão vencida; token vencido no arquivo nem vai à rede.
+    now += 10 * 60_000;
+    answer = {status: 401, body: ''};
+    accounts = await service.read(['.claude'], {force: true});
+    assertEqual([accounts[0].state, accounts[0].since !== null], ['ok', true], 'números antigos ficam:');
+    write('.claude-bm/.credentials.json', {claudeAiOauth: {accessToken: 'x', expiresAt: now - 1}});
+    const fresh = new ClaudeUsageService({home: home.get_path(), now: () => now});
+    fresh._get = async () => {
+        throw new Error('não devia ir à rede');
+    };
+    accounts = await fresh.read(['.claude-bm']);
+    assertEqual(accounts[0].state, Ai.State.EXPIRED);
+
+    assertEqual(personalCredentials(), before, 'a credencial não foi tocada:');
+    service.destroy();
+    fresh.destroy();
 });
 
 test('clima: previsão real de Rio do Sul (SC) é lida por inteiro', () => {
@@ -2909,10 +3395,11 @@ test('perfis: todos cobrem os 10 módulos, citam presets reais e têm ids único
     }
     assert(!ids.has(Profiles.CUSTOM_PROFILE), 'id reservado');
 
-    // Os 10 módulos do perfil são exatamente os implementados, menos o diagnóstico e
-    // o clima: os perfis reproduzem as 11 extensões do baseline, e o clima é um
-    // opcional novo (2026-09-21) que só liga quando o usuário escolhe.
-    const outside = ['diagnostics', 'weather'];
+    // Os 10 módulos do perfil são exatamente os implementados, menos o diagnóstico,
+    // o clima, a cota de IA, os externos e as atualizações: os perfis reproduzem as 11
+    // extensões do baseline, e os outros são opcionais novos (2026-09-21 a 2026-09-29)
+    // que só ligam quando o usuário escolhe.
+    const outside = ['diagnostics', 'weather', 'aiusage', 'removable', 'updates', 'sysmon', 'calendar'];
     const implemented = MODULES_INFO.filter(i => i.implemented && !outside.includes(i.id)).map(i => i.id).sort();
     assertEqual([...Profiles.PROFILE_MODULES].sort(), implemented, 'módulos cobertos:');
 });
@@ -3003,6 +3490,13 @@ function makeFakeOsd({failOnShow = false} = {}) {
                 throw new Error('falha proposital');
             this.calls.push({window, options});
         },
+        placed: [],
+        place(window, options) {
+            this.placed.push({window, options});
+        },
+        restorePlacement() {
+            this.placementRestored = (this.placementRestored ?? 0) + 1;
+        },
         restoreAll() {
             this.restored++;
         },
@@ -3012,11 +3506,48 @@ function makeFakeOsd({failOnShow = false} = {}) {
     return {osd, FakeOsdWindow};
 }
 
+/** O alto-falante da barra: guarda quem escuta o clique do meio e o estado do mudo. */
+function makeFakeQuick() {
+    const quick = {
+        muted: false,
+        listeners: new Set(),
+        onVolumeMiddleClick(callback) {
+            quick.listeners.add(callback);
+            return () => quick.listeners.delete(callback);
+        },
+        toggleOutputMute() {
+            quick.muted = !quick.muted;
+            return quick.muted;
+        },
+        destroy() {},
+    };
+    return quick;
+}
+
+test('volume: clique do meio no alto-falante alterna o mudo, e desativar solta o ícone', () => {
+    const {osd} = makeFakeOsd();
+    const quick = makeFakeQuick();
+    const {lifecycle} = makeLifecycle(defaultValues({'volume-enabled': true}),
+        {modules: [VolumeModule], serviceFactories: {osd: () => osd, quickSettings: () => quick}});
+
+    lifecycle.enable();
+    assertEqual(quick.listeners.size, 1, 'escutas do clique do meio:');
+    const [click] = quick.listeners;
+    click();
+    assertEqual(quick.muted, true, 'primeiro clique liga o mudo:');
+    click();
+    assertEqual(quick.muted, false, 'segundo clique devolve o som:');
+
+    lifecycle.disable();
+    assertEqual(quick.listeners.size, 0, 'depois de desativar:');
+});
+
 test('volume: o serviço recebe a janela antes do show original, e o patch é revertido', () => {
     const {osd, FakeOsdWindow} = makeFakeOsd();
+    const quick = makeFakeQuick();
     const original = FakeOsdWindow.prototype.show;
     const {lifecycle, injections} = makeLifecycle(defaultValues({'volume-enabled': true}),
-        {modules: [VolumeModule], serviceFactories: {osd: () => osd}});
+        {modules: [VolumeModule], serviceFactories: {osd: () => osd, quickSettings: () => quick}});
 
     lifecycle.enable();
     assert(FakeOsdWindow.prototype.show !== original, 'show deveria estar substituído');
@@ -3027,10 +3558,13 @@ test('volume: o serviço recebe a janela antes do show original, e o patch é re
     assertEqual(osd.calls.length, 1, 'chamadas ao serviço:');
     assert(osd.calls[0].window === window, 'o serviço deveria receber a própria janela');
     assertEqual(osd.calls[0].options.format(0.5), '50', 'formatador repassado:');
+    assertEqual(osd.placed.length, 1, 'lugar e tamanho pedidos a cada show:');
+    assertEqual(Object.keys(osd.placed[0].options).sort(), ['align', 'belowBar', 'compact']);
 
     lifecycle.disable();
     assert(FakeOsdWindow.prototype.show === original, 'show deveria voltar ao original');
     assertEqual(osd.restored, 1, 'restoreAll:');
+    assertEqual(osd.placementRestored, 1, 'lugar devolvido:');
     assertEqual(injections.filter(m => m.pending > 0).length, 0, 'patches pendentes:');
 
     window.show();
@@ -3039,9 +3573,10 @@ test('volume: o serviço recebe a janela antes do show original, e o patch é re
 
 test('volume: falha no serviço não impede o OSD de aparecer', () => {
     const {osd, FakeOsdWindow} = makeFakeOsd({failOnShow: true});
+    const quick = makeFakeQuick();
     const {lifecycle, sink} = makeLifecycle(
         defaultValues({'volume-enabled': true, 'log-level': 'error'}),
-        {modules: [VolumeModule], serviceFactories: {osd: () => osd}});
+        {modules: [VolumeModule], serviceFactories: {osd: () => osd, quickSettings: () => quick}});
 
     lifecycle.enable();
     const window = new FakeOsdWindow();
@@ -3053,9 +3588,10 @@ test('volume: falha no serviço não impede o OSD de aparecer', () => {
 
 test('volume: desligar e religar a chave a quente troca o patch', () => {
     const {osd, FakeOsdWindow} = makeFakeOsd();
+    const quick = makeFakeQuick();
     const original = FakeOsdWindow.prototype.show;
     const {lifecycle, extension} = makeLifecycle(defaultValues({'volume-enabled': true}),
-        {modules: [VolumeModule], serviceFactories: {osd: () => osd}});
+        {modules: [VolumeModule], serviceFactories: {osd: () => osd, quickSettings: () => quick}});
 
     lifecycle.enable();
     extension.base.set('volume-enabled', false);

@@ -96,6 +96,10 @@ const {PanelPage} = await import(`../${UUID}/prefs/pages/panel.js`);
 const {MenuPage} = await import(`../${UUID}/prefs/pages/menu.js`);
 const {MediaPage} = await import(`../${UUID}/prefs/pages/media.js`);
 const {WeatherPage} = await import(`../${UUID}/prefs/pages/weather.js`);
+const {AiUsagePage} = await import(`../${UUID}/prefs/pages/aiusage.js`);
+const {RemovablePage} = await import(`../${UUID}/prefs/pages/removable.js`);
+const {SysmonPage} = await import(`../${UUID}/prefs/pages/sysmon.js`);
+const {UpdatesPage} = await import(`../${UUID}/prefs/pages/updates.js`);
 const {captureAccel} = await import(`../${UUID}/prefs/widgets.js`);
 const {BluetoothPage} = await import(`../${UUID}/prefs/pages/bluetooth.js`);
 const {DockPage} = await import(`../${UUID}/prefs/pages/dock.js`);
@@ -322,6 +326,27 @@ step('PanelPage é construída', () => {
         throw new Error(`esperava 2 interruptores, achei ${switches.length}`);
 });
 
+step('PanelPage: a ordem dos botões tem uma linha por botão e as setas regravam a lista', () => {
+    const settings = childSettings('panel');
+    settings.reset('button-order');
+    const page = new PanelPage(settings, _);
+    const arrows = () => descendants(page).filter(w =>
+        w instanceof Gtk.Button && ['go-up-symbolic', 'go-down-symbolic'].includes(w.icon_name));
+    const before = settings.get_strv('button-order');
+    if (arrows().length !== before.length * 2)
+        throw new Error(`esperava ${before.length * 2} setas, achei ${arrows().length}`);
+    if (arrows()[0].sensitive)
+        throw new Error('o primeiro não tem para onde subir');
+
+    arrows()[1].emit('clicked');   // desce o primeiro
+    const after = settings.get_strv('button-order');
+    if (after[0] !== before[1] || after[1] !== before[0])
+        throw new Error(`a lista não trocou: ${after.join(',')}`);
+    if (arrows().length !== before.length * 2)
+        throw new Error('as linhas não foram refeitas uma vez só');
+    settings.reset('button-order');
+});
+
 step('MenuPage lista um interruptor por item de menu, mais o monocromático da galeria', () => {
     const page = new MenuPage(childSettings('menu'), _);
     const switches = descendants(page).filter(w => w instanceof Adw.SwitchRow);
@@ -459,8 +484,9 @@ step('MediaPage: atalhos de mídia com padrão, limpar, restaurar e aviso de col
 
     const rows = descendants(page).filter(w => w instanceof Adw.ActionRow &&
         descendants(w).some(c => c instanceof Gtk.ShortcutLabel));
-    if (rows.length !== 3)
-        throw new Error(`esperava 3 linhas de atalho, achei ${rows.length}`);
+    // Três de faixa (tocar, próxima, anterior) e dois de volume da música.
+    if (rows.length !== 5)
+        throw new Error(`esperava 5 linhas de atalho, achei ${rows.length}`);
 
     const row = rows.find(r => r.title === 'Play or pause');
     const label = descendants(row).find(w => w instanceof Gtk.ShortcutLabel);
@@ -553,6 +579,95 @@ await asyncStep('WeatherPage: busca a cidade, escolher grava nome e coordenadas'
     for (const key of ['location-name', 'latitude', 'longitude'])
         settings.reset(key);
     base.reset('weather-enabled');
+});
+
+step('AiUsagePage: uma linha por conta; desmarcar grava a escolha, todas marcadas é "todas"', () => {
+    const settings = childSettings('aiusage');
+    const base = openOurs('');
+    const profiles = () => [
+        {id: '.claude', dir: '/home/x/.claude', name: 'Gabriel', email: 'g@x.com', organization: null, role: null},
+        {id: '.claude-bm', dir: '/home/x/.claude-bm', name: null, email: 'g@bm.com', organization: 'BM', role: null},
+    ];
+    const page = new AiUsagePage(settings, _, {baseSettings: base, profiles});
+
+    const switches = descendants(page).filter(w => w instanceof Adw.SwitchRow);
+    if (!switches.some(w => w.title === 'Show the AI usage in the top bar'))
+        throw new Error('a página deveria ter o interruptor do módulo');
+    const accounts = switches.filter(w => w.subtitle.includes('/home/x/'));
+    if (accounts.length !== 2 || accounts[0].title !== 'Gabriel' || !accounts.every(w => w.active))
+        throw new Error(`esperava as 2 contas marcadas, achei ${accounts.map(w => w.title)}`);
+
+    accounts[0].active = false;
+    if (JSON.stringify(settings.get_strv('accounts')) !== '[".claude-bm"]')
+        throw new Error(`desmarcar deveria gravar só a outra: ${settings.get_strv('accounts')}`);
+    accounts[1].active = false;
+    if (settings.get_strv('accounts').length !== 0 || !accounts.every(w => w.active))
+        throw new Error('nenhuma marcada volta a "todas"');
+
+    const empty = new AiUsagePage(settings, _, {profiles: () => []});
+    if (!descendants(empty).some(w => w instanceof Adw.ActionRow && w.title === 'No account found'))
+        throw new Error('sem conta deveria avisar');
+    settings.reset('accounts');
+});
+
+step('SysmonPage: intervalo em segundos e posição, sem o interruptor do módulo', () => {
+    const settings = childSettings('sysmon');
+    const base = openOurs('');
+    const page = new SysmonPage(settings, _);
+
+    if (!base.get_boolean('sysmon-enabled'))
+        throw new Error('o módulo deveria vir ligado');
+    if (descendants(page).some(w => w instanceof Adw.SwitchRow))
+        throw new Error('o interruptor do módulo fica só na página Geral');
+
+    const spins = descendants(page).filter(w => w instanceof Adw.SpinRow);
+    if (spins.length !== 1 || spins[0].value !== 2)
+        throw new Error('esperava o intervalo, em 2 segundos');
+    spins[0].value = 5;
+    if (settings.get_uint('interval-seconds') !== 5)
+        throw new Error('mudar o intervalo deveria gravar interval-seconds');
+
+    settings.reset('interval-seconds');
+});
+
+step('RemovablePage: "só enquanto houver" e posição, sem o interruptor do módulo', () => {
+    const settings = childSettings('removable');
+    const base = openOurs('');
+    const page = new RemovablePage(settings, _);
+
+    // O módulo vem ligado de fábrica e o interruptor dele fica só na página Geral.
+    if (!base.get_boolean('removable-enabled'))
+        throw new Error('o módulo deveria vir ligado');
+    const switches = descendants(page).filter(w => w instanceof Adw.SwitchRow);
+    const onlyWhile = switches.find(w => w.title === 'Only while something is connected');
+    if (switches.length !== 1 || !onlyWhile || !onlyWhile.active)
+        throw new Error('esperava só o "só enquanto houver", ligado');
+
+    onlyWhile.active = false;
+    if (settings.get_boolean('hide-when-empty'))
+        throw new Error('desligar deveria gravar hide-when-empty = false');
+
+    settings.reset('hide-when-empty');
+});
+
+step('UpdatesPage: intervalo em horas e posição, sem o interruptor do módulo', () => {
+    const settings = childSettings('updates');
+    const base = openOurs('');
+    const page = new UpdatesPage(settings, _);
+
+    if (!base.get_boolean('updates-enabled'))
+        throw new Error('o módulo deveria vir ligado');
+    if (descendants(page).some(w => w instanceof Adw.SwitchRow))
+        throw new Error('o interruptor do módulo fica só na página Geral');
+
+    const spins = descendants(page).filter(w => w instanceof Adw.SpinRow);
+    if (spins.length !== 1 || spins[0].value !== 6)
+        throw new Error('esperava o intervalo, em 6 horas');
+    spins[0].value = 12;
+    if (settings.get_uint('interval-hours') !== 12)
+        throw new Error('mudar o intervalo deveria gravar interval-hours');
+
+    settings.reset('interval-hours');
 });
 
 step('TilingPage: atalhos editáveis, com colisão avisada', () => {
@@ -816,6 +931,9 @@ step('menu lateral: uma linha por página, escolher mostra a página, busca filt
 
     if (window.get_content() !== split)
         throw new Error('a janela deveria exibir o menu lateral');
+    // Sem ela, o diálogo do Shell loga "did not provide any UI" e troca o título.
+    if (!window.visible_page)
+        throw new Error('a janela precisa de uma visible_page para o diálogo do Shell');
     const rows = [];
     for (let row = list.get_row_at_index(0), i = 0; row; row = list.get_row_at_index(++i))
         rows.push(row);

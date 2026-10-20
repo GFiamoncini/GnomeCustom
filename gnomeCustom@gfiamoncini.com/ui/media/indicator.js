@@ -32,6 +32,11 @@ import {darkenForContrast, rgba} from '../../theme/engine/color.js';
 /** Intervalo de atualização do tempo, só com o card aberto e tocando. */
 const TICK_MS = 1000;
 
+/** O nome da faixa rolando: as contas do WinDock (28 px/s acompanha a leitura). */
+const ROLL_HOLD_MS = 2000;
+const ROLL_PX_PER_SECOND = 28;
+const ROLL_BACK_MS = 450;
+
 /** Cor do degradê enquanto a capa não chega ou quando ela não tem cor útil. */
 const FALLBACK_COLOR = [46, 52, 64];
 
@@ -135,6 +140,7 @@ export class MediaIndicator extends PanelMenu.Button {
 
         const {track} = player;
         this._panelTitle.text = track.title;
+        this._syncRoll();
         this._syncControls();
         this._source.text = player.identity;
         this._title.text = track.title;
@@ -167,7 +173,8 @@ export class MediaIndicator extends PanelMenu.Button {
 
     /** Relê as chaves de aparência. */
     applySettings() {
-        this._panelTitle.style = `max-width: ${this._settings.get_uint('panel-max-width')}px;`;
+        this._rollKey = null;
+        this._syncRoll();
         this._controls.visible = this._settings.get_boolean('show-controls');
         this._controlsSeparator.visible = this._controls.visible;
         this._syncBackground();
@@ -188,8 +195,16 @@ export class MediaIndicator extends PanelMenu.Button {
         });
         this._thumb.set_child(this._thumbIcon);
 
-        this._panelTitle = new St.Label({y_align: Clutter.ActorAlign.CENTER});
+        // A moldura corta o nome na largura máxima; dentro dela o texto tem o
+        // tamanho que quiser, que é o que permite rolar.
+        this._panelTitle = new St.Label();
         this._panelTitle.clutter_text.ellipsize = Pango.EllipsizeMode.END;
+        this._titleClip = new St.Widget({
+            layout_manager: new Clutter.FixedLayout(),
+            clip_to_allocation: true,
+            y_align: Clutter.ActorAlign.CENTER,
+        });
+        this._titleClip.add_child(this._panelTitle);
 
         this._controls = new St.BoxLayout({
             style_class: 'gnomecustom-media-controls',
@@ -211,10 +226,71 @@ export class MediaIndicator extends PanelMenu.Button {
         this._controlsSeparator = this._separator();
         box.add_child(this._thumb);
         box.add_child(this._separator());
-        box.add_child(this._panelTitle);
+        box.add_child(this._titleClip);
         box.add_child(this._controlsSeparator);
         box.add_child(this._controls);
         this.add_child(box);
+    }
+
+    /**
+     * Faz o nome da faixa rolar quando não cabe, em vez de terminar em
+     * reticências (do WinDock; pedido do usuário, 2026-10-07).
+     *
+     * Rola só o que precisa e só enquanto toca: nome que cabe fica parado, e em
+     * pausa volta ao começo, com reticências. Sem animações no sistema também
+     * não rola — o `ease` terminaria na hora e o ciclo viraria um laço.
+     */
+    _syncRoll() {
+        const label = this._panelTitle;
+        const max = this._settings.get_uint('panel-max-width');
+        const natural = label.clutter_text.get_preferred_width(-1)[1];
+        const rolling = natural > max &&
+            this._state?.status === 'Playing' &&
+            this._settings.get_boolean('scroll-title') &&
+            St.Settings.get().enable_animations;
+
+        // O mesmo nome no mesmo estado não recomeça a rolagem: o tocador avisa
+        // mudanças que não mexem em nada disso.
+        const key = `${rolling}|${max}|${label.text}`;
+        if (key === this._rollKey)
+            return;
+        this._rollKey = key;
+
+        label.remove_all_transitions();
+        label.translation_x = 0;
+        // Largura explícita: o `max-width` do CSS não vale para a moldura, que
+        // pediria o tamanho do texto inteiro e empurraria os controles.
+        this._titleClip.width = Math.min(natural, max);
+        if (!rolling) {
+            label.clutter_text.ellipsize = Pango.EllipsizeMode.END;
+            label.style = `max-width: ${max}px;`;
+            return;
+        }
+        label.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
+        label.style = null;
+        this._roll(natural - max, key);
+    }
+
+    /** Um ciclo: espera, vai até o fim do nome, espera, volta. */
+    _roll(overflow, key) {
+        const label = this._panelTitle;
+        const again = () => {
+            if (this._rollKey === key)
+                this._roll(overflow, key);
+        };
+        label.ease({
+            translation_x: -overflow,
+            delay: ROLL_HOLD_MS,
+            duration: Math.round(overflow / ROLL_PX_PER_SECOND * 1000),
+            mode: Clutter.AnimationMode.LINEAR,
+            onComplete: () => label.ease({
+                translation_x: 0,
+                delay: ROLL_HOLD_MS,
+                duration: ROLL_BACK_MS,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                onComplete: again,
+            }),
+        });
     }
 
     _separator() {
@@ -423,6 +499,8 @@ export class MediaIndicator extends PanelMenu.Button {
 
     destroy() {
         this._stopTick();
+        this._rollKey = null;
+        this._panelTitle.remove_all_transitions();
         this._state = null;
         this._cover = null;
         this._onOpen = null;

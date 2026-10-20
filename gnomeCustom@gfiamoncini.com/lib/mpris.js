@@ -155,6 +155,42 @@ export const MEDIA_ACTIONS = Object.freeze([
     {key: 'shortcut-previous', method: 'Previous', title: N_('Previous track')},
 ]);
 
+/** Atalhos de volume do reprodutor: `delta` é a fração somada (0,05 = 5%). */
+export const VOLUME_ACTIONS = Object.freeze([
+    {key: 'shortcut-volume-up', delta: 0.05, title: N_('Music volume up')},
+    {key: 'shortcut-volume-down', delta: -0.05, title: N_('Music volume down')},
+]);
+
+/**
+ * O fluxo de áudio é do reprodutor? O PipeWire não conhece o nome MPRIS: a
+ * ponte é o nome do aplicativo ("Spotify") ou o id dele ("com.spotify.Client").
+ *
+ * @param {{id?: string, identity?: string, desktopEntry?: string}} player
+ * @param {{name?: ?string, appId?: ?string}} stream
+ * @returns {boolean}
+ */
+export function streamBelongsTo(player, stream) {
+    const clean = text => String(text ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const name = clean(stream?.name);
+    const appId = clean(stream?.appId);
+    // `id` pode vir com sufixo de instância: 'firefox.instance_1_23'.
+    const keys = [String(player?.id ?? '').split('.')[0], player?.identity, player?.desktopEntry]
+        .map(clean).filter(key => key.length >= 3);
+    return keys.some(key => (name && (name === key || name.includes(key) || key.includes(name) && name.length >= 3)) ||
+        (appId && appId.includes(key)));
+}
+
+/**
+ * @param {number} current 0–1
+ * @param {number} delta
+ * @returns {number} 0–1, em passos exatos de `delta` (0,35, e não 0,3500001)
+ */
+export function stepVolume(current, delta) {
+    const base = Number.isFinite(current) ? current : 0;
+    const next = Math.round((base + delta) * 100) / 100;
+    return Math.min(1, Math.max(0, next));
+}
+
 /**
  * Player que recebe um comando. Primeiro o que está na barra; se nenhum está
  * (ex. o player parou), o primeiro permitido que estiver aberto — assim o atalho

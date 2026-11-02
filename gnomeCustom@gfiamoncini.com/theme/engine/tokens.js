@@ -53,6 +53,7 @@ export const SETTINGS_KEYS = Object.freeze({
     'panel-button-padding': 'panelButtonPadding',
     'panel-islands': 'panelIslands',
     'panel-island-gap': 'panelIslandGap',
+    'panel-edge-padding': 'panelEdgePadding',
     'cards-compact': 'cardsCompact',
     'panel-margin-top': 'marginTop',
     'panel-margin-bottom': 'marginBottom',
@@ -93,6 +94,7 @@ export const DEFAULT_CONFIG = Object.freeze({
     panelButtonPadding: 5,
     panelIslands: false,
     panelIslandGap: 6,
+    panelEdgePadding: 6,
     cardsCompact: false,
     marginTop: 1.5,
     marginBottom: 2.1,
@@ -174,6 +176,14 @@ export function buildTokens(config = {}) {
              */
             islands: Boolean(cfg.panelIslands) && floating && Boolean(panelBackground),
             islandGap: Math.min(60, Math.max(0, Math.round(cfg.panelIslandGap))),
+            /**
+             * Respiro entre as pontas da barra (ou de cada ilha) e os ícones da
+             * beira. Só na flutuante: colada, o botão do canto precisa encostar
+             * na borda da tela (Fitts).
+             */
+            edgePadding: floating
+                ? Math.min(32, Math.max(0, Math.round(cfg.panelEdgePadding ?? 0)))
+                : 0,
             /** Respiro lateral de cada botão; null deixa o do tema. */
             buttonPadding: cfg.panelButtonPadding >= 0
                 ? Math.min(16, Math.round(cfg.panelButtonPadding))

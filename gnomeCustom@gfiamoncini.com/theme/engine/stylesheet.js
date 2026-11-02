@@ -209,26 +209,63 @@ function panelBlock(panel) {
     if (panel.foreground)
         rules.push(`color: ${panel.foreground} !important;`);
 
-    if (!panel.islands)
-        return block('#panel', [...rules, ...surface]);
+    // O #panel ignora o próprio padding (o Panel aloca os três trechos a partir
+    // do x 0), então o respiro das pontas fica nas caixas da esquerda e da direita.
+    const edge = panel.edgePadding;
+    if (!panel.islands) {
+        const out = [block('#panel', [...rules, ...surface])];
+        if (edge > 0) {
+            out.push(block('#panel #panelLeft', [`padding-left: ${edge}px !important;`]));
+            out.push(block('#panel #panelRight', [`padding-right: ${edge}px !important;`]));
+        }
+        return out.join('\n\n');
+    }
 
     // Em ilhas (do WinDock, pedido de 2026-10-07): a faixa fica transparente e o
-    // fundo e a borda descem para os três trechos da barra. O vão entre o centro
-    // e os lados é o que sobrar da tela; `islandGap` só vale quando eles se
-    // encostam.
+    // fundo e a borda descem para os botões. Cada trecho da barra é ao menos uma
+    // ilha, e `panel/island-breaks` parte um trecho em mais (2026-11-02); quem
+    // diz a forma de cada botão é o serviço do painel, por classe. O vão entre o
+    // centro e os lados é o que sobrar da tela; `islandGap` vale entre ilhas
+    // vizinhas.
     rules.push('background-color: transparent !important;');
     rules.push('border: none !important;');
     rules.push('box-shadow: none !important;');
     const half = panel.islandGap / 2;
+    // Como no WinDock: a ponta da ilha é redonda de verdade em qualquer altura,
+    // metade da altura da barra, e não o raio da faixa.
+    const r = Math.max(4, Math.floor(panel.height / 2));
+    const fill = surface.filter(rule => rule.startsWith('background-color'));
+    const line = surface.find(rule => rule.startsWith('border:'))
+        ?.replace(/^border: /, '').replace(/ !important;$/, '') ?? 'none';
+    const sides = (left, right) => [
+        `border-top: ${line} !important;`,
+        `border-bottom: ${line} !important;`,
+        `border-left: ${left ? line : 'none'} !important;`,
+        `border-right: ${right ? line : 'none'} !important;`,
+    ];
+    const item = name => `#panel .gnomecustom-island-${name}`;
     return [
         block('#panel', rules),
         block('#panel #panelLeft, #panel #panelCenter, #panel #panelRight', [
-            ...surface,
-            `border-radius: ${panel.radius}px !important;`,
+            'background-color: transparent !important;',
+            'border: none !important;',
+            'padding: 0 !important;',
+            'spacing: 0 !important;',
         ]),
         block('#panel #panelLeft', [`margin-right: ${half}px !important;`]),
         block('#panel #panelCenter', [`margin: 0 ${half}px !important;`]),
         block('#panel #panelRight', [`margin-left: ${half}px !important;`]),
+        block([item('solo'), item('start'), item('middle'), item('end')].join(', '), fill),
+        block(item('solo'), [...sides(true, true), `border-radius: ${r}px !important;`,
+            `padding: 0 ${edge}px !important;`]),
+        block(item('start'), [...sides(true, false), `border-radius: ${r}px 0 0 ${r}px !important;`,
+            `padding: 0 0 0 ${edge}px !important;`]),
+        block(item('middle'), [...sides(false, false), 'border-radius: 0 !important;',
+            'padding: 0 !important;']),
+        block(item('end'), [...sides(false, true), `border-radius: 0 ${r}px ${r}px 0 !important;`,
+            `padding: 0 ${edge}px 0 0 !important;`]),
+        block(item('split-before'), [`margin-left: ${half}px !important;`]),
+        block(item('split-after'), [`margin-right: ${half}px !important;`]),
     ].join('\n\n');
 }
 

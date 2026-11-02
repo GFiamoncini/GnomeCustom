@@ -56,6 +56,7 @@ const {ClaudeUsageService} = await import(`${EXT}/services/ai/claude-usage.js`);
 const Removable = await import(`${EXT}/lib/removable.js`);
 const Updates = await import(`${EXT}/lib/updates.js`);
 const PanelOrder = await import(`${EXT}/lib/panel-order.js`);
+const PanelIslands = await import(`${EXT}/lib/panel-islands.js`);
 const CompactCards = await import(`${EXT}/lib/compact-cards.js`);
 const {AppThemeService} = await import(`${EXT}/services/system/app-theme.js`);
 const {AppTweaks} = await import(`${EXT}/services/system/app-tweaks.js`);
@@ -974,20 +975,78 @@ test('stylesheet: respiro dos botões da barra só quando pedido, e os nossos ac
 
 test('stylesheet: barra em ilhas move o fundo da faixa para os três trechos', () => {
     const css = config => generateStylesheet(buildTokens({palette: ['#602011'], ...config}));
-    const strip = css({});
+    const strip = css({panelEdgePadding: 0});
     assert(!strip.includes('#panelLeft'), 'desligado, a faixa continua inteira');
 
     const islands = css({panelIslands: true, panelIslandGap: 8});
     const panel = islands.match(/#panel \{[^}]*\}/)[0];
     assert(panel.includes('background-color: transparent !important;'), `a faixa deveria sumir: ${panel}`);
     assert(panel.includes('border: none !important;'), 'a borda da faixa deveria sumir');
-    const pills = islands.match(/#panel #panelLeft, #panel #panelCenter, #panel #panelRight \{[^}]*\}/)?.[0] ?? '';
-    assert(/background-color: rgba\(/.test(pills), `as ilhas levam o fundo: ${pills}`);
+    const boxes = islands.match(/#panel #panelLeft, #panel #panelCenter, #panel #panelRight \{[^}]*\}/)?.[0] ?? '';
+    assert(boxes.includes('background-color: transparent !important;'), `as caixas ficam sem fundo: ${boxes}`);
+    const pills = islands.match(/#panel \.gnomecustom-island-solo, [^{]*\{[^}]*\}/)?.[0] ?? '';
+    assert(/background-color: rgba\(/.test(pills), `os botões levam o fundo: ${pills}`);
+    const start = islands.match(/#panel \.gnomecustom-island-start \{[^}]*\}/)?.[0] ?? '';
+    assert(start.includes('border-right: none !important;'), `o começo não fecha à direita: ${start}`);
+    assert(/border-radius: \d+px 0 0 \d+px/.test(start), `o começo só arredonda à esquerda: ${start}`);
+    const round = css({panelIslands: true, panelHeight: 30, radius: 3})
+        .match(/#panel \.gnomecustom-island-solo \{[^}]*\}/)?.[0] ?? '';
+    assert(round.includes('border-radius: 15px !important;'), `ponta redonda, metade da altura: ${round}`);
+    assert(islands.includes('#panel .gnomecustom-island-split-after {\n    margin-right: 4px !important;'),
+        'entre duas ilhas do mesmo trecho, meio vão de cada lado');
     assert(islands.includes('#panel #panelCenter {\n    margin: 0 4px !important;'), 'meio vão de cada lado');
 
-    assert(!css({panelIslands: true, panelStyle: 'attached'}).includes('#panelLeft'), 'só na barra flutuante');
-    assert(!generateStylesheet(buildTokens({panelIslands: true, paletteFromWallpaper: false})).includes('#panelLeft'),
+    assert(!css({panelIslands: true, panelStyle: 'attached', panelEdgePadding: 0}).includes('#panelLeft'), 'só na barra flutuante');
+    assert(!generateStylesheet(buildTokens({panelIslands: true, paletteFromWallpaper: false})).includes('#panelCenter'),
         'sem cor resolvida não há ilhas');
+});
+
+test('stylesheet: respiro das pontas nas caixas dos lados, ou em cada ilha', () => {
+    const css = config => generateStylesheet(buildTokens({palette: ['#602011'], ...config}));
+    const strip = css({panelEdgePadding: 10});
+    assert(strip.includes('#panel #panelLeft {\n    padding-left: 10px !important;'), 'a ponta esquerda ganha respiro');
+    assert(strip.includes('#panel #panelRight {\n    padding-right: 10px !important;'), 'a ponta direita ganha respiro');
+    assert(!css({panelEdgePadding: 0}).includes('#panelLeft'), 'zero não gera regra');
+    assert(!css({panelEdgePadding: 10, panelStyle: 'attached'}).includes('#panelLeft'),
+        'colada, o canto continua encostando na borda');
+    assert(css({panelEdgePadding: 99}).includes('padding-left: 32px'), 'limite superior');
+
+    const solo = css({panelIslands: true, panelEdgePadding: 9})
+        .match(/#panel \.gnomecustom-island-solo \{[^}]*\}/)?.[0] ?? '';
+    assert(solo.includes('padding: 0 9px !important;'), `cada ilha com respiro nos dois lados: ${solo}`);
+});
+
+test('panel-islands: um trecho sem quebras é uma ilha só, e os escondidos não contam', () => {
+    const shapes = PanelIslands.islandShapes([
+        {id: 'sysmon', visible: true},
+        {id: 'updates', visible: false},
+        {id: 'keyboard', visible: true},
+        {id: 'quickSettings', visible: true},
+    ], []);
+    assertEqual(shapes.map(place => place?.shape ?? null), ['start', null, 'middle', 'end']);
+    assert(!shapes.some(place => place?.splitBefore || place?.splitAfter), 'sem quebra não há vão');
+});
+
+test('panel-islands: a quebra começa uma ilha nova no botão escolhido', () => {
+    const items = ['sysmon', 'aiusage', 'keyboard', 'quickSettings'].map(id => ({id, visible: true}));
+    const shapes = PanelIslands.islandShapes(items, ['keyboard', 'quickSettings']);
+    assertEqual(shapes.map(place => place.shape), ['start', 'end', 'solo', 'solo']);
+    assertEqual(shapes.map(place => [place.splitBefore, place.splitAfter]),
+        [[false, false], [false, true], [true, true], [true, false]]);
+
+    // Quebra no primeiro visível não cria ilha vazia antes dele.
+    const first = PanelIslands.islandShapes([{id: 'x', visible: false}, ...items], ['sysmon']);
+    assertEqual(first.map(place => place?.shape ?? null), [null, 'start', 'middle', 'middle', 'end']);
+    assert(!first[1].splitBefore, 'nada antes da primeira ilha');
+
+    // Um botão sem papel conhecido nunca quebra, e o que vem depois dele quebra.
+    const anon = PanelIslands.islandShapes([{id: null, visible: true}, {id: 'keyboard', visible: true}], ['keyboard']);
+    assertEqual(anon.map(place => place.shape), ['solo', 'solo']);
+});
+
+test('panel-islands: o id dos nossos botões é o do módulo; o do GNOME, o papel', () => {
+    assertEqual(PanelIslands.itemId('gnomecustom-sysmon'), 'sysmon');
+    assertEqual(PanelIslands.itemId('quickSettings'), 'quickSettings');
 });
 
 test('stylesheet: notificações compactas só quando pedidas, mesmo sem outra superfície', () => {
@@ -1225,7 +1284,7 @@ test('fase 7: SETTINGS_KEYS, PRESET_KEYS e o esquema concordam', () => {
     // A paleta é cache; notificações compactas são densidade, não aparência: um
     // preset não deve ligá-las nem desligá-las (2026-09-16). O respiro dos botões
     // é densidade do mesmo jeito (2026-10-07).
-    assertEqual(notInPresets, ['panel-button-padding', 'panel-islands', 'panel-island-gap', 'cards-compact', 'palette', 'compact-notifications', 'menus-compact', 'amoled-black'],
+    assertEqual(notInPresets, ['panel-button-padding', 'panel-islands', 'panel-island-gap', 'panel-edge-padding', 'cards-compact', 'palette', 'compact-notifications', 'menus-compact', 'amoled-black'],
         'fora dos presets:');
 
     // Toda chave de estilo do esquema é conhecida pelo engine, exceto as que decidem

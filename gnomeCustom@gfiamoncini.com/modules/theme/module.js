@@ -24,6 +24,9 @@ import {setCardScale} from '../../ui/common/card-scale.js';
 /** Chaves que, ao mudar, exigem regerar a folha: a lista única do engine. */
 const STYLE_KEYS = Object.keys(SETTINGS_KEYS);
 
+/** Em `…gnomecustom.panel`: onde começam as ilhas novas. */
+const BREAKS_KEY = 'island-breaks';
+
 /** Espera antes de regerar, para agrupar mudanças em rajada. */
 const REBUILD_DEBOUNCE_MS = 120;
 
@@ -37,7 +40,7 @@ export class ThemeModule extends Module {
     }
 
     static get requires() {
-        return ['shellTheme', 'wallpaper', 'style', 'appTheme'];
+        return ['shellTheme', 'wallpaper', 'style', 'appTheme', 'panel'];
     }
 
     enable() {
@@ -45,8 +48,13 @@ export class ThemeModule extends Module {
         this._wallpaper = this.service('wallpaper');
         this._style = this.service('style');
         this._appTheme = this.service('appTheme');
+        this._panel = this.service('panel');
         this._settings = this.settings.child('theme');
+        this._panelSettings = this.settings.child('panel');
         this._rebuildToken = undefined;
+
+        this.signals.connectSetting(this._panelSettings, BREAKS_KEY,
+            () => this._islands?.setBreaks(this._panelSettings.get_strv(BREAKS_KEY)));
 
         for (const key of STYLE_KEYS)
             this.signals.connectSetting(this._settings, key, () => this._scheduleRebuild());
@@ -68,6 +76,9 @@ export class ThemeModule extends Module {
     disable() {
         this._unsubscribePalette?.();
         this._unsubscribePalette = null;
+        this._syncIslands(false);
+        this._panel = null;
+        this._panelSettings = null;
 
         // O serviço pode continuar vivo para outros módulos, então é este
         // módulo que precisa desfazer o que aplicou.
@@ -111,6 +122,7 @@ export class ThemeModule extends Module {
 
         // Quem não se estiliza por CSS (o dock) recebe os tokens direto.
         this._style?.publish(tokens);
+        this._syncIslands(tokens.panel.enabled && tokens.panel.islands);
 
         this._theme?.apply(css)
             .then(changed => {
@@ -121,6 +133,20 @@ export class ThemeModule extends Module {
                 }
             })
             .catch(e => this.log.error('falha ao aplicar o estilo', e));
+    }
+
+    /**
+     * Em ilhas, o fundo mora nos botões, e cada um precisa saber a sua forma na
+     * ilha; quem marca é o serviço do painel, que acompanha a barra viva.
+     */
+    _syncIslands(on) {
+        if (!on) {
+            this._islands?.undo();
+            this._islands = null;
+            return;
+        }
+        if (!this._islands)
+            this._islands = this._panel?.trackIslands(this._panelSettings.get_strv(BREAKS_KEY)) ?? null;
     }
 
     /** Extrai a paleta quando ela é necessária e ainda não existe. */

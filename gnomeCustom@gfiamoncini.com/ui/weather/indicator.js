@@ -122,14 +122,14 @@ export class WeatherIndicator extends PanelMenu.Button {
             style_class: 'gnomecustom-weather-item',
         });
         const card = new St.BoxLayout({
-            vertical: true,
+            orientation: Clutter.Orientation.VERTICAL,
             x_expand: true,
             style_class: 'gnomecustom-weather-card',
         });
 
         // Cabeçalho: cidade e última atualização; à direita, atualizar.
         const header = new St.BoxLayout({style_class: 'gnomecustom-weather-header'});
-        const titles = new St.BoxLayout({vertical: true, x_expand: true});
+        const titles = new St.BoxLayout({orientation: Clutter.Orientation.VERTICAL, x_expand: true});
         this._title = new St.Label({style_class: 'gnomecustom-weather-title'});
         this._title.clutter_text.ellipsize = Pango.EllipsizeMode.END;
         this._updated = new St.Label({style_class: 'gnomecustom-weather-updated'});
@@ -147,7 +147,7 @@ export class WeatherIndicator extends PanelMenu.Button {
         this._now = new St.BoxLayout({style_class: 'gnomecustom-weather-now'});
         this._currentIcon = new St.Icon({style_class: 'gnomecustom-weather-now-icon',
             y_align: Clutter.ActorAlign.CENTER});
-        const nowText = new St.BoxLayout({vertical: true, y_align: Clutter.ActorAlign.CENTER});
+        const nowText = new St.BoxLayout({orientation: Clutter.Orientation.VERTICAL, y_align: Clutter.ActorAlign.CENTER});
         this._currentTemp = new St.Label({style_class: 'gnomecustom-weather-now-temp'});
         this._currentDescription = new St.Label({style_class: 'gnomecustom-weather-now-description'});
         nowText.add_child(this._currentTemp);
@@ -159,7 +159,7 @@ export class WeatherIndicator extends PanelMenu.Button {
         this._details.clutter_text.ellipsize = Pango.EllipsizeMode.END;
 
         this._hourly = new St.BoxLayout({style_class: 'gnomecustom-weather-hourly'});
-        this._daily = new St.BoxLayout({vertical: true, style_class: 'gnomecustom-weather-daily'});
+        this._daily = new St.BoxLayout({orientation: Clutter.Orientation.VERTICAL, style_class: 'gnomecustom-weather-daily'});
 
         this._message = new St.Label({style_class: 'gnomecustom-weather-message', visible: false});
         this._message.clutter_text.line_wrap = true;
@@ -204,7 +204,7 @@ export class WeatherIndicator extends PanelMenu.Button {
     }
 
     _hourCell(hour) {
-        const cell = new St.BoxLayout({vertical: true, x_expand: true,
+        const cell = new St.BoxLayout({orientation: Clutter.Orientation.VERTICAL, x_expand: true,
             style_class: 'gnomecustom-weather-hour'});
         cell.add_child(new St.Label({text: formatHour(hour.hour),
             style_class: 'gnomecustom-weather-hour-time', x_align: Clutter.ActorAlign.CENTER}));

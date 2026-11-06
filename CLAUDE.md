@@ -33,7 +33,7 @@ GJS 1.88, GTK 4.22, libadwaita 1.9, Wayland.
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | as decisões registradas (AD-1…AD-32) |
 | [docs/NOTAS-TECNICAS.md](docs/NOTAS-TECNICAS.md) | **pegadinhas de GJS, St, Mutter e ambiente** |
 | [docs/TESTE-ISOLADO.md](docs/TESTE-ISOLADO.md) | **como ensaiar sem tocar na sessão** |
-| [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md) | versões suportadas; §7 = auditoria do GNOME 50 |
+| [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md) | versões suportadas; §7 = auditoria do GNOME 50, §8 = do 51 |
 | [docs/LICENSE-AUDIT.md](docs/LICENSE-AUDIT.md) | §4: extensões cujo código **não pode** ser copiado |
 | [docs/BASELINE-CONFIG.md](docs/BASELINE-CONFIG.md) | a configuração do usuário, que é o alvo funcional |
 | [docs/USER-GUIDE.md](docs/USER-GUIDE.md), [docs/MIGRATION.md](docs/MIGRATION.md) | uso e troca das extensões |

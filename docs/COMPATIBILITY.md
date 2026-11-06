@@ -162,3 +162,57 @@ Rodado de verdade, depois da atualização. `metadata.json` declara `["49","50"]
 Ainda não exercitado no 50: visão geral (os 4 recursos), Bluetooth (rádio e conectar) e o
 PiP do Firefox.
 
+
+## 8. Fedora 45 / GNOME 51: auditoria por inspeção (2026-11-05)
+
+O Fedora 45 (lançado em 2026-11-03) traz **GNOME Shell 51.1, Mutter 51.1, GJS 1.90.1,
+GTK 4.24.1 e libadwaita 1.10.0** (`dnf --releasever=45 repoquery`). Mesmo método do §7: o
+JavaScript do Shell foi extraído da seção `.gresource.shell_js_resources` de `libshell-51.so`
+(163 arquivos) e comparado com o do 50.6 instalado (152), mais o `Meta-51.gir` e o
+`Clutter-51.gir` do `mutter-devel`. Referência das mudanças: o guia de porte em
+<https://gjs.guide/extensions/upgrading/gnome-shell-51.html>.
+
+Conferido:
+
+| Área | Situação no GNOME 51 |
+|---|---|
+| Módulos do Shell importados (17) e nomes importados | todos presentes |
+| Membros privados usados pela extensão (648 nomes `._x`) | nenhum sumiu do 50 para o 51 |
+| `osdWindow.js`, `workspace.js`, `workspaceThumbnail.js`, `overview.js`, `systemActions.js` | **idênticos** ao 50 |
+| `dash.js` | uma linha (`reactive: true` num botão interno) |
+| `PanelMenu.Button` | `_clickGesture` igual ao 50; o teclado passou a `Clutter.KeyController` (não afeta o desvio da mídia) |
+| `Background.BackgroundManager` | mesmos parâmetros do construtor (o carregamento por Glycin é interno) |
+| `Gio.DBusProxy.makeProxyWrapper()` | passou a devolver classe, mas `newAsync()` continua igual — o MPRIS só usa ele |
+| Indicador de volume do menu rápido | rolagem por `Clutter.ScrollController`; o `button-press-event` do clique do meio = mudo continua emitido (forma descontinuada, ainda funciona) |
+| `menu.close()` / `toggle()` sem argumento | continuam válidos (o novo formato é `close({animate})`) |
+| `disable()` assíncrono, `Shell.GLSLEffect`, `pointerWatcher`, `Clutter.get_default_backend()`, `maybeCollapseMessageGroupForEvent`, `St.ButtonMask.ONE…` | não usados |
+| Tipos e valores de `Meta.*`, `Clutter.*`, métodos de `Meta.Window` do mosaico | presentes, exceto o cursor (abaixo) |
+
+### O que **muda** no GNOME 51 e foi corrigido neste branch (`gnome-51`)
+
+1. **`vertical` saiu do St** (descontinuado desde o 48). No `St-51.typelib` o nome só
+   sobrevive como valor de `St.GradientType`. Eram 36 usos de `vertical: true/false` em 8
+   indicadores (`aiusage`, `bluetooth`, `media`, `panel/apps-menu`, `removable`, `sysmon`,
+   `updates`, `weather`); todos viraram `orientation: Clutter.Orientation.VERTICAL/HORIZONTAL`,
+   que vale do 49 em diante.
+2. **`Meta.Cursor` deixou de ser enumeração** e `global.display.set_cursor` não existe no
+   Mutter 51. A escolha de janela (`services/shell/session.js`) usa agora
+   `global.stage.set_cursor_type(Clutter.CursorType.*)`, como o próprio Shell faz desde o 50, e
+   mantém o caminho antigo quando o método não existe (49). Provavelmente o cursor em cruz já
+   não aparecia no 50 — o erro caía no `try` e virava só um `debug`.
+
+Descontinuado, mas ainda funcionando, e **não** mexido aqui: os 5 `connect('*-event')` diretos
+em atores (`services/shell/session.js`, `services/shell/quick-settings.js`,
+`ui/media/indicator.js`), que o 51 quer trocados por `Clutter.ClickGesture` /
+`MotionController`; e o novo `St.Settings.reducedMotion`, que o módulo de animação pode passar
+a respeitar além de `enable-animations`.
+
+### Conclusão
+
+**`"51"` declarado em 2026-11-05, antes de executar** — mesma exceção do §7, para a extensão
+subir no primeiro login do Fedora 45. `TESTED_MAJORS` continua `[49, 50]` até a execução
+real, então o log vai avisar "versão não testada" até lá. Pendente na primeira sessão do 51:
+`make check` (GJS 1.90, GTK 4.24, Adw 1.10), sessão real sem `JS ERROR`, os 8 cartões que
+tinham `vertical`, a mídia (MPRIS e o clique nos controles), o clique do meio no volume e a
+escolha de janela com o cursor em cruz. Caminho de volta: `gnome-extensions disable
+gnomeCustom@gfiamoncini.com` ou tirar o `"51"` do `metadata.json`.

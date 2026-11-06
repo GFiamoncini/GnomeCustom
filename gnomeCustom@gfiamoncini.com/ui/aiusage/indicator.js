@@ -128,12 +128,12 @@ export class AiUsageIndicator extends PanelMenu.Button {
             style_class: 'gnomecustom-aiusage-item',
         });
         const card = new St.BoxLayout({
-            vertical: true,
+            orientation: Clutter.Orientation.VERTICAL,
             x_expand: true,
             style_class: 'gnomecustom-aiusage-card',
         });
 
-        this._accounts = new St.BoxLayout({vertical: true, style_class: 'gnomecustom-aiusage-accounts'});
+        this._accounts = new St.BoxLayout({orientation: Clutter.Orientation.VERTICAL, style_class: 'gnomecustom-aiusage-accounts'});
 
         // Rodapé: a hora da leitura à esquerda; atualizar, configurações e a seta à direita.
         const footer = new St.BoxLayout({style_class: 'gnomecustom-aiusage-footer'});
@@ -163,7 +163,7 @@ export class AiUsageIndicator extends PanelMenu.Button {
     _accountBlock(account, first, expanded) {
         const _ = this._;
         const block = new St.BoxLayout({
-            vertical: true,
+            orientation: Clutter.Orientation.VERTICAL,
             style_class: first ? 'gnomecustom-aiusage-account first' : 'gnomecustom-aiusage-account',
         });
         const {title, line} = describeAccount(account.profile);
@@ -206,7 +206,7 @@ export class AiUsageIndicator extends PanelMenu.Button {
         }
 
         const gauges = new St.BoxLayout({
-            vertical: true,
+            orientation: Clutter.Orientation.VERTICAL,
             style_class: expanded ? 'gnomecustom-aiusage-gauges' : 'gnomecustom-aiusage-gauges indented',
         });
         for (const gauge of account.gauges)
@@ -237,7 +237,7 @@ export class AiUsageIndicator extends PanelMenu.Button {
     }
 
     _detailedGauge(gauge) {
-        const box = new St.BoxLayout({vertical: true, style_class: 'gnomecustom-aiusage-detail'});
+        const box = new St.BoxLayout({orientation: Clutter.Orientation.VERTICAL, style_class: 'gnomecustom-aiusage-detail'});
 
         const top = new St.BoxLayout();
         const name = new St.Label({

@@ -21,6 +21,7 @@
 | **Bordas/cantos por superfície; barra colada arredonda embaixo** | ✅ 2026-09-20 |
 | **Atalhos do mosaico revisados pelo WinDock** | ✅ 2026-09-20, editáveis nas prefs |
 | Fedora 44 / GNOME 50 | auditado por inspeção: COMPATIBILITY.md §7 |
+| Fedora 45 / GNOME 51 | auditado por inspeção e corrigido no branch `gnome-51`: COMPATIBILITY.md §8 |
 
 Os quatro bugs foram validados num Shell isolado com a configuração real (tema Orchis, atalhos
 do usuário) e gnome-text-editor de verdade. O do mosaico foi conferido também ao contrário:

@@ -109,7 +109,7 @@ export class AppsMenuButton extends PanelMenu.Button {
 
         if (this._layout === 'accordion') {
             this._categoriesBox = new St.BoxLayout({
-                vertical: true,
+                orientation: Clutter.Orientation.VERTICAL,
                 style_class: 'gnomecustom-apps-accordion',
                 width: ACCORDION_WIDTH,
             });
@@ -119,12 +119,12 @@ export class AppsMenuButton extends PanelMenu.Button {
             item.add_child(this._categoriesScroll);
         } else {
             this._categoriesBox = new St.BoxLayout({
-                vertical: true,
+                orientation: Clutter.Orientation.VERTICAL,
                 style_class: 'gnomecustom-apps-categories',
                 width: CATEGORY_WIDTH,
             });
             this._applicationsBox = new St.BoxLayout({
-                vertical: true,
+                orientation: Clutter.Orientation.VERTICAL,
                 style_class: 'gnomecustom-apps-list',
                 width: APPLICATION_WIDTH,
             });
@@ -133,7 +133,7 @@ export class AppsMenuButton extends PanelMenu.Button {
             this._applicationsScroll = this._wrapInScroll(this._applicationsBox);
 
             const columns = new St.BoxLayout({
-                vertical: false,
+                orientation: Clutter.Orientation.HORIZONTAL,
                 style_class: 'gnomecustom-apps-menu',
             });
             columns.add_child(this._categoriesScroll);
@@ -277,7 +277,7 @@ export class AppsMenuButton extends PanelMenu.Button {
             x_expand: true,
         });
 
-        const box = new St.BoxLayout({vertical: false, x_expand: true});
+        const box = new St.BoxLayout({orientation: Clutter.Orientation.HORIZONTAL, x_expand: true});
         box.add_child(new St.Label({
             text: category.directory.get_name(),
             y_align: Clutter.ActorAlign.CENTER,
@@ -297,7 +297,7 @@ export class AppsMenuButton extends PanelMenu.Button {
         header.set_child(box);
 
         const list = new St.BoxLayout({
-            vertical: true,
+            orientation: Clutter.Orientation.VERTICAL,
             style_class: 'gnomecustom-apps-sublist',
             visible: false,
         });
@@ -356,7 +356,7 @@ export class AppsMenuButton extends PanelMenu.Button {
             reactive: true,
         });
 
-        const box = new St.BoxLayout({vertical: false, x_expand: true});
+        const box = new St.BoxLayout({orientation: Clutter.Orientation.HORIZONTAL, x_expand: true});
         const icon = category.directory.get_icon();
         if (icon) {
             box.add_child(new St.Icon({
@@ -410,7 +410,7 @@ export class AppsMenuButton extends PanelMenu.Button {
             reactive: true,
         });
 
-        const box = new St.BoxLayout({vertical: false, x_expand: true});
+        const box = new St.BoxLayout({orientation: Clutter.Orientation.HORIZONTAL, x_expand: true});
         box.add_child(new St.Icon({
             gicon: app.get_icon(),
             icon_size: iconSize,

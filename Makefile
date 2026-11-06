@@ -72,7 +72,9 @@ locale: $(MO_FILES)
 
 $(SRC)/locale/%/LC_MESSAGES/$(GETTEXT).mo: po/%.po
 	@mkdir -p $(dir $@)
-	msgfmt --check -o $@ $<
+	@# Gera ao lado e move: o msgfmt do gettext 1.0 (Fedora 45) não consegue
+	@# sobrescrever um .mo existente na partição NTFS ("Operação não permitida").
+	msgfmt --check -o $@.tmp $< && mv -f $@.tmp $@
 	@echo 'tradução compilada: $*'
 
 # ------------------------------------------------------------ verificação

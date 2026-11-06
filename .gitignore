@@ -10,3 +10,5 @@ node_modules/
 
 # temporários do ntfs-3g (arquivo aberto e apagado)
 .fuse_hidden*
+# .mo intermediário do make locale (sobra se o msgfmt falhar)
+*.mo.tmp

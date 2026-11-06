@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2026 Gabriel Fiamoncini
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
-# `meson` não está instalado no ambiente-alvo (Fedora 43); o build é feito aqui
+# `meson` não está instalado no ambiente-alvo (Fedora 44/45); o build é feito aqui
 # (decisão AD-7 em docs/ARCHITECTURE.md).
 
 UUID          := gnomeCustom@gfiamoncini.com
@@ -73,8 +73,13 @@ locale: $(MO_FILES)
 $(SRC)/locale/%/LC_MESSAGES/$(GETTEXT).mo: po/%.po
 	@mkdir -p $(dir $@)
 	@# Gera ao lado e move: o msgfmt do gettext 1.0 (Fedora 45) não consegue
-	@# sobrescrever um .mo existente na partição NTFS ("Operação não permitida").
-	msgfmt --check -o $@.tmp $< && mv -f $@.tmp $@
+	@# sobrescrever um .mo existente na partição NTFS ("Operação não permitida"),
+	@# nem mesmo um .tmp que sobrou de uma execução que falhou — daí o rm antes.
+	@# Só troca o .mo se o conteúdo mudou: o Shell em uso o mantém aberto (instalação
+	@# por symlink) e cada troca deixa um .fuse_hidden* para trás no ntfs-3g.
+	@rm -f $@.tmp
+	msgfmt --check -o $@.tmp $<
+	@if cmp -s $@.tmp $@; then rm -f $@.tmp; touch $@; else mv -f $@.tmp $@; fi
 	@echo 'tradução compilada: $*'
 
 # ------------------------------------------------------------ verificação
@@ -166,6 +171,7 @@ install-copy: build
 	@mkdir -p $(TARGET)
 	@rm -rf $(TARGET)
 	@cp -r $(SRC) $(TARGET)
+	@find $(TARGET) \( -name '.fuse_hidden*' -o -name '*.tmp' \) -delete
 	@echo 'instalado em $(TARGET)'
 
 .PHONY: uninstall
@@ -239,5 +245,8 @@ update-po: pot
 .PHONY: clean
 clean:
 	rm -f $(SRC)/schemas/gschemas.compiled
-	rm -rf $(SRC)/locale $(BUILD)
+	@# O .mo é versionado (a instalação por symlink usa direto do repositório):
+	@# limpa só os restos, não a tradução.
+	find $(SRC)/locale \( -name '*.mo.tmp' -o -name '.fuse_hidden*' \) -delete 2>/dev/null || true
+	rm -rf $(BUILD)
 	@echo 'artefatos removidos'

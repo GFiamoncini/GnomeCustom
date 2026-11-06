@@ -114,10 +114,13 @@ schemas-check:
 # `node --check` só aceita ESM em arquivos .mjs, daí a cópia temporária.
 .PHONY: lint
 lint:
-	@fail=0; tmp=$$(mktemp -d); \
+	@command -v node >/dev/null || { echo 'node não encontrado: a verificação de sintaxe precisa dele (dnf install nodejs)'; exit 1; }; \
+	fail=0; tmp=$$(mktemp -d); \
 	for f in $(JS_FILES); do \
 		cp "$$f" "$$tmp/check.mjs"; \
-		if ! node --check "$$tmp/check.mjs" 2>&1 | sed "s|$$tmp/check.mjs|$$f|"; then fail=1; fi; \
+		if ! out=$$(node --check "$$tmp/check.mjs" 2>&1); then \
+			echo "$$out" | sed "s|$$tmp/check.mjs|$$f|"; fail=1; \
+		fi; \
 	done; \
 	rm -rf "$$tmp"; \
 	if [ $$fail -eq 0 ]; then echo "sintaxe OK em $(words $(JS_FILES)) arquivo(s)"; fi; \

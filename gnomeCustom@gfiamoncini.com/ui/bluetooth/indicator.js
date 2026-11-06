@@ -127,7 +127,7 @@ export class BluetoothIndicator extends PanelMenu.Button {
         });
 
         const card = new St.BoxLayout({
-            vertical: true,
+            orientation: Clutter.Orientation.VERTICAL,
             x_expand: true,
             style_class: 'gnomecustom-bt-card',
         });
@@ -157,10 +157,10 @@ export class BluetoothIndicator extends PanelMenu.Button {
             this._callbacks.onPower?.(!this._switch.state));
         header.add_child(this._switchButton);
 
-        this._list = new St.BoxLayout({vertical: true, style_class: 'gnomecustom-bt-list'});
+        this._list = new St.BoxLayout({orientation: Clutter.Orientation.VERTICAL, style_class: 'gnomecustom-bt-list'});
 
-        const footer = new St.BoxLayout({vertical: true, style_class: 'gnomecustom-bt-footer'});
-        this._links = new St.BoxLayout({vertical: true, x_expand: true});
+        const footer = new St.BoxLayout({orientation: Clutter.Orientation.VERTICAL, style_class: 'gnomecustom-bt-footer'});
+        this._links = new St.BoxLayout({orientation: Clutter.Orientation.VERTICAL, x_expand: true});
         this._showHidden = this._link('', () => this._callbacks.onShowHidden?.());
         this._links.add_child(this._showHidden);
         this._links.add_child(this._link(_('Bluetooth settings'), () => {

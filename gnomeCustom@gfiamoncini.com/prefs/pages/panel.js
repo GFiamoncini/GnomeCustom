@@ -7,9 +7,11 @@ import Gtk from 'gi://Gtk';
 
 import {MODULES_INFO} from '../../lib/modules-info.js';
 import {moveItem, normalizeOrder} from '../../lib/panel-order.js';
+import {KNOWN_ITEMS} from '../../lib/panel-islands.js';
 import {switchRow, spinRow, enumRow, infoRow, escapeMarkup} from '../widgets.js';
 
 const ORDER_KEY = 'button-order';
+const BREAKS_KEY = 'island-breaks';
 
 export class PanelPage extends Adw.PreferencesPage {
     static {
@@ -74,8 +76,55 @@ export class PanelPage extends Adw.PreferencesPage {
             settings,
             key: 'keyboard-uppercase',
         }));
+        keyboard.add(switchRow({
+            title: _('Always show'),
+            subtitle: _('Keeps the layout in the top bar even with a single layout'),
+            settings,
+            key: 'keyboard-always-visible',
+        }));
         this.add(keyboard);
         this.add(this._buildOrderGroup(settings, _));
+        this.add(this._buildIslandsGroup(settings, _));
+    }
+
+    /**
+     * Um interruptor por botão: ligado, a ilha nova começa nele. Os do GNOME
+     * entram com nome próprio; os nossos, com o nome do módulo.
+     */
+    _buildIslandsGroup(settings, _) {
+        const group = new Adw.PreferencesGroup({
+            title: _('Islands'),
+            description: _('With the top bar drawn as islands (Theme page), each switch starts a new island ' +
+                'at that button. A button hidden or alone at the start of its section changes nothing.'),
+        });
+        const titles = new Map(MODULES_INFO.map(info => [info.id, _(info.title)]));
+        titles.set('apps-menu', _('Applications menu'));
+        titles.set('dateMenu', _('Clock'));
+        titles.set('keyboard', _('Keyboard layout'));
+        titles.set('quickSettings', _('System menu'));
+
+        const switches = new Map();
+        for (const id of KNOWN_ITEMS) {
+            const row = new Adw.SwitchRow({title: titles.get(id) ?? id});
+            row.connect('notify::active', () => {
+                const breaks = settings.get_strv(BREAKS_KEY).filter(item => item !== id);
+                if (row.active)
+                    breaks.push(id);
+                if (breaks.join() !== settings.get_strv(BREAKS_KEY).join())
+                    settings.set_strv(BREAKS_KEY, breaks);
+            });
+            switches.set(id, row);
+            group.add(row);
+        }
+        const sync = () => {
+            const breaks = settings.get_strv(BREAKS_KEY);
+            for (const [id, row] of switches)
+                row.active = breaks.includes(id);
+        };
+        sync();
+        const id = settings.connect(`changed::${BREAKS_KEY}`, sync);
+        this.connect('destroy', () => settings.disconnect(id));
+        return group;
     }
 
     /**

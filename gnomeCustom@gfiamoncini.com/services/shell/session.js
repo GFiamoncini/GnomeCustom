@@ -276,9 +276,18 @@ class WindowPicker {
 
     _setCursor(picking) {
         try {
-            global.display.set_cursor(picking
-                ? Meta.Cursor.CROSSHAIR
-                : Meta.Cursor.DEFAULT);
+            // GNOME 50+: o cursor é do palco (Clutter.CursorType); o
+            // Meta.Cursor enumerado e o global.display.set_cursor não existem
+            // mais no Mutter 51. GNOME 49: global.display.set_cursor(Meta.Cursor).
+            if (global.stage.set_cursor_type) {
+                global.stage.set_cursor_type(picking
+                    ? Clutter.CursorType.CROSSHAIR
+                    : Clutter.CursorType.DEFAULT);
+            } else {
+                global.display.set_cursor(picking
+                    ? Meta.Cursor.CROSSHAIR
+                    : Meta.Cursor.DEFAULT);
+            }
         } catch (e) {
             this._logger.debug(`cursor não pôde ser alterado: ${e.message}`);
         }

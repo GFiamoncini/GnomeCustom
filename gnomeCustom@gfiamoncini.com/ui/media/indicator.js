@@ -329,7 +329,7 @@ export class MediaIndicator extends PanelMenu.Button {
         });
 
         this._card = new St.BoxLayout({
-            vertical: true,
+            orientation: Clutter.Orientation.VERTICAL,
             x_expand: true,
             style_class: 'gnomecustom-media-card',
         });
@@ -363,7 +363,7 @@ export class MediaIndicator extends PanelMenu.Button {
         this._coverArt.set_child(this._coverIcon);
 
         const info = new St.BoxLayout({
-            vertical: true,
+            orientation: Clutter.Orientation.VERTICAL,
             x_expand: true,
             y_align: Clutter.ActorAlign.CENTER,
             style_class: 'gnomecustom-media-info',
@@ -378,12 +378,12 @@ export class MediaIndicator extends PanelMenu.Button {
         body.add_child(info);
 
         this._progress = new St.BoxLayout({
-            vertical: true,
+            orientation: Clutter.Orientation.VERTICAL,
             style_class: 'gnomecustom-media-progress',
         });
         // Área de clique mais alta que o trilho de 4 px, para não exigir mira.
         this._seekArea = new St.BoxLayout({
-            vertical: true,
+            orientation: Clutter.Orientation.VERTICAL,
             reactive: true,
             track_hover: true,
             style_class: 'gnomecustom-media-seek',

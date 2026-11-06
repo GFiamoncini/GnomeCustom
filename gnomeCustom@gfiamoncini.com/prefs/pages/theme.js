@@ -256,6 +256,14 @@ export class ThemePage extends Adw.PreferencesPage {
             settings: this._settings,
             key: 'panel-islands',
         }));
+        group.add(spinRow({
+            title: _('Gap between islands'),
+            subtitle: _('In pixels, between two neighbouring islands'),
+            settings: this._settings,
+            key: 'panel-island-gap',
+            min: 0,
+            max: 60,
+        }));
         group.add(switchRow({
             title: _('Compact cards'),
             subtitle: _('Text, icons and spacing of the cards opened from the bar about 15% smaller. Nothing else changes.'),
@@ -272,7 +280,7 @@ export class ThemePage extends Adw.PreferencesPage {
         }));
         group.add(spinRow({
             title: _('Corner radius'),
-            subtitle: _('Attached to the edge, only the bottom corners are rounded'),
+            subtitle: _('Attached to the edge, only the bottom corners are rounded. Islands always have round ends'),
             settings: this._settings,
             key: 'panel-radius',
             min: 0,
@@ -295,6 +303,14 @@ export class ThemePage extends Adw.PreferencesPage {
             key: 'panel-button-padding',
             min: -1,
             max: 16,
+        }));
+        group.add(spinRow({
+            title: _('Space at the ends'),
+            subtitle: _('Between the ends of the bar, or of each island, and the outermost icons, in pixels. Floating style only'),
+            settings: this._settings,
+            key: 'panel-edge-padding',
+            min: 0,
+            max: 32,
         }));
         group.add(spinRow({
             title: _('Space above'),

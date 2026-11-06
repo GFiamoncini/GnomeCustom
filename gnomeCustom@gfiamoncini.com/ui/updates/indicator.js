@@ -129,7 +129,7 @@ export class UpdatesIndicator extends PanelMenu.Button {
             style_class: 'gnomecustom-updates-item',
         });
         const card = new St.BoxLayout({
-            vertical: true,
+            orientation: Clutter.Orientation.VERTICAL,
             x_expand: true,
             style_class: 'gnomecustom-updates-card',
         });
@@ -153,7 +153,7 @@ export class UpdatesIndicator extends PanelMenu.Button {
         header.add_child(this._when);
         card.add_child(header);
 
-        this._list = new St.BoxLayout({vertical: true, style_class: 'gnomecustom-updates-list'});
+        this._list = new St.BoxLayout({orientation: Clutter.Orientation.VERTICAL, style_class: 'gnomecustom-updates-list'});
         card.add_child(this._list);
 
         this._restart = this._wrapped(_('Updates downloaded: restart the computer to install them.'),

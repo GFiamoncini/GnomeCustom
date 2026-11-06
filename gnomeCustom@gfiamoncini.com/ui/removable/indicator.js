@@ -88,7 +88,7 @@ export class RemovableIndicator extends PanelMenu.Button {
             style_class: 'gnomecustom-removable-item',
         });
         const card = new St.BoxLayout({
-            vertical: true,
+            orientation: Clutter.Orientation.VERTICAL,
             x_expand: true,
             style_class: 'gnomecustom-removable-card',
         });
@@ -106,7 +106,7 @@ export class RemovableIndicator extends PanelMenu.Button {
         }));
         card.add_child(header);
 
-        this._list = new St.BoxLayout({vertical: true, style_class: 'gnomecustom-removable-list'});
+        this._list = new St.BoxLayout({orientation: Clutter.Orientation.VERTICAL, style_class: 'gnomecustom-removable-list'});
         card.add_child(this._list);
 
         this._message = this._label('', 'gnomecustom-removable-message');
@@ -123,7 +123,7 @@ export class RemovableIndicator extends PanelMenu.Button {
         const _ = this._;
         const row = new St.BoxLayout({style_class: 'gnomecustom-removable-row', reactive: true, track_hover: true});
 
-        const text = new St.BoxLayout({vertical: true, x_expand: true, y_align: Clutter.ActorAlign.CENTER});
+        const text = new St.BoxLayout({orientation: Clutter.Orientation.VERTICAL, x_expand: true, y_align: Clutter.ActorAlign.CENTER});
         text.add_child(this._label(device.name, 'gnomecustom-removable-name'));
         const detail = describeDevice(device, bytes => GLib.format_size(bytes));
         if (detail)

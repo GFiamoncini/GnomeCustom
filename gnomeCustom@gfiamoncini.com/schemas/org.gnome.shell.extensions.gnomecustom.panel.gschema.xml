@@ -43,12 +43,27 @@
       <description>Shows “BR” instead of “br” in the keyboard layout indicator
       of the top bar and in its menu.</description>
     </key>
+    <key name="keyboard-always-visible" type="b">
+      <default>true</default>
+      <summary>Always show the keyboard layout</summary>
+      <description>Keeps the layout indicator in the top bar even with a single
+      layout; GNOME hides it when there is nothing to switch to.</description>
+    </key>
     <key name="button-order" type="as">
       <default>['sysmon', 'updates', 'removable', 'aiusage', 'weather', 'media', 'bluetooth']</default>
       <summary>Order of the GnomeCustom buttons in the top bar</summary>
       <description>Module ids from left to right. The section of the bar (left,
       center or right) is chosen on the page of each module; this list decides
       who comes first among the buttons that share a section.</description>
+    </key>
+    <!-- Pedido de 2026-11-02: partir as ilhas da barra num botão escolhido. -->
+    <key name="island-breaks" type="as">
+      <default>[]</default>
+      <summary>Top bar buttons that start a new island</summary>
+      <description>With the top bar drawn as islands, each listed button
+      starts a new island within its section of the bar. Our buttons use the
+      module id (“sysmon”, “bluetooth”); GNOME ones, their status area role
+      (“keyboard”, “quickSettings”, “dateMenu”).</description>
     </key>
   </schema>
 </schemalist>

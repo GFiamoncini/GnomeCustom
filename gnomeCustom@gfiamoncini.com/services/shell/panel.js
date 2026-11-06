@@ -11,11 +11,16 @@
  *   // GNOME 49: Main.sessionMode.panel.left / .center / .right
  *   // GNOME 49: Main.panel._leftBox / ._centerBox / ._rightBox
  *   // GNOME 49: Main.panel.statusArea.keyboard._indicatorLabels / ._menuItems[i].indicator
+ *   // GNOME 50: Main.panel.statusArea.keyboard._getCurrentSource() / ._calculateSourceIndicatorIndex()
  *
  * **Ordem dos nossos botões** (`lib/panel-order.js`): quem entra com `slot` é
  * arrumado pela lista `panel/button-order`, e não pela ordem em que os módulos
  * ligaram. Na esquerda eles ficam depois dos itens nativos e dos menus; no
  * centro e na direita, antes (do relógio e do menu rápido).
+ *
+ * **Ilhas partidas** (`lib/panel-islands.js`): com a barra em ilhas, cada filho
+ * das três caixas recebe a classe da sua forma na ilha, e o CSS do tema desenha
+ * o fundo nos botões em vez de nas caixas.
  *
  * Tudo o que o serviço adiciona é registrado, e `destroy()` remove — a extensão
  * precisa devolver o painel ao estado anterior.
@@ -25,8 +30,12 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import {getInputSourceManager} from 'resource:///org/gnome/shell/ui/status/keyboard.js';
 
 import {sortByOrder} from '../../lib/panel-order.js';
+import {islandShapes, itemId} from '../../lib/panel-islands.js';
 
 const ORDER_KEY = 'button-order';
+const BOXES = ['left', 'center', 'right'];
+const ISLAND_CLASSES = ['solo', 'start', 'middle', 'end', 'split-before', 'split-after']
+    .map(name => `gnomecustom-island-${name}`);
 
 export class ShellPanelService {
     /**
@@ -97,6 +106,101 @@ export class ShellPanelService {
             // Um a um para o fim, na ordem, e eles terminam em ordem no fim.
             actor.set_child_at_index(container, box === 'left' ? actor.get_n_children() - 1 : index);
         });
+        this._islands?.refresh();
+    }
+
+    /**
+     * Marca cada botão da barra com a forma dele na ilha, e remarca quando um
+     * botão entra, sai, aparece ou some.
+     *
+     * @param {string[]} breaks ids em que começa uma ilha nova
+     * @returns {{setBreaks: Function, undo: Function}}
+     */
+    trackIslands(breaks) {
+        this._islands?.undo();
+
+        let current = [...breaks];
+        const watched = new Map();   // ator -> [ids de sinais]
+        const boxIds = [];
+
+        const roleOf = container => {
+            for (const [role, indicator] of Object.entries(Main.panel.statusArea)) {
+                if (indicator?.container === container)
+                    return role;
+            }
+            return null;
+        };
+        const watch = actor => {
+            if (!actor || watched.has(actor))
+                return;
+            watched.set(actor, [
+                actor.connect('notify::visible', () => refresh()),
+                actor.connect('destroy', () => watched.delete(actor)),
+            ]);
+        };
+        const refresh = () => {
+            for (const box of BOXES) {
+                const actor = Main.panel[`_${box}Box`];
+                const children = actor?.get_children() ?? [];
+                const items = children.map(child => {
+                    watch(child);
+                    watch(child.child);
+                    const role = roleOf(child);
+                    return {
+                        id: role ? itemId(role) : null,
+                        visible: child.visible && (child.child?.visible ?? true),
+                    };
+                });
+                islandShapes(items, current).forEach((place, i) => {
+                    const child = children[i];
+                    for (const name of ISLAND_CLASSES)
+                        child.remove_style_class_name(name);
+                    if (!place)
+                        return;
+                    child.add_style_class_name(`gnomecustom-island-${place.shape}`);
+                    if (place.splitBefore)
+                        child.add_style_class_name('gnomecustom-island-split-before');
+                    if (place.splitAfter)
+                        child.add_style_class_name('gnomecustom-island-split-after');
+                });
+            }
+        };
+
+        for (const box of BOXES) {
+            const actor = Main.panel[`_${box}Box`];
+            if (!actor)
+                continue;
+            boxIds.push([actor, actor.connect('child-added', () => refresh())]);
+            boxIds.push([actor, actor.connect('child-removed', () => refresh())]);
+        }
+        refresh();
+
+        const islands = {
+            refresh,
+            setBreaks: list => {
+                current = [...list];
+                refresh();
+            },
+            undo: () => {
+                for (const [actor, id] of boxIds)
+                    actor.disconnect(id);
+                for (const [actor, ids] of watched) {
+                    for (const id of ids)
+                        actor.disconnect(id);
+                }
+                watched.clear();
+                for (const box of BOXES) {
+                    for (const child of Main.panel[`_${box}Box`]?.get_children() ?? []) {
+                        for (const name of ISLAND_CLASSES)
+                            child.remove_style_class_name(name);
+                    }
+                }
+                if (this._islands === islands)
+                    this._islands = null;
+            },
+        };
+        this._islands = islands;
+        return islands;
     }
 
     /**
@@ -226,12 +330,61 @@ export class ShellPanelService {
         };
     }
 
+    /**
+     * Mantém a sigla do teclado na barra mesmo com um layout só. O Shell esconde
+     * o indicador quando há menos de dois; o nosso observador entra depois do
+     * dele e mostra de novo o indicador e o rótulo do layout atual.
+     *
+     * @returns {Function} desfaz: volta à regra do Shell
+     */
+    keepKeyboardIndicator() {
+        const apply = () => {
+            const indicator = Main.panel.statusArea.keyboard;
+            if (!indicator || indicator.visible)
+                return;
+            const source = indicator._getCurrentSource?.();
+            if (!source)
+                return;
+            const index = indicator._calculateSourceIndicatorIndex?.(source) ?? source.index;
+            const label = indicator._indicatorLabels?.[index];
+            if (!label)
+                return;
+            indicator.show();
+            label.show();
+        };
+
+        let manager = null;
+        let ids = [];
+        try {
+            manager = getInputSourceManager();
+            ids = ['sources-changed', 'current-source-changed']
+                .map(signal => manager.connect(signal, apply));
+            apply();
+        } catch (e) {
+            this._logger.warn(`sigla do teclado não mantida: ${e.message}`);
+        }
+
+        return () => {
+            for (const id of ids)
+                manager.disconnect(id);
+            // Com um layout só, o Shell não mostraria o indicador.
+            try {
+                const indicator = Main.panel.statusArea.keyboard;
+                if (indicator && Object.keys(indicator._inputSources ?? {}).length < 2)
+                    indicator.hide();
+            } catch (e) {
+                this._logger.debug(`indicador do teclado já foi destruído: ${e.message}`);
+            }
+        };
+    }
+
     /** @returns {?object} indicador nativo, quando existe neste modo de sessão */
     lookupNative(name) {
         return Main.panel.statusArea[name] ?? null;
     }
 
     destroy() {
+        this._islands?.undo();
         for (const role of [...this._added.keys()])
             this.remove(role);
         for (const name of [...this._hiddenActors.keys()])

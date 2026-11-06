@@ -56,6 +56,14 @@
       <range min="0" max="60"/>
       <summary>Smallest gap between two islands, in pixels</summary>
     </key>
+    <!-- Pedido de 2026-11-02: os ícones das pontas colavam na curva da barra. -->
+    <key name="panel-edge-padding" type="u">
+      <default>6</default>
+      <range min="0" max="32"/>
+      <summary>Space between the ends of the top bar and the outermost icons, in pixels</summary>
+      <description>Only with the floating style. With islands, it applies to
+      both ends of each island.</description>
+    </key>
     <key name="cards-compact" type="b">
       <default>false</default>
       <summary>Compact cards</summary>

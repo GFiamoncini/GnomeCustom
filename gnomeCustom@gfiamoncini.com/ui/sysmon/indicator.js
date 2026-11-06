@@ -151,7 +151,7 @@ export class SysmonIndicator extends PanelMenu.Button {
             style_class: 'gnomecustom-sysmon-item',
         });
         const card = new St.BoxLayout({
-            vertical: true,
+            orientation: Clutter.Orientation.VERTICAL,
             x_expand: true,
             style_class: 'gnomecustom-sysmon-card',
         });
@@ -198,7 +198,7 @@ export class SysmonIndicator extends PanelMenu.Button {
     }
 
     _section(card, title, icon, series, {shared = false, tone} = {}) {
-        const section = new St.BoxLayout({vertical: true, style_class: 'gnomecustom-sysmon-section'});
+        const section = new St.BoxLayout({orientation: Clutter.Orientation.VERTICAL, style_class: 'gnomecustom-sysmon-section'});
 
         const head = new St.BoxLayout({style_class: 'gnomecustom-sysmon-section-head'});
         head.add_child(new St.Icon({

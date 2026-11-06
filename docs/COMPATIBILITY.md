@@ -216,3 +216,28 @@ real, então o log vai avisar "versão não testada" até lá. Pendente na prime
 tinham `vertical`, a mídia (MPRIS e o clique nos controles), o clique do meio no volume e a
 escolha de janela com o cursor em cruz. Caminho de volta: `gnome-extensions disable
 gnomeCustom@gfiamoncini.com` ou tirar o `"51"` do `metadata.json`.
+
+### Execução no GNOME 51.1 (Fedora 45, 2026-11-05)
+
+Rodado de verdade, depois da atualização (GJS 1.90.1, GTK 4.24.1, Adw 1.10.0, Mutter 51.1).
+
+- Sessão real: extensão `ACTIVE`, **zero JS ERROR**. O único erro no primeiro login não era do
+  51: o Fedora 45 passou a montar a partição NTFS (fstab com tipo `auto`) pelo driver `ntfs3`
+  do kernel, com tudo `root 755`, e a gravação do snippet do Obsidian falhou por permissão.
+  Corrigido no `/etc/fstab` fixando `ntfs-3g` (ver §1 das notas técnicas).
+- `make test`: 231 testes do núcleo, sem falha; `prefs-smoke` passou.
+- Sessão isolada headless com os 17 módulos e `strict-cleanup-check`: `ACTIVE` antes e depois
+  do ciclo desligar/religar, zero JS ERROR. Os 26 `Gjs-CRITICAL` de `services/shell/panel.js:144`
+  acontecem no *desligamento* do Shell de teste e são idênticos no 50 (anteriores a este branch).
+- A mensagem de versão não testada tinha "(testadas: 49)" fixo no texto; agora lista
+  `TESTED_MAJORS`.
+- `make lint` nunca falhava: o `if ! node --check … | sed` via o status do `sed`. Agora exige o
+  `node` e propaga a falha. O `node` estava fora do sistema (os pacotes `nodejs*` do Fedora 43
+  bloqueavam a atualização por conflito de arquivos com os `nodejs22-*` do 45 e foram removidos).
+
+- Com o `node` 22.23.1 reinstalado, `make check` completo passou (sintaxe dos 133 arquivos,
+  esquema, 231 testes, preferências); um arquivo com erro de sintaxe proposital fez o lint falhar.
+- Conferido pelo usuário na sessão real: os 8 cartões que tinham `vertical` e o menu de apps, a
+  mídia, o clique do meio no volume e o cursor em cruz da escolha de janela.
+
+`TESTED_MAJORS` passou a `[49, 50, 51]`.

@@ -282,9 +282,10 @@ test('compatibility: versão sem minor e versão inválida', () => {
 });
 
 test('compatibility: versão não testada é sinalizada', () => {
-    const compat = new Compatibility('51.0');
-    assert(!compat.isTested, '51 não foi testada');
-    assertEqual(compat.missingRequirements, [], 'requisitos ainda presentes em 51:');
+    const compat = new Compatibility('52.0');
+    assert(!compat.isTested, '52 não foi testada');
+    assertEqual(compat.missingRequirements, [], 'requisitos ainda presentes em 52:');
+    assert(new Compatibility('51.1').isTested, '51 deveria ser tida como testada');
 });
 
 test('compatibility: capacidades', () => {

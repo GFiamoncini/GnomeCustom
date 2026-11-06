@@ -13,7 +13,7 @@
  */
 
 import {Logger} from './logger.js';
-import {Compatibility} from './compatibility.js';
+import {Compatibility, TESTED_MAJORS} from './compatibility.js';
 import {SettingsManager} from './settings.js';
 import {ServiceRegistry} from './services.js';
 import {Context} from './context.js';
@@ -85,7 +85,7 @@ export class Lifecycle {
         this._logger.info(`iniciando ${this._compat.describe()}`);
         if (!this._compat.isTested) {
             this._logger.warn(
-                `esta versão do GNOME Shell não foi testada com o GnomeCustom (testadas: 49)`);
+                `esta versão do GNOME Shell não foi testada com o GnomeCustom (testadas: ${TESTED_MAJORS.join(', ')})`);
         }
 
         this._services = new ServiceRegistry({

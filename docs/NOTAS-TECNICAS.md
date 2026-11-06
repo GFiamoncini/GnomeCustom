@@ -8,7 +8,12 @@ serem redescobertos; o ensaio que expôs a maioria delas está em
 ## 1. Ambiente: repositório em partição NTFS
 
 `/mnt/3C0CEC910CEC478A` é `fuseblk` (ntfs-3g) montado com `user_id=0`, então todo
-arquivo aparece como `root:root 0777`:
+arquivo aparece como `root:root 0777`.
+
+**O tipo no `/etc/fstab` precisa ser `ntfs-3g`, não `auto`.** No Fedora 45 o `auto` passou a
+escolher o driver `ntfs3` do kernel, que mostra tudo como `root 755`: o usuário perde a escrita
+na partição inteira (git, Obsidian, a própria extensão gravando o snippet). Corrigido em
+2026-11-05; a cópia anterior ficou em `/etc/fstab.bak-f45`. Consequências do ntfs-3g:
 
 - o git recusa operar ("detected dubious ownership") — é preciso
   `git config --global --add safe.directory <caminho>`, **um por repositório**

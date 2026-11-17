@@ -17,7 +17,8 @@
  *   // Meta.Window: shown, unmanaged, workspace-changed, notify::minimized,
  *   //   notify::fullscreen, notify::maximized-horizontally/-vertically,
  *   //   notify::title, notify::wm-class, set_unmaximize_flags + unmaximize()
- *   //   (assinatura nova do 49), move_frame, move_resize_frame
+ *   //   (assinatura nova do 49), move_frame, move_resize_frame, raise,
+ *   //   make_above, unmake_above
  */
 
 import Meta from 'gi://Meta';
@@ -179,6 +180,10 @@ export class WindowsService {
 
     activate(id) {
         this._readyWindow(id)?.activate(global.get_current_time());
+    }
+
+    raise(id) {
+        this._readyWindow(id)?.raise();
     }
 
     /** @param {number} id @returns {boolean} */

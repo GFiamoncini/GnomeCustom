@@ -2231,6 +2231,68 @@ test('controlador: quem flutua sozinho (diálogo, regra) também fica no topo, c
     assert(!ws.above.has(prefs), 'parar desfaz tudo');
 });
 
+test('controlador: janela nova abre na frente das flutuantes "no topo", que voltam no próximo foco', () => {
+    const {ws, controller} = makeTiling();
+    const editor = ws.add();
+    const calc = ws.add({wmClass: 'org.gnome.Calculator'});
+    const pinned = ws.add({type: 'dialog'});
+    controller.setConfig({rules: [{wmClass: 'org.gnome.Calculator', mode: 'float'}]});
+    controller.start();
+    controller.render();
+    ws.focused = pinned;
+    controller.run({type: 'above-toggle'});
+    controller.run({type: 'above-toggle'});   // diálogo já subia sozinho: o 1º solta
+    assert(ws.above.has(calc) && ws.above.has(pinned), 'flutuantes no topo');
+
+    // O foco chega antes da janela ficar pronta (ver services/shell/windows.js).
+    const fresh = ws.add();
+    ws.focused = fresh;
+    controller.focusChanged(fresh);
+    controller.windowAdded(fresh);
+    assert(controller.isTiled(fresh), 'a nova vai para a árvore');
+    assert(!ws.above.has(calc), 'a flutuante cede o topo');
+    assert(ws.above.has(pinned), 'o que o usuário prendeu com o Super+T fica');
+    assertEqual(ws.raised.at(-1), fresh, 'e a nova vem para a frente:');
+
+    ws.set(calc, {title: 'outro título'});
+    controller.windowChanged(calc, 'title');
+    assert(!ws.above.has(calc), 'trocar o título não a devolve por cima da nova');
+
+    controller.focusChanged(fresh);
+    assert(!ws.above.has(calc), 'foco de novo na nova: nada muda');
+
+    ws.focused = editor;
+    controller.focusChanged(editor);
+    assert(ws.above.has(calc), 'o foco saiu da nova: volta para o topo');
+
+    // Janela nova que flutua ela mesma já sobe: ninguém precisa ceder.
+    const dialog = ws.add({type: 'dialog'});
+    controller.windowAdded(dialog);
+    assert(ws.above.has(dialog) && ws.above.has(calc), 'diálogo novo sobe junto, sem rebaixar ninguém');
+
+    controller.setConfig({floatOnTop: false});
+    const other = ws.add();
+    controller.windowAdded(other);
+    controller.focusChanged(editor);
+    assert(!ws.above.has(calc), 'sem a opção, nada volta ao topo');
+
+    controller.stop();
+    assert(!ws.above.has(pinned), 'parar solta até o que foi preso');
+});
+
+test('controlador: Super+T numa janela do tiling não cai com uma troca de título', () => {
+    const {ws, controller} = makeTiling();
+    const a = ws.add();
+    controller.start();
+    controller.render();
+    ws.focused = a;
+    controller.run({type: 'above-toggle'});
+    controller.windowChanged(a, 'title');
+    assert(ws.above.has(a), 'continua presa acima');
+    controller.run({type: 'above-toggle'});
+    assert(!ws.above.has(a), 'e o atalho solta');
+});
+
 test('controlador: foco por direção na árvore, entre monitores e a partir de flutuante', () => {
     const {ws, controller} = makeTiling({monitors: [{width: 1600, height: 900}, {width: 1280, height: 720}]});
     const a = ws.add();

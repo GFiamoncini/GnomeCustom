@@ -496,3 +496,19 @@ do WinDock" (lido até o 965a8cd, 2026-10-30).
   coluna inteira (no St a margem tira a área de clique).
 - Conferido no Shell isolado com a configuração dele: ilhas em logo | Aplicações | IA |
   sistema | EN | menu do sistema, e de volta à faixa; 0 JS ERROR.
+
+## Janela nova abria atrás das flutuantes (2026-11-16)
+
+Relato: com janelas flutuando, toda janela nova abria atrás delas.
+
+- Causa: com `float-always-on-top` (ligado, como no Forge dele), as flutuantes vão para a
+  camada "acima" do Mutter, e nenhuma janela de fora dessa camada passa por cima — nem a
+  nova, mesmo com o foco.
+- Agora, quando entra uma janela que não sobe sozinha, as flutuantes que **nós** subimos
+  descem da camada (`TilingController._yieldTop`) e a nova vem para a frente
+  (`raise`, novo no adaptador). Voltam para o topo no primeiro foco em outra janela
+  (`_restoreTop`); trocas de título no meio do caminho não as devolvem antes disso.
+- O que o usuário prendeu com o Super+T fica onde está. De carona: o Super+T numa janela
+  do mosaico caía na primeira troca de título (o `_sync` desfazia o "no topo").
+- Conferido no Shell isolado (calculadora por regra + editor novo): sem a correção a
+  calculadora fica por cima do editor; com ela, o editor abre na frente.

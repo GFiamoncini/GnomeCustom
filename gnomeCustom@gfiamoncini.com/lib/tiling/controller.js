@@ -21,6 +21,7 @@
  *   moveResize(id, rect)  → põe a janela no retângulo (desmaximizando antes)
  *   activate(id)          → foca e traz para frente
  *   setAbove(id, above)   → "sempre no topo"
+ *   raise(id)             → traz para frente, sem mexer no foco
  *   focusedId()           → id da janela focada, ou null
  *   pointer()             → [x, y]
  *
@@ -103,6 +104,9 @@ export class TilingController {
         this._tree = new TilingTree();
         this._floating = new Set();      // flutuação manual: só em memória (sem wmId)
         this._raised = new Set();        // janelas em que *nós* ligamos "sempre no topo"
+        this._pinned = new Set();        // ... e as que o usuário prendeu (Super+T)
+        this._yielded = new Set();       // flutuantes que cederam o topo a uma janela nova
+        this._yieldedTo = null;          // ... e a janela nova
         this._recent = [];
         this._layouts = new Map();       // chave → último layout
         this._lastRects = new Map();     // id → último retângulo do layout
@@ -216,6 +220,9 @@ export class TilingController {
             }
         }
         this._raised.clear();
+        this._pinned.clear();
+        this._yielded.clear();
+        this._yieldedTo = null;
         this._tree = new TilingTree();
         this._floating.clear();
         this._layouts.clear();
@@ -254,12 +261,17 @@ export class TilingController {
         if (!this._running)
             return;
         this._sync(id, {anchor: 'focus'});
+        this._yieldTop(id);
         this._requestRender();
     }
 
     windowRemoved(id) {
         this._floating.delete(id);
         this._raised.delete(id);
+        this._pinned.delete(id);
+        this._yielded.delete(id);
+        if (this._yieldedTo === id)
+            this._yieldedTo = null;
         this._lastRects.delete(id);
         this._requested.delete(id);
         this._recent = this._recent.filter(other => other !== id);
@@ -288,8 +300,11 @@ export class TilingController {
     }
 
     focusChanged(id) {
-        if (id !== null && id !== undefined)
-            this._touch(id);
+        if (id === null || id === undefined)
+            return;
+        this._touch(id);
+        if (this._running && id !== this._yieldedTo)
+            this._restoreTop();
     }
 
     workspaceSwitched() {
@@ -481,13 +496,20 @@ export class TilingController {
             // Como no Forge, "flutuantes sempre no topo" vale também para quem flutua
             // sozinho (diálogos, janelas das regras) — não só para o Super+C. Sem isso,
             // clicar noutra janela escondia as preferências atrás dela (2026-09-17).
+            // Quem cedeu o topo a uma janela nova só volta no próximo foco: uma troca
+            // de título no meio do caminho não pode devolvê-la por cima da nova.
+            if (this._yielded.has(id) || this._pinned.has(id))
+                return;
             if (this._floating.has(id) || this._floatsOnItsOwn(desc))
                 this._setRaised(id, this._config.floatOnTop);
             return;
         }
 
-        // Voltou para o tiling (ex. a regra saiu): desfaz o "no topo" que ligamos.
-        this._setRaised(id, false);
+        // Voltou para o tiling (ex. a regra saiu): desfaz o "no topo" que ligamos —
+        // menos o que o usuário prendeu com o Super+T.
+        this._yielded.delete(id);
+        if (!this._pinned.has(id))
+            this._setRaised(id, false);
 
         const key = keyFor(desc);
         if (this._tree.has(id)) {
@@ -599,6 +621,9 @@ export class TilingController {
         for (const id of this._raised)
             this._win.setAbove(id, false);
         this._raised.clear();
+        this._pinned.clear();
+        this._yielded.clear();
+        this._yieldedTo = null;
         this._floating.clear();
     }
 
@@ -712,6 +737,8 @@ export class TilingController {
 
         if (this._floating.has(id)) {
             this._floating.delete(id);
+            this._pinned.delete(id);
+            this._yielded.delete(id);
             this._setRaised(id, false);
             this._sync(id, {anchor: 'focus'});
             this._requestRender();
@@ -734,7 +761,13 @@ export class TilingController {
 
     /** Prende (ou solta) a janela acima das outras, como o Alt+T do WinDock. */
     _toggleAbove(id) {
-        this._setRaised(id, !this._win.isAbove(id));
+        const above = !this._win.isAbove(id);
+        this._yielded.delete(id);
+        if (above)
+            this._pinned.add(id);
+        else
+            this._pinned.delete(id);
+        this._setRaised(id, above);
         return true;
     }
 
@@ -886,5 +919,39 @@ export class TilingController {
             this._win.setAbove(id, false);
             this._raised.delete(id);
         }
+    }
+
+    /**
+     * Janela nova abre na frente. O "sempre no topo" das flutuantes é a camada
+     * acima do Mutter, e nada de fora dela passa por cima — a janela nova nascia
+     * atrás (2026-11-16). Então as flutuantes que nós subimos descem enquanto a
+     * nova estiver em foco; o que o usuário prendeu com o Super+T fica.
+     */
+    _yieldTop(id) {
+        if (!this._config.floatOnTop || this._raised.has(id) || !this._win.describe(id))
+            return;
+
+        const yielding = [...this._raised].filter(other => other !== id && !this._pinned.has(other));
+        if (yielding.length === 0)
+            return;
+
+        for (const other of yielding) {
+            this._setRaised(other, false);
+            this._yielded.add(other);
+        }
+        this._yieldedTo = id;
+        // Fora da camada de cima, a flutuante ainda pode estar à frente na pilha.
+        this._win.raise(id);
+    }
+
+    /** O foco saiu da janela nova: as flutuantes voltam para o topo. */
+    _restoreTop() {
+        if (this._yielded.size === 0)
+            return;
+        const yielded = [...this._yielded];
+        this._yielded.clear();
+        this._yieldedTo = null;
+        for (const id of yielded)
+            this._sync(id, {anchor: 'end'});
     }
 }

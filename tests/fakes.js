@@ -200,6 +200,7 @@ export class FakeWindowSystem {
         this.pending = new Map();
         this.deferConfigure = false;
         this.above = new Set();
+        this.raised = [];
         this._nextId = 100;
     }
 
@@ -301,6 +302,11 @@ export class FakeWindowSystem {
 
     activate(id) {
         this.focused = id;
+        this.raised.push(id);
+    }
+
+    raise(id) {
+        this.raised.push(id);
     }
 
     isAbove(id) {

@@ -26,7 +26,7 @@ import Soup from 'gi://Soup?version=3.0';
 import {
     DEFAULT_ACCOUNT_ID, FRESH_SECONDS, OAUTH_BETA, State, USAGE_URL,
     accountId, chooseProfiles, identityPaths, parseCredentials, parseIdentity,
-    parseUsage, retryAfterSeconds, sortAccountIds,
+    currentGauges, parseUsage, retryAfterSeconds, sortAccountIds,
 } from '../../lib/ai-usage.js';
 
 /**
@@ -159,7 +159,10 @@ export class ClaudeUsageService {
      */
     async read(chosen = [], {force = false} = {}) {
         const profiles = chooseProfiles(this.profiles(), chosen);
-        return Promise.all(profiles.map(p => this._cached(p, force)));
+        const accounts = await Promise.all(profiles.map(p => this._cached(p, force)));
+        // A leitura guardada fica como veio; quem lê recebe o que vale agora.
+        const now = this._now();
+        return accounts.map(account => ({...account, gauges: currentGauges(account.gauges, now)}));
     }
 
     /**

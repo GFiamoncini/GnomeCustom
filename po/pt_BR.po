@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnomeCustom 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/gfiamoncini/gnomecustom/issues\n"
-"POT-Creation-Date: 2026-11-02 14:43-0300\n"
+"POT-Creation-Date: 2026-11-05 22:22-0300\n"
 "PO-Revision-Date: 2026-09-09 23:30-0300\n"
 "Last-Translator: Gabriel Fiamoncini\n"
 "Language-Team: português do Brasil\n"
@@ -3516,17 +3516,23 @@ msgstr "5 horas"
 msgid "7 days"
 msgstr "7 dias"
 
-#: gnomeCustom@gfiamoncini.com/lib/ai-usage.js:294
-msgid "resets now"
-msgstr "zera agora"
+#: gnomeCustom@gfiamoncini.com/lib/ai-usage.js:313
+#, javascript-format
+msgid "reset at %s"
+msgstr "zerou às %s"
 
-#: gnomeCustom@gfiamoncini.com/lib/ai-usage.js:301
-#: gnomeCustom@gfiamoncini.com/lib/ai-usage.js:307
+#: gnomeCustom@gfiamoncini.com/lib/ai-usage.js:314
+#, javascript-format
+msgid "reset on %s at %s"
+msgstr "zerou em %s, às %s"
+
+#: gnomeCustom@gfiamoncini.com/lib/ai-usage.js:323
+#: gnomeCustom@gfiamoncini.com/lib/ai-usage.js:329
 #, javascript-format
 msgid "resets in %s"
 msgstr "zera em %s"
 
-#: gnomeCustom@gfiamoncini.com/lib/ai-usage.js:306
+#: gnomeCustom@gfiamoncini.com/lib/ai-usage.js:328
 #, javascript-format
 msgid "resets in %s, at %s"
 msgstr "zera em %s, às %s"
@@ -4089,6 +4095,9 @@ msgstr "Os gráficos guardam as últimas 60 leituras."
 #: gnomeCustom@gfiamoncini.com/schemas/org.gnome.shell.extensions.gnomecustom.sysmon.gschema.xml:26
 msgid "Top bar section for the system monitor button"
 msgstr "Seção da barra superior para o botão do monitor do sistema"
+
+#~ msgid "resets now"
+#~ msgstr "zera agora"
 
 #~ msgid "The same switch as the Removable Devices module on the General page"
 #~ msgstr "O mesmo interruptor do módulo Dispositivos externos na página Geral"

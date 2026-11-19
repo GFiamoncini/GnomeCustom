@@ -512,3 +512,27 @@ Relato: com janelas flutuando, toda janela nova abria atrás delas.
   do mosaico caía na primeira troca de título (o `_sync` desfazia o "no topo").
 - Conferido no Shell isolado (calculadora por regra + editor novo): sem a correção a
   calculadora fica por cima do editor; com ela, o editor abre na frente.
+
+## Super+C não devolvia a janela ao mosaico (2026-11-18)
+
+Relato: algumas janelas não respeitavam o Super+C; o exemplo foi o Nautilus.
+
+- Não era do Nautilus: era de qualquer janela que, ao voltar, caísse no **mesmo
+  retângulo** de antes de flutuar — o caso típico é a janela sozinha no monitor. O
+  primeiro Super+C soltava; o segundo a punha de volta na árvore, mas ela ficava solta.
+- Causa: o render guarda o último retângulo pedido ao Mutter (`_requested`) para não
+  repetir pedidos enquanto o cliente Wayland não confirma. O Super+C move a janela por
+  fora do render sem limpar esse registro; na volta, o retângulo calculado era igual ao
+  "já pedido" e o render pulava a janela.
+- Agora todo `moveResize` passa por `TilingController._place`, que anota o pedido — o
+  `_requested` volta a ser sempre "o último retângulo pedido ao Mutter", dentro ou fora
+  do render. E no render quem decide é esse pedido: igual ao calculado, espera; diferente,
+  pede de novo, mesmo que a janela pareça no lugar. É o que cobre o Super+C duas vezes
+  rápido, com o pedido de flutuar ainda sem confirmação do cliente (achado na revisão).
+- De carona, da mesma revisão: a troca de monitores limpa os pedidos, porque o Mutter
+  reacomoda as janelas sozinho no hotplug.
+- Testes novos: Super+C duas vezes com a janela sozinha, o mesmo antes de o cliente
+  confirmar, e a troca de monitores repondo a janela.
+- Conferido no Shell isolado com a configuração dele: sem a correção o Nautilus fica
+  flutuando no segundo Super+C; com ela, volta a 1592×826, também com os dois Super+C
+  em ~30 ms. O hotplug de monitor só tem teste do núcleo, não foi exercitado ao vivo.

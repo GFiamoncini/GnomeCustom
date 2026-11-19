@@ -2182,6 +2182,63 @@ test('controlador: flutuar por janela é só memória, centraliza e fica no topo
     assertEqual(requests, [], 'flutuar por janela nunca grava configuração:');
 });
 
+test('controlador: Super+C duas vezes devolve ao lugar a janela sozinha no monitor', () => {
+    // Relato de 2026-11-18 (Nautilus): sozinha, a janela volta ao mesmo retângulo
+    // de antes, e o render achava que esse pedido ainda estava pendente.
+    const {ws, controller} = makeTiling();
+    const files = ws.add({wmClass: 'org.gnome.Nautilus'});
+    controller.start();
+    controller.render();
+    ws.focused = files;
+    const tiled = rectOf(ws, files);
+
+    controller.run({type: 'float-toggle'});
+    controller.render();
+    assertEqual(rectOf(ws, files), Geometry.floatRect(ws.workArea(0)), 'flutuando:');
+
+    controller.run({type: 'float-toggle'});
+    controller.render();
+    assert(controller.isTiled(files), 'deveria voltar à árvore');
+    assertEqual(rectOf(ws, files), tiled, 'de volta ao lugar no mosaico:');
+});
+
+test('controlador: Super+C duas vezes antes de o cliente confirmar ainda devolve a janela', () => {
+    // No Wayland o retângulo só muda quando o aplicativo confirma. Com o segundo
+    // Super+C chegando antes disso, a janela ainda "está no lugar" — mas há um
+    // pedido de flutuar pendente, que precisa ser sobreposto.
+    const {ws, controller} = makeTiling();
+    const files = ws.add({wmClass: 'org.gnome.Nautilus'});
+    controller.start();
+    controller.render();
+    ws.focused = files;
+    const tiled = rectOf(ws, files);
+
+    ws.deferConfigure = true;
+    controller.run({type: 'float-toggle'});
+    controller.run({type: 'float-toggle'});
+    controller.render();
+    ws.configureAll();
+    ws.deferConfigure = false;
+
+    assert(controller.isTiled(files), 'deveria voltar à árvore');
+    assertEqual(rectOf(ws, files), tiled, 'de volta ao lugar no mosaico:');
+});
+
+test('controlador: troca de monitores repõe a janela que o Mutter moveu por conta própria', () => {
+    const {ws, controller} = makeTiling();
+    const a = ws.add();
+    controller.start();
+    controller.render();
+    const tiled = rectOf(ws, a);
+
+    // O Mutter reacomoda a janela no hotplug, sem passar pelo nosso layout.
+    ws.windows.get(a).rect = {x: 100, y: 100, width: 640, height: 480};
+    controller.monitorsChanged();
+    controller.render();
+
+    assertEqual(rectOf(ws, a), tiled, 'de volta ao retângulo do layout:');
+});
+
 test('controlador: sempre-flutuar grava regra de classe e centraliza (regressão de ordem)', () => {
     const {ws, controller, requests} = makeTiling();
     ws.add();

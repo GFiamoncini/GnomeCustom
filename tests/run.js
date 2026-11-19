@@ -16,6 +16,37 @@ import {FakeEmitter, FakeSettings, FakeInjectionManager, FakeExtension, FakeSink
 
 const EXT = '../gnomeCustom@gfiamoncini.com';
 
+// Pastas temporárias dos testes: tudo o que nasce por aqui é apagado ao fim da
+// rodada, passe ou falhe, para não acumular sobra em /tmp.
+const tempDirs = [];
+
+function tempDir(prefix) {
+    const dir = Gio.File.new_for_path(GLib.dir_make_tmp(`${prefix}-XXXXXX`));
+    tempDirs.push(dir);
+    return dir;
+}
+
+function removeTree(dir) {
+    const info = dir.query_info('standard::type', Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS, null);
+    if (info.get_file_type() === Gio.FileType.DIRECTORY) {
+        const children = dir.enumerate_children('standard::name', Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS, null);
+        for (let child = children.next_file(null); child; child = children.next_file(null))
+            removeTree(dir.get_child(child.get_name()));
+        children.close(null);
+    }
+    dir.delete(null);
+}
+
+function removeTempDirs() {
+    for (const dir of tempDirs.splice(0)) {
+        try {
+            removeTree(dir);
+        } catch (error) {
+            printerr(`sobra em ${dir.get_path()}: ${error.message}`);
+        }
+    }
+}
+
 const {Logger, LogLevel, toLogLevel, logLevelNick} = await import(`${EXT}/core/logger.js`);
 const {SignalTracker} = await import(`${EXT}/core/signals.js`);
 const {Patcher} = await import(`${EXT}/core/patcher.js`);
@@ -2830,7 +2861,7 @@ function fakeSettings(values) {
 }
 
 test('tema dos apps: aplica, guarda o gtk.css do usuário e devolve tudo ao desligar', async () => {
-    const root = Gio.File.new_for_path(GLib.dir_make_tmp('gnomecustom-apptheme-XXXXXX'));
+    const root = tempDir('gnomecustom-apptheme');
     const theme = root.get_child('Dracula-AMOLED');
     for (const part of ['gtk-3.20', 'libadwaita'])
         theme.get_child(part).make_directory_with_parents(null);
@@ -2922,7 +2953,7 @@ test('apps Electron: valores do Obsidian voltam, salvo se o usuário mudou depoi
 });
 
 test('apps Electron: receita do tema aplicada nos arquivos e desfeita por inteiro', () => {
-    const root = Gio.File.new_for_path(GLib.dir_make_tmp('gnomecustom-tweaks-XXXXXX'));
+    const root = tempDir('gnomecustom-tweaks');
     const write = (target, text) => {
         if (!target.get_parent().query_exists(null))
             target.get_parent().make_directory_with_parents(null);
@@ -3326,7 +3357,7 @@ test('atualizações: pacotes por nome, Flatpak pela saída do comando, e quando
 
 test('cota de IA: serviço acha as contas, lê sem escrever, guarda a leitura e respeita o 429', async () => {
     GLib.unsetenv('CLAUDE_CONFIG_DIR');
-    const home = Gio.File.new_for_path(GLib.dir_make_tmp('gnomecustom-aiusage-XXXXXX'));
+    const home = tempDir('gnomecustom-aiusage');
     const write = (path, value) => {
         const file = home.resolve_relative_path(path);
         if (!file.get_parent().query_exists(null))
@@ -4415,4 +4446,6 @@ test('dados: uuid de extensão conhecida não se repete', () => {
     assertEqual(uuids.length, new Set(uuids).size, 'uuids duplicados:');
 });
 
-imports.system.exit(await run());
+const failures = await run();
+removeTempDirs();
+imports.system.exit(failures);

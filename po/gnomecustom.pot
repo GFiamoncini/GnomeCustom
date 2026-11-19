@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnomeCustom 0.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/gfiamoncini/gnomecustom/issues\n"
-"POT-Creation-Date: 2026-11-02 14:43-0300\n"
+"POT-Creation-Date: 2026-11-05 22:22-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3272,17 +3272,23 @@ msgstr ""
 msgid "7 days"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/ai-usage.js:294
-msgid "resets now"
+#: gnomeCustom@gfiamoncini.com/lib/ai-usage.js:313
+#, javascript-format
+msgid "reset at %s"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/ai-usage.js:301
-#: gnomeCustom@gfiamoncini.com/lib/ai-usage.js:307
+#: gnomeCustom@gfiamoncini.com/lib/ai-usage.js:314
+#, javascript-format
+msgid "reset on %s at %s"
+msgstr ""
+
+#: gnomeCustom@gfiamoncini.com/lib/ai-usage.js:323
+#: gnomeCustom@gfiamoncini.com/lib/ai-usage.js:329
 #, javascript-format
 msgid "resets in %s"
 msgstr ""
 
-#: gnomeCustom@gfiamoncini.com/lib/ai-usage.js:306
+#: gnomeCustom@gfiamoncini.com/lib/ai-usage.js:328
 #, javascript-format
 msgid "resets in %s, at %s"
 msgstr ""

@@ -536,3 +536,20 @@ Relato: algumas janelas não respeitavam o Super+C; o exemplo foi o Nautilus.
 - Conferido no Shell isolado com a configuração dele: sem a correção o Nautilus fica
   flutuando no segundo Super+C; com ela, volta a 1592×826, também com os dois Super+C
   em ~30 ms. O hotplug de monitor só tem teste do núcleo, não foi exercitado ao vivo.
+
+
+## Cota de IA mostrava o número de uma janela já vencida (2026-11-18)
+
+Achado ao reler o WinDock (commits de 03 a 18/11, até o `87f7e30`); lá o defeito foi
+corrigido no `bf58d74`. Quando a API não responde (login do Claude Code vencido de
+madrugada, 429), o cartão fica com a leitura guardada, e a janela cujo prazo já tinha
+passado continuava com a porcentagem antiga e "zera agora".
+
+- `currentGauges()` em `lib/ai-usage.js`: janela com o prazo vencido vale 0%. O serviço
+  aplica isso em toda leitura que entrega; a leitura guardada fica como veio.
+- `describeReset()`: prazo passado vira "zerou às HH:MM", com o dia quando não foi hoje.
+- Testes: a regra no núcleo e o serviço devolvendo 0% com a leitura velha.
+- **Não visto ao vivo:** depende de a sessão atravessar o prazo sem resposta da API.
+- Do mesmo commit do WinDock que **não** veio: perguntar de novo assim que a data do
+  `.credentials.json` muda. O resto da leitura dessa rodada (papel de parede por pasta,
+  abrir flutuando, histórico da bateria) ficou só avaliado, a pedido.

@@ -219,6 +219,22 @@ export function parseUsage(json) {
     return gauges;
 }
 
+/**
+ * Os medidores como valem agora: a janela cujo prazo já passou zerou, e mostrar
+ * a porcentagem dela seria dar o número de ontem como se fosse de hoje. Acontece
+ * com a leitura guardada, quando a API não responde (login vencido de madrugada,
+ * 429): o prazo antigo fica, para o cartão dizer quando ela zerou.
+ *
+ * @param {Gauge[]} gauges
+ * @param {number} nowMs
+ * @returns {Gauge[]}
+ */
+export function currentGauges(gauges, nowMs) {
+    return gauges.map(gauge => gauge.resetsAt !== null && gauge.resetsAt <= nowMs && gauge.percent !== 0
+        ? {...gauge, percent: 0}
+        : gauge);
+}
+
 /** @param {*} value ISO 8601 @returns {?number} ms desde 1970 */
 export function parseTime(value) {
     if (typeof value !== 'string' || !value)
@@ -277,7 +293,8 @@ export function formatClock(ms) {
 
 /**
  * Quanto falta para a janela zerar. Hoje, com a hora — é acionável; de amanhã em
- * diante, só o prazo.
+ * diante, só o prazo. Prazo que já passou vira "zerou às", com o dia quando não
+ * foi hoje.
  *
  * Devolve a mensagem em inglês com os marcadores (`%s`) e os valores, para quem
  * exibe traduzir antes de substituir.
@@ -290,8 +307,13 @@ export function describeReset(resetsAt, nowMs) {
     if (resetsAt === null || resetsAt === undefined)
         return null;
     const left = resetsAt - nowMs;
-    if (left <= 0)
-        return {message: N_('resets now'), args: []};
+    if (left <= 0) {
+        const then = new Date(resetsAt);
+        return then.toDateString() === new Date(nowMs).toDateString()
+            ? {message: N_('reset at %s'), args: [formatClock(resetsAt)]}
+            : {message: N_('reset on %s at %s'),
+                args: [`${pad(then.getDate())}/${pad(then.getMonth() + 1)}`, formatClock(resetsAt)]};
+    }
 
     const minutes = Math.floor(left / 60_000);
     const hours = Math.floor(minutes / 60);

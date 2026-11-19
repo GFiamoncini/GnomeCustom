@@ -3059,11 +3059,25 @@ test('cota de IA: "zera em" — hoje com a hora, depois só o prazo', () => {
     const at = (d, h, m = 0) => new Date(2026, 8, d, h, m).getTime();
 
     assertEqual(Ai.describeReset(null, now), null);
-    assertEqual(Ai.describeReset(now - 1, now).message, 'resets now');
+    assertEqual(Ai.describeReset(now - 1, now), {message: 'reset at %s', args: ['09:59']});
+    assertEqual(Ai.describeReset(at(23, 19, 59), now), {message: 'reset on %s at %s', args: ['23/09', '19:59']});
     assertEqual(Ai.describeReset(at(24, 12, 5), now), {message: 'resets in %s, at %s', args: ['2h05', '12:05']});
     assertEqual(Ai.describeReset(at(24, 10, 20), now).args, ['20 min', '10:20']);
     assertEqual(Ai.describeReset(at(25, 2), now), {message: 'resets in %s', args: ['16h00']});
     assertEqual(Ai.describeReset(at(27, 13), now).args, ['3d 3h']);
+});
+
+test('cota de IA: janela com o prazo vencido vale 0%, as outras ficam', () => {
+    const now = Date.parse('2026-09-24T18:00:00Z');
+    const gauges = Ai.parseUsage(AI_USAGE_RESPONSE);
+    const current = Ai.currentGauges(gauges, now);
+
+    assertEqual(current.map(g => g.percent), [0, 71, 12, 100], 'só a de 5 horas zerou:');
+    assertEqual(current[0].resetsAt, now, 'o prazo fica, para dizer quando zerou:');
+    assertEqual(gauges[0].percent, 42.4, 'a leitura original não muda:');
+    assert(current[2] === gauges[2], 'sem prazo, fica como veio');
+    assertEqual(Ai.currentGauges(gauges, now - 1).map(g => g.percent), [42.4, 71, 12, 100], 'antes do prazo:');
+    assertEqual(Ai.panelPercent([{gauges: current}]), 0, 'a barra acompanha:');
 });
 
 test('cota de IA: faixas, valor da barra, ordem e escolha das contas, Retry-After', () => {
@@ -3393,6 +3407,13 @@ test('cota de IA: serviço acha as contas, lê sem escrever, guarda a leitura e 
     answer = {status: 401, body: ''};
     accounts = await service.read(['.claude'], {force: true});
     assertEqual([accounts[0].state, accounts[0].since !== null], ['ok', true], 'números antigos ficam:');
+
+    // Sem resposta nova e com a janela de 5 horas já vencida, o número antigo não volta.
+    now = Date.parse('2026-09-24T19:00:00Z');
+    accounts = await service.read(['.claude'], {force: true});
+    assertEqual(accounts[0].gauges.map(g => g.percent), [0, 71, 12, 100], 'janela vencida zerada:');
+    assertEqual(accounts[0].since !== null, true, 'e o aviso de leitura velha continua:');
+
     write('.claude-bm/.credentials.json', {claudeAiOauth: {accessToken: 'x', expiresAt: now - 1}});
     const fresh = new ClaudeUsageService({home: home.get_path(), now: () => now});
     fresh._get = async () => {

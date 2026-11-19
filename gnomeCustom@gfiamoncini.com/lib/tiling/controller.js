@@ -317,6 +317,9 @@ export class TilingController {
             return;
         for (const id of this._win.list())
             this._sync(id, {anchor: 'end'});
+        // O Mutter reacomoda as janelas por conta própria no hotplug: os pedidos
+        // antigos não dizem mais onde elas estão.
+        this._requested.clear();
         this._requestRender();
     }
 
@@ -459,20 +462,31 @@ export class TilingController {
                 this._lastRects.set(id, rect);
                 if (this._grab?.id === id)
                     continue;
-                if (sameRect(this._win.frameRect(id), rect))
-                    continue;
                 // No Wayland o retângulo real só muda quando o aplicativo confirma
-                // o novo tamanho. Um segundo layout antes disso veria a janela
-                // "fora do lugar" e pediria de novo — o que se viu no Shell. Se o
-                // mesmo retângulo já foi pedido, espera.
-                if (sameRect(this._requested.get(id), rect))
+                // o novo tamanho. Por isso quem manda é o último pedido, não o
+                // retângulo real: se o mesmo já foi pedido, espera (pedir de novo
+                // a cada layout foi o que se viu no Shell); se o pedido foi outro
+                // (ex. flutuar, ainda não confirmado), a janela pode até parecer
+                // no lugar, mas vai sair dele — pede de novo. Só sem pedido algum
+                // o retângulo real decide.
+                const requested = this._requested.get(id);
+                if (requested ? sameRect(requested, rect) : sameRect(this._win.frameRect(id), rect))
                     continue;
-                this._win.moveResize(id, rect);
-                this._requested.set(id, rect);
+                this._place(id, rect);
                 moved++;
             }
         }
         return moved;
+    }
+
+    /**
+     * Move a janela e anota o pedido. Todo `moveResize` passa por aqui, dentro ou
+     * fora do render: `_requested` tem de ser sempre o último retângulo pedido ao
+     * Mutter, ou o render toma um pedido velho por pendente (2026-11-18).
+     */
+    _place(id, rect) {
+        this._win.moveResize(id, rect);
+        this._requested.set(id, rect);
     }
 
     // ----------------------------------------------------------- internos
@@ -753,7 +767,7 @@ export class TilingController {
 
         this._floating.add(id);
         this._tree.remove(id);
-        this._win.moveResize(id, floatRect(this._win.workArea(desc.monitor, this._workspaceOf(desc))));
+        this._place(id, floatRect(this._win.workArea(desc.monitor, this._workspaceOf(desc))));
         this._setRaised(id, this._config.floatOnTop);
         this._requestRender();
         return true;
@@ -783,7 +797,7 @@ export class TilingController {
         // agora.
         const wasTiled = this._tree.has(id);
         if (floating && wasTiled) {
-            this._win.moveResize(id, floatRect(this._win.workArea(desc.monitor, this._workspaceOf(desc))));
+            this._place(id, floatRect(this._win.workArea(desc.monitor, this._workspaceOf(desc))));
             this._setRaised(id, this._config.floatOnTop);
         } else if (!floating) {
             this._setRaised(id, false);
@@ -818,7 +832,7 @@ export class TilingController {
         const rect = side === 'center'
             ? centerRect(area, this._win.frameRect(id))
             : snapRect(area, side, fraction, this.gap);
-        this._win.moveResize(id, rect);
+        this._place(id, rect);
         return true;
     }
 

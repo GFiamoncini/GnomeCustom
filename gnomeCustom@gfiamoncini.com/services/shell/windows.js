@@ -262,12 +262,14 @@ export class WindowsService {
         // Janela nova: só entra no jogo depois de aparecer, e mais um ciclo do
         // loop, para o Mutter terminar o posicionamento inicial. Mover antes
         // disso faz a janela brigar com a própria colocação.
-        let shownToken;
+        let scheduled = false;
+        const waiting = [];
         const becomeReady = () => {
-            if (shownToken !== undefined) {
-                this._signals.disconnect(shownToken);
-                shownToken = undefined;
-            }
+            if (scheduled)
+                return;     // o outro sinal chegou primeiro
+            scheduled = true;
+            for (const token of waiting.splice(0))
+                this._signals.disconnect(token);
             this._signals.addIdle(() => {
                 if (this._tracked.get(id) === entry && !entry.ready) {
                     entry.ready = true;
@@ -277,12 +279,27 @@ export class WindowsService {
             }, {label: 'window-ready'});
         };
 
-        if (window.get_compositor_private()?.visible && !window.minimized)
+        const actor = window.get_compositor_private();
+        if (actor?.visible && !window.minimized) {
             becomeReady();
-        else {
-            shownToken = this._signals.connect(window, 'shown', becomeReady);
-            // Se a janela sumir antes de aparecer, _untrack também desconecta.
-            entry.tokens.push(shownToken);
+            return;
+        }
+        // Se a janela sumir antes de aparecer, _untrack também desconecta.
+        const wait = (object, signal, handler) => {
+            const token = this._signals.connect(object, signal, handler);
+            waiting.push(token);
+            entry.tokens.push(token);
+        };
+        wait(window, 'shown', becomeReady);
+        // Janela X11 (Xwayland) nova não emite 'shown' — o que chega é o ator
+        // ficando visível. Sem isto nenhum app X11 aberto depois da extensão
+        // entrava no mosaico nem ganhava a borda de foco (visto com o
+        // gnome-text-editor em GDK_BACKEND=x11 e o GTerm em Avalonia, 2026-11-24).
+        if (actor) {
+            wait(actor, 'notify::visible', () => {
+                if (actor.visible && !window.minimized)
+                    becomeReady();
+            });
         }
     }
 

@@ -107,6 +107,11 @@ arquivo estável funciona: `unload`, reescrever o mesmo caminho, `load`. Referê
   CRITICAL no Cogl. Esconder = opacidade 0 **antes** da altura 0; mostrar = altura antes
   da opacidade.
 - `BackgroundManager` põe o fundo por cima do contêiner; em miniaturas é preciso descê-lo.
+- **Janela X11 (Xwayland) nova não emite `shown`**; a do Wayland emite. No `window-created`
+  as duas já têm ator, ainda invisível; para a X11 o que chega depois é o
+  `notify::visible` do ator. Esperando só o `shown`, nenhum app X11 aberto depois da
+  extensão entrava no mosaico nem ganhava a borda de foco (2026-11-24, com o
+  gnome-text-editor em `GDK_BACKEND=x11` e o GTerm em Avalonia; `services/shell/windows.js`).
 - **GNOME 50:** `PanelMenu.Button` abre o menu por `Clutter.ClickGesture` em vez de
   `vfunc_event`, e chamar `super.vfunc_event` lança "Class StWidget doesn't implement
   event" (ver `ui/media/indicator.js`).
